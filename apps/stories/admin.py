@@ -3,9 +3,13 @@
 """Specifies how models are represented inthe admin pages."""
 
 from django.contrib import admin
-import models
+from models import *
 
 class BoardAdmin(admin.ModelAdmin):
     prepopulated_fields = {"slug": ("label",)}
+    
+class StoryAdmin(admin.ModelAdmin):
+    prepopulated_fields = {"slug": ("label",)}
 
-admin.site.register(models.Board, BoardAdmin)
+admin.site.register(Board, BoardAdmin)
+admin.site.register(Story, StoryAdmin)
