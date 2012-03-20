@@ -3,6 +3,7 @@
 from django.http import HttpResponse
 from django.template import RequestContext
 from django.shortcuts import render_to_response
+from models import Board
 
 def with_template(template_name):
     """Decorator for view functions.
@@ -22,4 +23,6 @@ def with_template(template_name):
 
 @with_template('stories/board-list.html')
 def board_list(request):
-    pass
+    return {
+        'boards': Board.objects.all(),
+    }

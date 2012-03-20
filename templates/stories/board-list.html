@@ -10,7 +10,15 @@
 		
 		<h1>Boards</h1>
 		<p>
-			…
-		</p>			
+			Generally you only have exactly one board,
+			containing all your projects, themes, and stories.
+		</p>		
+		<ul>
+			{% for board in boards %}
+			<li>
+				{{ board.label }}
+			</li>
+			{% endfor %}
+		</ul>	
 	</body>
 </html>
