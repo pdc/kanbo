@@ -2,8 +2,8 @@
 
 from django.http import HttpResponse
 from django.template import RequestContext
-from django.shortcuts import render_to_response
-from models import Board
+from django.shortcuts import render_to_response, get_object_or_404
+from models import Board, Story
 
 def with_template(template_name):
     """Decorator for view functions.
@@ -25,4 +25,12 @@ def with_template(template_name):
 def board_list(request):
     return {
         'boards': Board.objects.all(),
+    }
+    
+@with_template('stories/story-list.html')
+def story_list(request, board_id):
+    board = get_object_or_404(Board, pk=board_id)
+    return {
+        'board': board,
+        'stories': board.story_set.all(), # XXX topological sort will be required
     }

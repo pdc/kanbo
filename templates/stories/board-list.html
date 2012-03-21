@@ -5,7 +5,10 @@
 	</head>
 	<body>
 		<header>
-			<nav id="trail"><a href="{% url home %}">Kanbo</a></nav>
+			<nav id="trail">
+				<a href="{% url home %}">Kanbo</a>
+				<span>></span>
+			</nav>
 		</header>
 		
 		<h1>Boards</h1>
@@ -16,7 +19,7 @@
 		<ul>
 			{% for board in boards %}
 			<li>
-				{{ board.label }}
+				<a href="{% url story_list board_id=board.id %}">{{ board.label }}</a>
 			</li>
 			{% endfor %}
 		</ul>	
