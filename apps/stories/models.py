@@ -4,6 +4,23 @@
 
 from django.db import models
 
+        
+class Bag(models.Model):
+    name = models.SlugField(max_length=200)
+    label = models.CharField(max_length=200)
+    
+    def __unicode__(self):
+        return self.label
+        
+        
+class Tag(models.Model):
+    bag = models.ForeignKey(Bag)
+    
+    name = models.SlugField(max_length=200)
+    
+    def __unicode__(self):
+        return '{0}:{1}'.format(self.bag.name, self.name)
+    
 
 class Board(models.Model):
     """The universe of stories for one team, or group of teams."""
@@ -20,6 +37,7 @@ class Board(models.Model):
 class Story(models.Model):
     """On thing on a board"""
     board = models.ForeignKey(Board)
+    tag_set = models.ManyToManyField(Tag, related_name='story_set')
     
     label = models.CharField(max_length=200)
     slug = models.SlugField()
@@ -35,4 +53,4 @@ class Story(models.Model):
         
     def __unicode__(self):
         return self.label
-    
+        
