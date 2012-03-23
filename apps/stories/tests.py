@@ -6,11 +6,23 @@ Replace this with more appropriate tests for your application.
 """
 
 from django.test import TestCase
+#from apps.stories.models import *
 
 
-class SimpleTest(TestCase):
-    def test_basic_addition(self):
-        """
-        Tests that 1 + 1 always equals 2.
-        """
-        self.assertEqual(1 + 1, 2)
+class TestNothing(TestCase):
+    def test_nothing(self):
+        pass
+        
+    #def test_get_tags(self):
+    #    bag = Bag(name='state', label='State')
+    #    bag.save()
+    #    new_tag = Bag.tag_set.create(name='new')
+    #    progress_tag = Bag.tag_set.create(name='progress')
+    #    done_tag = Bag.tag_set.create(name='done')
+    #    
+    #    board = Board(label='a')
+    #    board.save()
+    #    story = Board.story_set.create(label='This')
+    #    story.tag_set.add(new_tag)
+    #    
+    #    self.assertEqual('new', story.get_tags(bag).name)
