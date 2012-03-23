@@ -1,27 +1,18 @@
-<!DOCTYPE html>
-<html lang="en-GB">
-	<head>
-		<title>Boards - Kanbo</title>
-	</head>
-	<body>
-		<header>
-			<nav id="trail">
-				<a href="{% url home %}">Kanbo</a>
-				<span>></span>
-			</nav>
-		</header>
-		
-		<h1>Boards</h1>
-		<p>
-			Generally you only have exactly one board,
-			containing all your projects, themes, and stories.
-		</p>		
-		<ul>
-			{% for board in boards %}
-			<li>
-				<a href="{% url story_list board_id=board.id %}">{{ board.label }}</a>
-			</li>
-			{% endfor %}
-		</ul>	
-	</body>
-</html>
+{% extends "stories/base.html" %}
+{% block title %}Boards{% endblock %}
+{% block main %}
+<section id="board-list">
+    <h1>Boards</h1>
+    <p>
+        Generally you only have exactly one board,
+        containing all your projects, themes, and stories.
+    </p>
+    <ul>
+        {% for board in boards %}
+        <li>
+            <a href="{% url story_list board_id=board.id %}">{{ board.label }}</a>
+        </li>
+        {% endfor %}
+    </ul>
+</section>
+{% endblock %}

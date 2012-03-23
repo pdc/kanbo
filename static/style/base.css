@@ -1,0 +1,107 @@
+@import url("../fonts/goudy-booketter-1911/stylesheet.css");
+@import url("../fonts/sorts-mill-goudy/stylesheet.css");
+
+/*
+Pale #FFFAE4
+Yellow #E9B955
+Blue #007F88
+Red #D67353
+*/
+
+* {
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-size: 81.25%; /* If default is 16px this makes 13px */
+    font-family: "Helvetica Neue", "Arial", "Helvetica", sans-serif;
+    line-height: 1.38; /* If default is 16px then this is 18px */
+    color: #331;
+    background: #FFFAE4;
+}
+
+header {
+    background: #007F88;
+    color: #FFFAE4;
+    padding: 10px;
+}
+
+header h1 {
+    font-size: 3em;
+    margin: 1em 10px 0.5em;
+
+    line-height: 1;
+    font-family: "GoudyBookletter1911Regular", serif;
+    font-weight: normal;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+#all {
+    width: 960px;
+    margin: 0 auto;
+}
+
+#main {
+    float: left;
+    width: 720px;
+}
+
+#asides {
+    float: left;
+    width: 240px;
+}
+
+section {
+    float: left;
+    width: 320px;
+    margin-top: 1px;
+    padding-top: 1px;
+
+    border-top: 1px solid #D67353;
+}
+
+#about {
+    width: 400px;
+    font-size: 1.23em;
+    font-family: "SortsMillGoudyRegular", serif;
+    line-height: 1.4;
+}
+
+#about i,
+#about em {
+    font-family: "SortsMillGoudyItalic", serif;
+}
+
+#status {
+    font-size: 1.23em;
+    color: #D67353;
+    font-weight: bold;
+}
+
+section h1 {
+    font-size: 2em;
+    margin: 1em 10px 0.5em;
+
+    line-height: 1;
+    font-family: "GoudyBookletter1911Regular", serif;
+    font-weight: normal;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #D67353;
+}
+
+section p {
+    margin: 1.4em 10px;
+
+
+}
+
+section li {
+    margin: 0.7em 10px 0.7em 30px;
+}
+
+aside li {
+    margin: 0.7em 10px;
+}
