@@ -1,12 +1,58 @@
 <!DOCTYPE html>
 <html lang="en-GB">
-	<head>
-		<title>Kanbo</title>
-	</head>
-	<body>
-		<h1>Kanbo</h1>
-		<p>
-			<a href="{% url board_list %}">Boards</a>
-		</p>			
-	</body>
+    <head>
+        <meta charset="UTF-8">
+        <title>Kanbo</title>
+        <link rel="stylesheet" href="{{ STATIC_URL}}style/base.css" type="text/css">
+    </head>
+    <body>
+        <header>
+            <h1>Kanbo</h1>
+        </header>
+        <div id="all">
+            <div id="main">
+                <section id="about">
+                    <p>Any fool can create a task-list web app. Here’s mine.</p>
+                    <p>
+                        Project-management styles variously calling themselves Agile, Lean,
+                        Scrum, and so on inspired by Toyota’s Kanban method want to
+                        arrange cards representing <i>stories</i> on a board.
+                    </p>
+                    <p>
+                        On the board, columns represent stages in the story’s life cycle
+                        (variously called states, bins, queues, backlogs).
+                        Stories start in the project backlog, are moved
+                        in to the <i>In Progress</i> bin, and
+                        eventually—we hope—end up in the <i>Completed</i> bin.
+                    </p>
+                    <p>
+                        The board may optionally be divided in to horizontal rows to
+                        show individual projects, devlopers, or iterations (also called sprints).
+                    </p>
+                </section>
+                <section id="status">
+                    <p>
+                        This is a work in progress.
+                    </p>
+                    <p>
+                        In fact I have barely started.
+                    </p>
+                </section>
+                <section id="boards">
+                    <p>
+                        <a href="{% url board_list %}">Boards</a>
+                    </p>
+                </section>
+            </div>
+            <div id="asides">
+                <aside>
+                    <ul>
+                        <li>
+                            <a href="https://github.com/pdc/kanbo">Code on GitHub</a>
+                        </li>
+                    </ul>
+                </aside>
+            </dv>
+        </div>
+    </body>
 </html>

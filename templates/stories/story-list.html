@@ -1,25 +1,18 @@
-<!DOCTYPE html>
-<html lang="en-GB">
-	<head>
-		<title>{{ board.label }} - Kanbo</title>
-	</head>
-	<body>
-		<header>
-			<nav id="trail">
-				<a href="{% url home %}">Kanbo</a>
-				<span>></span>
-				<a href="{% url board_list %}">Boards</a>
-				<span>></span>
-			</nav>
-		</header>
-		
-		<h1>{{ board.label }}</h1>
-		<ul>
-			{% for story in stories %}
-			<li id="story-{{ story.id }}">
-				<b>{{ story.label }}</b>
-			</li>
-			{% endfor %}
-		</ul>	
-	</body>
-</html>
+{% extends "stories/base.html" %}
+{% block title %}{{ board.label }}{% endblock %}
+{% block trail %}
+<a href="{% url board_list %}">Boards</a>
+<span>></span>
+{% endblock %}
+{% block main %}
+<section id="board">
+    <h1>{{ board.label }}</h1>
+    <ul>
+        {% for story in stories %}
+        <li id="story-{{ story.id }}">
+            <b>{{ story.label }}</b>
+        </li>
+        {% endfor %}
+    </ul>
+</section>
+{% endblock %}
