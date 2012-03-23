@@ -19,7 +19,7 @@ class Tag(models.Model):
     name = models.SlugField(max_length=200)
     
     def __unicode__(self):
-        return '{0}:{1}'.format(self.bag.name, self.name)
+        return u'{0}:{1}'.format(self.bag.name, self.name)
     
 
 class Board(models.Model):
@@ -37,7 +37,7 @@ class Board(models.Model):
 class Story(models.Model):
     """On thing on a board"""
     board = models.ForeignKey(Board)
-    tag_set = models.ManyToManyField(Tag, related_name='story_set')
+    tag_set = models.ManyToManyField(Tag, related_name=u'story_set')
     
     label = models.CharField(max_length=200)
     slug = models.SlugField()
@@ -48,8 +48,8 @@ class Story(models.Model):
     modified = models.DateField(auto_now=True, editable=False)
     
     class Meta:
-        ordering = ["created"] # change to sequence later?
-        verbose_name_plural = "stories"
+        ordering = [u"created"] # change to sequence later?
+        verbose_name_plural = u"stories"
         
     def __unicode__(self):
         return self.label
