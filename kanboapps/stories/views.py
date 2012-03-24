@@ -3,12 +3,12 @@
 from django.http import HttpResponse
 from django.template import RequestContext
 from django.shortcuts import render_to_response, get_object_or_404
-from models import Board, Story
+from models import Board, Story, toposorted
 
 def with_template(template_name):
     """Decorator for view functions.
-    
-    The wrapped function returns a dictionary 
+
+    The wrapped function returns a dictionary
     that is used as template arguments."""
     def decorator(view):
         def decorated_view(request, *args, **kwargs):
@@ -16,7 +16,7 @@ def with_template(template_name):
             if isinstance(response, HttpResponse):
                 return response
             template_args = response or {}
-            return render_to_response(template_name, template_args, 
+            return render_to_response(template_name, template_args,
                     context_instance=RequestContext(request))
         return decorated_view
     return decorator
@@ -26,11 +26,12 @@ def board_list(request):
     return {
         'boards': Board.objects.all(),
     }
-    
+
 @with_template('stories/story-list.html')
 def story_list(request, board_id):
     board = get_object_or_404(Board, pk=board_id)
+
     return {
         'board': board,
-        'stories': board.story_set.all(), # XXX topological sort will be required
+        'stories': toposorted(board.story_set.all()),
     }

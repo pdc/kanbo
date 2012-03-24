@@ -38,6 +38,8 @@ class Story(models.Model):
     """On thing on a board"""
     board = models.ForeignKey(Board)
     tag_set = models.ManyToManyField(Tag, related_name='story_set', blank=True)
+    succ = models.ForeignKey('self', null=True, blank=True,
+        help_text='Another story that follows this one in the queue.')
 
     label = models.CharField(max_length=200)
     slug = models.SlugField()
@@ -49,6 +51,7 @@ class Story(models.Model):
     class Meta:
         verbose_name = 'story'
         verbose_name_plural = 'stories'
+        ordering = ['created']
 
     def __unicode__(self):
         return self.label
@@ -68,8 +71,11 @@ def toposort(xs):
     """Given a list of things with a partial order, sort them.
 
     Things have  id and  succ_id attributes.
-    All id > 0. A false value for succ_id means x has no successor.
-    (Either 0 or None will do.)
+    The id is unique. All id values are non-false
+    (i.e., not zero, empty string, None)
+
+    succ_id identfies a thing that goes after x.
+    A false value for succ_id means x has no successor.
 
     Permute the list so that each x preceeds its successor
     (the thing with id==x.succ_id).

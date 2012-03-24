@@ -7,7 +7,7 @@ from models import *
 
 class TagInline(admin.TabularInline):
     model = Tag
-    
+
 class BagAdmin(admin.ModelAdmin):
     inlines = [
         TagInline,
@@ -15,9 +15,10 @@ class BagAdmin(admin.ModelAdmin):
 
 class BoardAdmin(admin.ModelAdmin):
     prepopulated_fields = {"slug": ("label",)}
-    
+
 class StoryAdmin(admin.ModelAdmin):
     prepopulated_fields = {"slug": ("label",)}
+    list_display = ['label', 'slug', 'succ', 'created']
 
 admin.site.register(Board, BoardAdmin)
 admin.site.register(Story, StoryAdmin)
