@@ -49,6 +49,80 @@ class Story(models.Model):
     class Meta:
         verbose_name = 'story'
         verbose_name_plural = 'stories'
-        
+
     def __unicode__(self):
         return self.label
+
+    def get_tag(self, bag):
+        """Get the tag in this bag for this story.
+
+        This best used with exclusive bags.
+        """
+        return self.tag_set.get(bag=bag)
+
+
+class CyclesException(Exception):
+    pass
+
+def toposort(xs):
+    """Given a list of things with a partial order, sort them.
+
+    Things have  id and  succ_id attributes.
+    All id > 0. A false value for succ_id means x has no successor.
+    (Either 0 or None will do.)
+
+    Permute the list so that each x preceeds its successor
+    (the thing with id==x.succ_id).
+
+    Note that xs is sorted in place. As with sort, there is no return value.
+    """
+    xs[:] = topoiter(xs)
+
+def toposorted(xs):
+    return list(topoiter(xs))
+
+def topoiter(xs):
+    # Here’s one traditional algorith for the general case.
+    # We are hoping to simplify based on a simplified graph
+    # where each node has at most one outgoing edge.
+    #
+    # L ← Empty list that will contain the sorted elements
+    # S ← Set of all nodes with no incoming edges
+    # while S is non-empty do
+    #     remove a node n from S
+    #     insert n into L
+    #     for each node m with an edge e from n to m do
+    #         remove edge e from the graph
+    #         if m has no other incoming edges then
+    #             insert m into S
+    # if graph has edges then
+    #     return error (graph has at least one cycle)
+    # else
+    #     return L (a topologically sorted order)
+
+    class Node(object):
+        __slots__ = ('x', 'succ', 'in_count')
+        def __init__(self, x):
+            self.x = x
+            self.in_count = 0
+
+    nodes = [Node(x) for x in xs]
+    nodes_by_id = dict((n.x.id,n) for n in nodes)
+    for n in nodes:
+        if n.x.succ_id:
+            n.succ = nodes_by_id[n.x.succ_id]
+            n.succ.in_count += 1
+
+    ns = [n for n in nodes if not n.in_count]
+    count = 0
+    while ns:
+        n = ns.pop(0)
+        count += 1
+        yield n.x
+        if n.x.succ_id:
+            m = n.succ
+            m.in_count -= 1
+            if not m.in_count:
+                ns.append(m)
+    if count < len(xs):
+        raise CyclesException('Cycles in story succession links')
