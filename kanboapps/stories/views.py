@@ -1,4 +1,4 @@
-# Create your views here.
+# -*- coding: UTF-8 -*-
 
 from django.http import HttpResponse
 from django.template import RequestContext

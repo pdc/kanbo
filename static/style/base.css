@@ -102,6 +102,57 @@ section li {
     margin: 0.7em 10px 0.7em 30px;
 }
 
+.story-bin {
+    width: 239px;
+    border-right: 1px dotted #D67353;
+}
+
+.story-bin li {
+    margin: 0.3em 9px 0.4em 10px;
+    padding: 0.3em 9px;
+    height: 5em;
+    overflow: hidden;
+
+    list-style-type: none;
+    background: #E9B955;
+    border: 1px outset #E9B955;
+    border-radius: 0.35em;
+    box-shadow: rgba(0, 0, 0, 0.5) 2px 2px 5px;
+}
+.story-bin li.ui-sortable-helper {
+    box-shadow: rgba(0, 0, 0, 0.5) 4px 4px 9px;
+}
+.story-bin b {
+    font-size: 2.1em;
+    display: block;
+    float: left;
+    margin:  0 10px 0 0;
+
+    line-height: 1;
+    font-weight: 200;
+}
+.story-bin q {
+    display: block;
+    font-weight: bolder;
+}
+
+.story-bin q::before,
+.story-bin q::after {
+    content: none;
+}
+
+
+form {
+    margin: 1.4em 10px;
+    padding: 9px;
+
+    background: #007F88;
+    border: 1px inset #007F88;
+    border-radius: 0.7em;
+}
+
+
+
 aside li {
     margin: 0.7em 10px;
 }

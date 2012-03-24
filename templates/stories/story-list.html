@@ -7,12 +7,27 @@
 {% block main %}
 <section id="board">
     <h1>{{ board.label }}</h1>
-    <ul>
+    <ul id="story-list" class="story-bin">
         {% for story in stories %}
         <li id="story-{{ story.id }}">
-            <b>{{ story.label }}</b>
+            <b>{{ story.id }}</b>
+            <q>{{ story.label }}</q>
+            {% for tag in story.tag_set.all %}
+                <i>{{ tag }}</i>
+            {% endfor %}
         </li>
         {% endfor %}
     </ul>
+    <form class="order-form">
+        <input name="order" id="order"
+                value="{% for story in stories %}{{ story.id }} {% endfor %}" />
+        <input type="submit" value="Change order" />
+    </form>
 </section>
+{% endblock %}
+
+{% block javascripts %}
+<script type="text/javascript" src="http://code.jquery.com/jquery-1.7.2.min.js"></script>
+<script type="text/javascript"src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.18/jquery-ui.min.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}js/story-list.js"></script>
 {% endblock %}
