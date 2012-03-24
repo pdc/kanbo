@@ -47,7 +47,8 @@ class Story(models.Model):
     modified = models.DateField(auto_now=True, editable=False)
 
     class Meta:
-        verbose_name_plural = u'stories'
+        verbose_name = 'story'
+        verbose_name_plural = 'stories'
         
     def __unicode__(self):
         return self.label

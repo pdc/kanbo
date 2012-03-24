@@ -6,7 +6,7 @@ Replace this with more appropriate tests for your application.
 """
 
 from django.test import TestCase
-#from apps.stories.models import *
+#from kanboapps.stories.models import *
 
 
 class TestNothing(TestCase):
