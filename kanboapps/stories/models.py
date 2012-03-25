@@ -130,20 +130,14 @@ def topoiter(xs):
 
     ns = [n for n in nodes if not n.in_count]
     count = len(nodes)
-    while ns:
-        n = ns.pop(0)
-        count -= 1
-        yield n.x
-        if n.x.succ_id:
-            m = n.succ
-            m.in_count -= 1
-            if not m.in_count:
-                ns.append(m)
-
-        if count and not(ns):
+    while count:
+        if not(ns):
+            # This shows there are one or more cycles in the input.
+            # For our purposes it is more important to
+            # display all the stories than it is to complain
+            # about cycles. (But they should neber happen.)
             for n in nodes:
                 if n.in_count:
-
                     # this is a candidate for disentanglement
                     logger.warn('Breaking cycle during topoiter: changing {0} in-count from {1} to 0'.format(n.x, n.in_count))
                     n.in_count = 0
@@ -152,8 +146,17 @@ def topoiter(xs):
                 else:
                     pass
             else:
-                # None fond. Probably a bug at this point.
+                # None fond. Probably a bug.
                 raise CyclesException('Cycles in story succession links of length at least {0}'.format(count))
+
+        n = ns.pop(0)
+        count -= 1
+        yield n.x
+        if n.x.succ_id:
+            m = n.succ
+            m.in_count -= 1
+            if not m.in_count:
+                ns.append(m)
 
 
 def rearrange_objects(model, ids):

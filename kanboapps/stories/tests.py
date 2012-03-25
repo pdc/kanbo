@@ -71,6 +71,17 @@ class TestTopsort(TestCase):
         self.assertEqual(5, len(xs))
         self.assertEqual(set(things), set(xs))
 
+
+    def test_break_cycle_of_totality(self):
+        things = [TestTopsort.Thing(*w) for w in [
+           (1, 2), (2, 3), (3, 4), (4, 1),
+        ]]
+        xs = list(things)
+        toposort(xs)
+
+        self.assertEqual(4, len(xs))
+        self.assertEqual(set(things), set(xs))
+
 class TestRorderFromOrderedStories(TestCase):
     def setUp(self):
         # Create 7 stories in order.
@@ -167,3 +178,9 @@ class TestRorderFromOrderedStories(TestCase):
     def test_dragon_drop_penultimate_after_last(self):
         self.rearrange_and_check(['foxtrot', ''],
             [ 'alpha', 'bravo', 'charlie', 'delta', 'echo', 'golf', 'foxtrot'])
+
+    def test_reverso(self):
+        # Added because I discovered that reversing the
+        # whole shebang caused a cycle to be created.
+        nu = ['golf', 'foxtrot', 'echo', 'delta', 'charlie', 'bravo', 'alpha']
+        self.rearrange_and_check(nu, nu)
