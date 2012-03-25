@@ -74,9 +74,9 @@ class TestRorderFromOrderedStories(TestCase):
         self.stories_by_slug = dict((x.slug, x) for x in self.stories)
         self.id_by_slug = dict((x.slug, x.id) for x in self.stories)
 
-    def reorder_and_check(self, order_slugs, expected_slugs):
+    def rearrange_and_check(self, order_slugs, expected_slugs):
         order = [(self.id_by_slug[x] if x else None) for x in order_slugs]
-        reorder(Story, order)
+        rearrange(Story, order)
 
         try:
             self.new_order = toposorted(Story.objects.all())
@@ -91,69 +91,69 @@ class TestRorderFromOrderedStories(TestCase):
 
     def test_nop_zero(self):
         # New orders are passed back as a list of IDs
-        self.reorder_and_check([],  ['alpha', 'bravo', 'charlie', 'delta', 'echo', 'foxtrot', 'golf'])
+        self.rearrange_and_check([],  ['alpha', 'bravo', 'charlie', 'delta', 'echo', 'foxtrot', 'golf'])
 
     def test_nop_one(self):
         # Special conventon for adding sequence at end.
-        self.reorder_and_check(['alpha'],
+        self.rearrange_and_check(['alpha'],
             [ 'alpha', 'bravo', 'charlie', 'delta', 'echo', 'foxtrot', 'golf',])
 
     def test_exchange_two(self):
         # This is supposed to be how drag & drop will work.
-        self.reorder_and_check(['foxtrot', 'echo'],
+        self.rearrange_and_check(['foxtrot', 'echo'],
             ['alpha', 'bravo', 'charlie', 'delta', 'foxtrot', 'echo', 'golf'])
 
     def test_first_to_last(self):
-        self.reorder_and_check(['golf', 'alpha', 'bravo'],
+        self.rearrange_and_check(['golf', 'alpha', 'bravo'],
             ['golf', 'alpha', 'bravo', 'charlie', 'delta', 'echo', 'foxtrot'])
 
     def test_gasther_and_plonk(self):
-        self.reorder_and_check(['bravo', 'echo', 'alpha', 'delta'],
+        self.rearrange_and_check(['bravo', 'echo', 'alpha', 'delta'],
             ['charlie', 'bravo', 'echo', 'alpha', 'delta', 'foxtrot', 'golf'])
 
     def test_dragon_drop_first_after_last(self):
         # Special conventon for adding sequence at end.
-        self.reorder_and_check(['alpha', None],
+        self.rearrange_and_check(['alpha', None],
             ['bravo', 'charlie', 'delta', 'echo', 'foxtrot', 'golf', 'alpha',])
 
     # The following are various permutations
     # that check the edge cases I can think of off the top
     # of my head. (No new code should be required.)
 
-    def test_reorder_everything(self):
+    def test_rearrange_everything(self):
         nu = ['delta', 'echo', 'charlie', 'alpha', 'foxtrot', 'bravo', 'golf']
-        self.reorder_and_check(nu, nu)
+        self.rearrange_and_check(nu, nu)
 
     def test_dragon_drop_last_before_first(self):
-        self.reorder_and_check(['golf', 'alpha'],
+        self.rearrange_and_check(['golf', 'alpha'],
             [ 'golf', 'alpha', 'bravo', 'charlie', 'delta', 'echo', 'foxtrot',])
 
     def test_dragon_drop_middle_before_first(self):
-        self.reorder_and_check(['charlie', 'alpha'],
+        self.rearrange_and_check(['charlie', 'alpha'],
             [ 'charlie', 'alpha', 'bravo', 'delta', 'echo', 'foxtrot', 'golf'])
 
     def test_dragon_drop_second_before_first(self):
-        self.reorder_and_check(['bravo', 'alpha'],
+        self.rearrange_and_check(['bravo', 'alpha'],
             [ 'bravo', 'alpha', 'charlie', 'delta', 'echo', 'foxtrot', 'golf'])
 
     def test_dragon_drop_first_before_second(self):
         # Should be a no-op.
-        self.reorder_and_check(['alpha', 'bravo'],
+        self.rearrange_and_check(['alpha', 'bravo'],
             [ 'alpha', 'bravo', 'charlie', 'delta', 'echo', 'foxtrot', 'golf'])
 
     def test_dragon_drop_first_before_middle(self):
-        self.reorder_and_check(['alpha', 'charlie'],
+        self.rearrange_and_check(['alpha', 'charlie'],
             ['bravo', 'alpha',  'charlie', 'delta', 'echo', 'foxtrot', 'golf'])
 
     def test_dragon_drop_first_before_last(self):
-        self.reorder_and_check(['alpha', 'golf'],
+        self.rearrange_and_check(['alpha', 'golf'],
             ['bravo', 'charlie', 'delta', 'echo', 'foxtrot', 'alpha',  'golf'])
 
     def test_dragon_drop_last_after_last(self):
         # Pointless, but what the hey.
-        self.reorder_and_check(['golf', ''],
+        self.rearrange_and_check(['golf', ''],
             [ 'alpha', 'bravo', 'charlie', 'delta', 'echo', 'foxtrot', 'golf'])
 
     def test_dragon_drop_penultimate_after_last(self):
-        self.reorder_and_check(['foxtrot', ''],
+        self.rearrange_and_check(['foxtrot', ''],
             [ 'alpha', 'bravo', 'charlie', 'delta', 'echo', 'golf', 'foxtrot'])

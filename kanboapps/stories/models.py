@@ -134,7 +134,7 @@ def topoiter(xs):
         raise CyclesException('Cycles in story succession links')
 
 
-def reorder(model, ids):
+def rearrange(model, ids):
     """Rearrange entities in the model
 
     Arguments --
