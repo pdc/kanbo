@@ -76,7 +76,7 @@ class TestRorderFromOrderedStories(TestCase):
 
     def rearrange_and_check(self, order_slugs, expected_slugs):
         order = [(self.id_by_slug[x] if x else None) for x in order_slugs]
-        rearrange(Story, order)
+        rearrange_objects(Story, order)
 
         try:
             self.new_order = toposorted(Story.objects.all())

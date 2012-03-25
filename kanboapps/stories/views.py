@@ -1,9 +1,10 @@
 # -*- coding: UTF-8 -*-
 
-from django.http import HttpResponse
+from django.core.urlresolvers import reverse
+from django.http import HttpResponse, HttpResponseRedirect
 from django.template import RequestContext
 from django.shortcuts import render_to_response, get_object_or_404
-from models import Board, Story, toposorted
+from models import Board, Story, toposorted, rearrange_objects
 
 def with_template(template_name):
     """Decorator for view functions.
@@ -30,8 +31,23 @@ def board_list(request):
 @with_template('stories/story-list.html')
 def story_list(request, board_id):
     board = get_object_or_404(Board, pk=board_id)
+    stories = toposorted(board.story_set.all())
+    return {
+        'board': board,
+        'stories': stories,
+        'order': ' '.join(str(x.id) for x in stories),
+    }
+
+@with_template('stories/story-list.html')
+def rearrangement(request, board_id):
+    board = get_object_or_404(Board, pk=board_id)
+    if request.method == 'POST':
+        ids = [(None if x == '-' else int(x)) for x in request.POST['order'].split()]
+        rearrange_objects(Story, ids)
+        return HttpResponseRedirect(reverse('story-list', kwargs={'board_id': board_id}))
 
     return {
         'board': board,
         'stories': toposorted(board.story_set.all()),
+        'order':  request.POST['order'],
     }
