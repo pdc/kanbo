@@ -132,3 +132,70 @@ def topoiter(xs):
                 ns.append(m)
     if count < len(xs):
         raise CyclesException('Cycles in story succession links')
+
+
+def reorder(model, ids):
+    """Rearrange entities in the model
+
+    Arguments --
+        model -- the class defining the universal set of entities
+        ids -- identifies some subset of the entities and
+            specifies the desired order of them relative to each other
+
+    The ids argument can be a subset of the entire
+    collection of model instances, or all of them.
+
+    The effect should be that the items are now in the
+    specified order, and occupy the position in the overall
+    ordering that the last item in the sequence once did.
+    """
+    if not ids or len(ids) == 1:
+        # Nothing to do.
+        return
+
+    objs_by_id = model.objects.in_bulk(ids)
+    objs = [(objs_by_id[i] if i else None)for i in ids]
+
+    # We will insert the new sequence
+    # where the new FINAL item originally sat.
+    # Start by plucking all the others out of
+    # the established partial order.
+    # We do this by setting the successor of
+    # their predecessors to their successors.
+
+    # Create a  list of succ relationships
+    # we need to patch over.
+    skips = dict((x.id, x.succ.id if x.succ else None) for x in objs[:-1])
+    skips[ids[-1]] = ids[0]
+
+    # Reduce the list by eliminating chains within our ordered elements.
+    # Varient: len(skips)
+    while skips:
+        for i, succ_i in skips.items():
+            if succ_i == ids[0]:
+                continue
+            succ_succ_i = skips.get(succ_i)
+            if succ_succ_i:
+                del skips[succ_i]
+                skips[i] = succ_succ_i
+                break
+        else:
+            break
+    after = None
+    for i, succ_i in skips.items():
+        if succ_i == ids[0]:
+            after = i, succ_i
+        else:
+            model.objects.filter(succ__id=i).update(succ=succ_i)
+    if after:
+        # The alteration linking to the start has to go after the rest
+        # to avoid creating stoopid cycles.
+        i, succ_i = after
+        model.objects.filter(succ__id=i).update(succ=succ_i)
+
+    # Establish the order amongs the new items.
+    for obj, succ in zip(objs, objs[1:]):
+        obj.succ = succ
+        obj.save()
+
+
