@@ -61,6 +61,16 @@ class TestTopsort(TestCase):
 
         self.assertEqual(things, xs)
 
+    def test_break_cycles_if_necessary(self):
+        things = [TestTopsort.Thing(*w) for w in [
+            (1, 4), (2, 3), (3, 5), (4, 1), (5, 4),
+        ]]
+        xs = list(things)
+        toposort(xs)
+
+        self.assertEqual(5, len(xs))
+        self.assertEqual(set(things), set(xs))
+
 class TestRorderFromOrderedStories(TestCase):
     def setUp(self):
         # Create 7 stories in order.

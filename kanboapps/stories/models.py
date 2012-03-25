@@ -3,7 +3,9 @@
 """Declarations for models used in the stories app."""
 
 from django.db import models
+import logging
 
+logger = logging.getLogger(__name__)
 
 class Bag(models.Model):
     name = models.SlugField(max_length=200)
@@ -112,6 +114,13 @@ def topoiter(xs):
             self.x = x
             self.in_count = 0
 
+        def __str__(self):
+            return str(x)
+
+        def __repr__(self):
+            return 'Node({0!r})'.format(self.x)
+
+
     nodes = [Node(x) for x in xs]
     nodes_by_id = dict((n.x.id,n) for n in nodes)
     for n in nodes:
@@ -120,18 +129,31 @@ def topoiter(xs):
             n.succ.in_count += 1
 
     ns = [n for n in nodes if not n.in_count]
-    count = 0
+    count = len(nodes)
     while ns:
         n = ns.pop(0)
-        count += 1
+        count -= 1
         yield n.x
         if n.x.succ_id:
             m = n.succ
             m.in_count -= 1
             if not m.in_count:
                 ns.append(m)
-    if count < len(xs):
-        raise CyclesException('Cycles in story succession links')
+
+        if count and not(ns):
+            for n in nodes:
+                if n.in_count:
+
+                    # this is a candidate for disentanglement
+                    logger.warn('Breaking cycle during topoiter: changing {0} in-count from {1} to 0'.format(n.x, n.in_count))
+                    n.in_count = 0
+                    ns.append(n)
+                    break
+                else:
+                    pass
+            else:
+                # None fond. Probably a bug at this point.
+                raise CyclesException('Cycles in story succession links of length at least {0}'.format(count))
 
 
 def rearrange_objects(model, ids):
