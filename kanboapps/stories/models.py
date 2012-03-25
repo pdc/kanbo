@@ -27,8 +27,8 @@ class Board(models.Model):
     label = models.CharField(max_length=200)
     slug = models.SlugField()
 
-    created = models.DateField(auto_now_add=True, editable=False)
-    modified = models.DateField(auto_now=True, editable=False)
+    created = models.DateTimeField(auto_now_add=True, editable=False)
+    modified = models.DateTimeField(auto_now=True, editable=False)
 
     def __unicode__(self):
         return self.label
@@ -45,8 +45,8 @@ class Story(models.Model):
     slug = models.SlugField()
     description = models.TextField(max_length=2000, blank=True, null=True)
 
-    created = models.DateField(auto_now_add=True, editable=False)
-    modified = models.DateField(auto_now=True, editable=False)
+    created = models.DateTimeField(auto_now_add=True, editable=False)
+    modified = models.DateTimeField(auto_now=True, editable=False)
 
     class Meta:
         verbose_name = 'story'
