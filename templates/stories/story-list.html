@@ -18,10 +18,10 @@
         </li>
         {% endfor %}
     </ul>
-    <form class="order-form">
-        <input name="order" id="order"
-                value="{% for story in stories %}{{ story.id }} {% endfor %}" />
-        <!--<input type="submit" value="Change order" />-->
+    <form class="rearrangement" action="{% url rearrangement board_id=board.id %}" method="post">
+        {% csrf_token %}
+        <input name="order" id="order" value="{{ order }}" />
+        <input type="submit" value="Rearrange" />
     </form>
 </section>
 {% endblock %}
