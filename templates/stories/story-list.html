@@ -1,9 +1,13 @@
 {% extends "stories/base.html" %}
 {% block title %}{{ board.label }}{% endblock %}
+
 {% block trail %}
-<a href="{% url board_list %}">Boards</a>
-<span>></span>
+    {% if many_boards %}
+    <a href="{% url board_list %}">Boards</a>
+    <span>></span>
+    {% endif %}
 {% endblock %}
+
 {% block main %}
 <section id="board">
     <h1>{{ board.label }}</h1>

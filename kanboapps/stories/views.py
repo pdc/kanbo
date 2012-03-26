@@ -3,7 +3,7 @@
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse, HttpResponseRedirect
 from django.template import RequestContext
-from django.shortcuts import render_to_response, get_object_or_404
+from django.shortcuts import render_to_response, get_object_or_404, redirect
 from models import Board, Story, toposorted, rearrange_objects
 
 def with_template(template_name):
@@ -24,15 +24,22 @@ def with_template(template_name):
 
 @with_template('stories/board-list.html')
 def board_list(request):
+    # XXX change the following to only list current user’s boards
+    boards = Board.objects.all()
+    if len(boards) == 1:
+        return redirect(story_list, board_id=boards[0].id)
+    
     return {
-        'boards': Board.objects.all(),
+        'boards': boards,
     }
 
 @with_template('stories/story-list.html')
 def story_list(request, board_id):
+    board_count = Board.objects.count() # XXX change to includ eonly user’s boards
     board = get_object_or_404(Board, pk=board_id)
     stories = toposorted(board.story_set.all())
     return {
+        'many_boards': board_count > 1,
         'board': board,
         'stories': stories,
         'order': ' '.join(str(x.id) for x in stories),
