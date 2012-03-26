@@ -2,8 +2,9 @@
 
 """Declarations for models used in the stories app."""
 
-from django.db import models
 import logging
+from heapq import heapify, heappop, heappush
+from django.db import models
 
 logger = logging.getLogger(__name__)
 
@@ -109,9 +110,10 @@ def topoiter(xs):
     #     return L (a topologically sorted order)
 
     class Node(object):
-        __slots__ = ('x', 'succ', 'in_count')
-        def __init__(self, x):
+        __slots__ = ('x', 'index', 'succ', 'in_count')
+        def __init__(self, x, index):
             self.x = x
+            self.index = index
             self.in_count = 0
 
         def __str__(self):
@@ -120,28 +122,30 @@ def topoiter(xs):
         def __repr__(self):
             return 'Node({0!r})'.format(self.x)
 
+        def __le__(self, other):
+            return self.index <= other.index
 
-    nodes = [Node(x) for x in xs]
+    nodes = [Node(x, i) for (i, x) in enumerate(xs)]
     nodes_by_id = dict((n.x.id,n) for n in nodes)
     for n in nodes:
         if n.x.succ_id:
             n.succ = nodes_by_id[n.x.succ_id]
             n.succ.in_count += 1
 
-    ns = [n for n in nodes if not n.in_count]
+    queue = [n for n in nodes if not n.in_count]
     count = len(nodes)
     while count:
-        if not(ns):
+        if not(queue):
             # This shows there are one or more cycles in the input.
             # For our purposes it is more important to
             # display all the stories than it is to complain
-            # about cycles. (But they should neber happen.)
+            # about cycles. (But they should never happen.)
             for n in nodes:
                 if n.in_count:
                     # this is a candidate for disentanglement
                     logger.warn('Breaking cycle during topoiter: changing {0} in-count from {1} to 0'.format(n.x, n.in_count))
                     n.in_count = 0
-                    ns.append(n)
+                    queue = [n]
                     break
                 else:
                     pass
@@ -149,14 +153,14 @@ def topoiter(xs):
                 # None fond. Probably a bug.
                 raise CyclesException('Cycles in story succession links of length at least {0}'.format(count))
 
-        n = ns.pop(0)
+        n = heappop(queue)
         count -= 1
         yield n.x
         if n.x.succ_id:
             m = n.succ
             m.in_count -= 1
             if not m.in_count:
-                ns.append(m)
+                heappush(queue, m)
 
 
 def rearrange_objects(model, ids):
@@ -191,32 +195,28 @@ def rearrange_objects(model, ids):
     # Create a  list of succ relationships
     # we need to patch over.
     skips = dict((x.id, x.succ.id if x.succ else None) for x in objs[:-1])
-    skips[ids[-1]] = ids[0]
+
 
     # Reduce the list by eliminating chains within our ordered elements.
-    # Varient: len(skips)
+    # Variant: len(skips)
     while skips:
         for i, succ_i in skips.items():
-            if succ_i == ids[0]:
-                continue
-            succ_succ_i = skips.get(succ_i)
-            if succ_succ_i:
+            if i == succ_i:
+                # This happens if there are cycles within our items.
+                skips[i] = 0 # Break the cycle
+                break
+            if succ_i in skips:
+                succ2_i = skips[succ_i]
+                skips[i] = succ2_i
                 del skips[succ_i]
-                skips[i] = succ_succ_i
                 break
         else:
             break
-    after = None
     for i, succ_i in skips.items():
-        if succ_i == ids[0]:
-            after = i, succ_i
-        else:
-            model.objects.filter(succ__id=i).update(succ=succ_i)
-    if after:
-        # The alteration linking to the start has to go after the rest
-        # to avoid creating stoopid cycles.
-        i, succ_i = after
         model.objects.filter(succ__id=i).update(succ=succ_i)
+
+    # Make predecessor of last elt point to start of new order.
+    model.objects.filter(succ__id=ids[-1]).update(succ=ids[0])
 
     # Establish the order amongs the new items.
     for obj, succ in zip(objs, objs[1:]):

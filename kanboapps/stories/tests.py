@@ -71,10 +71,19 @@ class TestTopsort(TestCase):
         self.assertEqual(5, len(xs))
         self.assertEqual(set(things), set(xs))
 
-
     def test_break_cycle_of_totality(self):
         things = [TestTopsort.Thing(*w) for w in [
            (1, 2), (2, 3), (3, 4), (4, 1),
+        ]]
+        xs = list(things)
+        toposort(xs)
+
+        self.assertEqual(4, len(xs))
+        self.assertEqual(set(things), set(xs))
+
+    def test_break_cycle_of_singleton(self):
+        things = [TestTopsort.Thing(*w) for w in [
+           (1, 2), (2, 3), (3, 3), (4, None),
         ]]
         xs = list(things)
         toposort(xs)
@@ -136,6 +145,24 @@ class TestRorderFromOrderedStories(TestCase):
         # Special conventon for adding sequence at end.
         self.rearrange_and_check(['alpha', None],
             ['bravo', 'charlie', 'delta', 'echo', 'foxtrot', 'golf', 'alpha',])
+
+    def test_does_not_faile_when_cycles(self):
+        # Again, cycles should never happen, but
+        # if they do we need the system to self-correct.
+        self.stories[-1].succ = self.stories[3]
+        self.stories[-1].save()
+
+        self.rearrange_and_check(['echo', 'golf'],
+            [ 'alpha', 'bravo', 'charlie', 'delta', 'foxtrot', 'echo', 'golf'])
+
+    def test_copes_with_singleton_cycle(self):
+        # Again, cycles should never happen, but
+        # if they do we need the system to self-correct.
+        self.stories[3].succ = self.stories[3]
+        self.stories[3].save()
+
+        self.rearrange_and_check(['golf', 'delta', 'charlie', ],
+            [ 'alpha', 'bravo', 'echo', 'foxtrot', 'golf', 'delta', 'charlie'])
 
     # The following are various permutations
     # that check the edge cases I can think of off the top
