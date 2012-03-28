@@ -5,7 +5,7 @@ import os, sys
 project_dir = os.path.abspath(os.path.dirname(__file__))
 def local_path(path):
     return os.path.join(project_dir, path)
-    
+
 if project_dir not in sys.path:
     sys.path[1:1] = [project_dir]
 
@@ -38,6 +38,8 @@ DATABASES = {
 # system time zone.
 TIME_ZONE = 'Europe/London'
 
+USE_TZ = True
+
 # Language code for this installation. All choices can be found here:
 # http://www.i18nguy.com/unicode/language-identifiers.html
 LANGUAGE_CODE = 'en-GB'
@@ -69,7 +71,7 @@ STATIC_ROOT = '/Users/pdc/Sites/kanbo'
 
 # URL prefix for static files.
 # Example: "http://media.lawrence.com/static/"
-STATIC_URL = 'http://ariel.local/~pdc/kanbo/'
+STATIC_URL = 'http://localhost/~pdc/kanbo/'
 
 # URL prefix for admin static files -- CSS, JavaScript and images.
 # Make sure to use a trailing slash.
@@ -130,6 +132,8 @@ INSTALLED_APPS = (
     'django.contrib.admin',
     # Uncomment the next line to enable admin documentation:
     # 'django.contrib.admindocs',
+    'south',
+
     'kanboapps.stories',
     'kanboapps.about',
 )
@@ -142,11 +146,24 @@ INSTALLED_APPS = (
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s'
+        },
+        'simple': {
+            'format': '%(levelname)s %(message)s'
+        },
+    },
     'handlers': {
         'mail_admins': {
             'level': 'ERROR',
             'class': 'django.utils.log.AdminEmailHandler'
-        }
+        },
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple'
+        },
     },
     'loggers': {
         'django.request': {
@@ -154,5 +171,10 @@ LOGGING = {
             'level': 'ERROR',
             'propagate': True,
         },
+        'kanboapps': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': True,
+        }
     }
 }
