@@ -11,6 +11,13 @@
 {% block main %}
 <section id="board">
     <h1>{{ board.label }}</h1>
+    <ul class="menu">
+        {% for bag in bags %}
+        <li>
+            <a href="{% url story-grid board_id=board.id col_name=bag.name %}">{{ bag.name }}</a>
+        </li>
+        {% endfor %}
+    </ul>
     <ul id="story-list" class="story-bin">
         {% for story in stories %}
         <li id="story-{{ story.id }}">

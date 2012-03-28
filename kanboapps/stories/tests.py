@@ -211,3 +211,59 @@ class TestRorderFromOrderedStories(TestCase):
         # whole shebang caused a cycle to be created.
         nu = ['golf', 'foxtrot', 'echo', 'delta', 'charlie', 'bravo', 'alpha']
         self.rearrange_and_check(nu, nu)
+
+
+class TestGridulate(TestCase):
+    def setUp(self):
+        # Create 16 stories
+        self.board = Board.objects.create(label='z')
+        self.stories = [self.board.story_set.create(board=self.board, label=x, slug=x)
+                for x in 'abcdefghijklmnop']
+        for x, y in zip(self.stories, self.stories[1:]):
+            x.succ = y
+            x.save()
+        self.stories_by_slug = dict((x.slug, x) for x in self.stories)
+        self.id_by_slug = dict((x.slug, x.id) for x in self.stories)
+
+        # Create some bags
+        self.bags = [self.board.bag_set.create(name=x) for x in 'qtw']
+        self.tagss = [[b.tag_set.create(name=s) for s in ss]
+            for b, ss in zip(self.bags, ['rs', 'uv', 'xyz'])]
+
+        # Taggity tag
+        for i, s in enumerate(self.stories):
+            s.tag_set.add(self.tagss[0][i // 8])
+            s.tag_set.add(self.tagss[1][i % 2])
+            if i % 4:
+                s.tag_set.add(self.tagss[2][i % 4 - 1])
+            s.save()
+
+    def test_fixture(self):
+        self.assertEqual(['r', 'u'], [t.name for t in self.stories[0].tag_set.all()])
+        self.assertEqual(['r', 'v', 'x'], [t.name for t in self.stories[1].tag_set.all()])
+
+    def test_simplest(self):
+        subject = self.board.make_grid()
+
+        # One row containing onc cell containing all the stories.
+        self.assertEqual([[self.stories]], subject)
+
+    def test_columns(self):
+        subject = self.board.make_grid(self.bags[0])
+
+        # One row containing 3 cells, the first empty
+        self.assertEqual([[[], self.stories[:8], self.stories[8:]]], subject)
+
+    def test_column_zero_has_unmatched_stories(self):
+        subject = self.board.make_grid(self.bags[2])
+
+        # One row containing 4 cells, each with one quarter of the items.
+        self.assertEqual([[
+            [self.stories[i] for i in [0, 4, 8, 12]],
+            [self.stories[i] for i in [1, 5, 9, 13]],
+            [self.stories[i] for i in [2, 6, 10, 14]],
+            [self.stories[i] for i in [3, 7, 11, 15]]]], subject)
+
+
+
+

@@ -141,6 +141,11 @@ section li {
     content: none;
 }
 
+td {
+    vertical-align: baseline;
+    text-align: left;
+}
+
 
 form {
     margin: 1.4em 10px;

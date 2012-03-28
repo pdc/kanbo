@@ -4,7 +4,7 @@ from django.core.urlresolvers import reverse
 from django.http import HttpResponse, HttpResponseRedirect
 from django.template import RequestContext
 from django.shortcuts import render_to_response, get_object_or_404, redirect
-from models import Board, Story, toposorted, rearrange_objects
+from models import Board, Story, Bag, toposorted, rearrange_objects
 
 def with_template(template_name):
     """Decorator for view functions.
@@ -28,7 +28,7 @@ def board_list(request):
     boards = Board.objects.all()
     if len(boards) == 1:
         return redirect(story_list, board_id=boards[0].id)
-    
+
     return {
         'boards': boards,
     }
@@ -43,6 +43,20 @@ def story_list(request, board_id):
         'board': board,
         'stories': stories,
         'order': ' '.join(str(x.id) for x in stories),
+        'bags': board.bag_set.all(),
+    }
+
+@with_template('stories/story-grid.html')
+def story_grid(request, board_id, col_name):
+    board_count = Board.objects.count() # XXX change to includ eonly user’s boards
+    board = get_object_or_404(Board, pk=board_id)
+    col_bag = get_object_or_404(Bag, board_id=board_id, name=col_name)
+    storiesss = board.make_grid(col_bag)
+    return {
+        'many_boards': board_count > 1,
+        'board': board,
+        'storiesss': storiesss,
+        'col_tags': col_bag.tag_set.all(),
     }
 
 @with_template('stories/story-list.html')

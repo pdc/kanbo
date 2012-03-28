@@ -1,28 +1,24 @@
 # -*- coding: UTF-8 -*-
 
-"""Declarations for models used in the stories app."""
+"""Declarations for models used in the stories app.
+
+Thes e models are maintained by South.
+After making a change, generate a migration using this command:
+
+    ./manage.py schemamigration  stories --auto
+
+Migrations can be applied using this command:
+
+    ./manage.py migrate stories
+
+
+"""
 
 import logging
 from heapq import heapify, heappop, heappush
 from django.db import models
 
 logger = logging.getLogger(__name__)
-
-class Bag(models.Model):
-    name = models.SlugField(max_length=200)
-    label = models.CharField(max_length=200)
-
-    def __unicode__(self):
-        return self.label
-
-
-class Tag(models.Model):
-    bag = models.ForeignKey(Bag)
-
-    name = models.SlugField(max_length=200)
-
-    def __unicode__(self):
-        return u'{0}:{1}'.format(self.bag.name, self.name)
 
 
 class Board(models.Model):
@@ -35,6 +31,41 @@ class Board(models.Model):
 
     def __unicode__(self):
         return self.label
+
+    def make_grid(self, columns_def=None):
+        stories = toposorted(self.story_set.all())
+
+        if columns_def:
+            idss = [[inf['id'] for inf in tag.story_set.values('id')]
+                    for tag in  columns_def.tag_set.all()]
+            storiess = [[x for x in stories if x.id in ids] for ids in idss]
+            missing = [x for x in stories if all(x not in xs for xs in storiess)]
+            return [[missing] + storiess]
+        return [[stories]]
+
+
+class Bag(models.Model):
+    """A set of tags. One of the axes by which stories are classified."""
+    board = models.ForeignKey(Board, null=True)
+
+    name = models.SlugField(max_length=200)
+    label = models.CharField(max_length=200)
+
+    def __unicode__(self):
+        return self.label
+
+
+class Tag(models.Model):
+    """One of the values of one axis of classification of stories."""
+    bag = models.ForeignKey(Bag)
+
+    name = models.SlugField(max_length=200)
+
+    def __unicode__(self):
+        return u'{0}:{1}'.format(self.bag.name, self.name)
+
+    class Meta:
+        ordering = ['id']
 
 
 class Story(models.Model):
@@ -161,7 +192,6 @@ def topoiter(xs):
             m.in_count -= 1
             if not m.in_count:
                 heappush(queue, m)
-
 
 def rearrange_objects(model, ids):
     """Rearrange entities in the model
