@@ -1,0 +1,64 @@
+{% extends "stories/base.html" %}
+{% block title %}{{ board.label }}{% endblock %}
+
+{% block trail %}
+    {% if many_boards %}
+    <a href="{% url board_list %}">Boards</a>
+    <span>></span>
+    {% endif %}
+{% endblock %}
+
+{% block main %}
+<section id="board">
+    <h1>{{ board.label }}</h1>
+    <ul class="menu">
+        {% for bag in bags %}
+        <li>
+            <a href="{% url story-grid board_id=board.id col_name=bag.name %}">{{ bag.name }}</a>
+        </li>
+        {% endfor %}
+    </ul>
+    <table id="story-grid">
+        <thead>
+            <tr>
+                <th>--</th>
+                {% for tag in col_tags %}
+                <th>{{ tag.name }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for storiess in storiesss %}
+            <tr>
+                {% for stories in storiess %}
+                <td>
+                    <ul class="story-bin">
+                        {% for story in stories %}
+                        <li id="story-{{ story.id }}">
+                            <b>{{ story.id }}</b>
+                            <q>{{ story.label }}</q>
+                            {% for tag in story.tag_set.all %}
+                                <i>{{ tag }}</i>
+                            {% endfor %}
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    <form class="rearrangement" action="{% url rearrangement board_id=board.id %}" method="post">
+                        {% csrf_token %}
+                        <input name="order" id="order" value="{{ order }}" />
+                        <input type="submit" value="Rearrange" />
+                    </form>
+                </td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
+{% endblock %}
+
+{% block javascripts %}
+<script type="text/javascript" src="http://code.jquery.com/jquery-1.7.2.min.js"></script>
+<script type="text/javascript"src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.18/jquery-ui.min.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}js/story-list.js"></script>
+{% endblock %}
