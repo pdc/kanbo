@@ -31,12 +31,12 @@ class Grid(object):
 
 
 class GridRow(object):
-    def __init__(self, cols, tags=None):
-        self.cols = cols
+    def __init__(self, bins, tags=None):
+        self.bins = bins
         self.tags = tags
 
     def __eq__(self, other):
-        return self.tags == other.tags and self.cols == other.cols
+        return self.tags == other.tags and self.bins == other.bins
 
 
 class GridCol(object):
@@ -67,10 +67,10 @@ class Board(models.Model):
         if columns_def:
             tag_idss = [(tag, [inf['id'] for inf in tag.story_set.values('id')])
                     for tag in  columns_def.tag_set.all()]
-            cols = [GridCol([x for x in stories if x.id in ids], [tag])
+            bins = [GridCol([x for x in stories if x.id in ids], [tag])
                 for (tag, ids) in tag_idss]
-            missing = GridCol([x for x in stories if all(x not in col.stories for col in cols)])
-            return Grid([GridRow([missing] + cols)])
+            missing = GridCol([x for x in stories if all(x not in bin.stories for bin in bins)])
+            return Grid([GridRow([missing] + bins)])
         return Grid([GridRow([GridCol(stories)])])
 
 
