@@ -32,6 +32,11 @@
             <tr>
                 {% for stories in storiess %}
                 <td>
+                    <form class="rearrangement" action="{% url rearrangement board_id=board.id %}" method="post">
+                        {% csrf_token %}
+                        <input name="order" id="order" value="{{ order }}" />
+                        <input type="submit" value="Rearrange" />
+                    </form>
                     <ul class="story-bin">
                         {% for story in stories %}
                         <li id="story-{{ story.id }}">
@@ -43,11 +48,6 @@
                         </li>
                         {% endfor %}
                     </ul>
-                    <form class="rearrangement" action="{% url rearrangement board_id=board.id %}" method="post">
-                        {% csrf_token %}
-                        <input name="order" id="order" value="{{ order }}" />
-                        <input type="submit" value="Rearrange" />
-                    </form>
                 </td>
                 {% endfor %}
             </tr>

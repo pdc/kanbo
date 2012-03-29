@@ -105,6 +105,7 @@ section li {
 .story-bin {
     width: 239px;
     border-right: 1px dotted #D67353;
+    border: 1px inset #D67353;
 }
 
 .story-bin li {
