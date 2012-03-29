@@ -71,13 +71,8 @@ def rearrangement(request, board_id, col_name):
         dropped_id = request.POST.get('dropped')
         if dropped_id:
             dropped = get_object_or_404(Story, id=dropped_id)
-            for old_tag in dropped.tag_set.filter(bag__name=col_name):
-                dropped.tag_set.remove(old_tag)
-            for tag_id in request.POST.getlist('tags'):
-                tag = get_object_or_404(Tag, id=tag_id, bag__name=col_name)
-                dropped.tag_set.add(tag)
-                logger.debug('Set {0} of {1} to {2}'.format(tag.bag, dropped, tag))
-
+            axis_bag = get_object_or_404(Bag, name=col_name)
+            dropped.replace_tags([axis_bag], request.POST.getlist('tags'))
         ids = [(None if x == '-' else int(x)) for x in request.POST['order'].split()]
         rearrange_objects(Story, ids)
 

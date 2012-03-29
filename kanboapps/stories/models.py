@@ -73,6 +73,14 @@ class Board(models.Model):
             return Grid([GridRow([missing] + bins)])
         return Grid([GridRow([GridCol(stories)])])
 
+    def rearrange(self, axes, tags, order, dropped):
+        """Rearrange stories.
+
+
+
+        """
+        pass
+
 
 class Bag(models.Model):
     """A set of tags. One of the axes by which stories are classified."""
@@ -127,6 +135,12 @@ class Story(models.Model):
         """
         return self.tag_set.get(bag=bag)
 
+    def replace_tags(self, axes, tags):
+        """Add the tags to this story, removing any from maching bags."""
+        for old_tag in self.tag_set.filter(bag__in=axes):
+            self.tag_set.remove(old_tag)
+        for tag in tags:
+            self.tag_set.add(tag)
 
 class CyclesException(Exception):
     pass

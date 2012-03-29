@@ -11,7 +11,7 @@ from django.test import TestCase
 from kanboapps.stories.models import *
 
 
-class TestNothing(TestCase):
+class TestStory(TestCase):
     def test_nothing(self):
         pass
 
@@ -28,6 +28,8 @@ class TestNothing(TestCase):
         story.tag_set.add(new_tag)
 
         self.assertEqual('new', story.get_tag(bag).name)
+
+
 
 class TestTopsort(TestCase):
     class Thing(object):
@@ -213,8 +215,8 @@ class TestRorderFromOrderedStories(TestCase):
         self.rearrange_and_check(nu, nu)
 
 
-class TestGridulate(TestCase):
-    def setUp(self):
+class BoardFixtureMixin(object):
+    def create_board_and_accoutrements(self):
         # Create 16 stories
         self.board = Board.objects.create(label='z')
         self.stories = [self.board.story_set.create(board=self.board, label=x, slug=x)
@@ -238,9 +240,8 @@ class TestGridulate(TestCase):
                 s.tag_set.add(self.tagss[2][i % 4 - 1])
             s.save()
 
-    def test_fixture(self):
-        self.assertEqual(['r', 'u'], [t.name for t in self.stories[0].tag_set.all()])
-        self.assertEqual(['r', 'v', 'x'], [t.name for t in self.stories[1].tag_set.all()])
+    def reload_stories(self):
+        self.stories = [Story.objects.get(id=s.id) for s in self.stories]
 
     def assert_grids_equal(self, grid1, grid2):
         self.assertTrue(grid1)
@@ -256,6 +257,14 @@ class TestGridulate(TestCase):
             self.assertEqual(bin1.tags, bin2.tags)
             self.assertEqual(bin1.stories, bin2.stories)
 
+
+class TestGrid(TestCase, BoardFixtureMixin):
+    def setUp(self):
+        self.create_board_and_accoutrements()
+
+    def test_fixture(self):
+        self.assertEqual(['r', 'u'], [t.name for t in self.stories[0].tag_set.all()])
+        self.assertEqual(['r', 'v', 'x'], [t.name for t in self.stories[1].tag_set.all()])
 
     def test_simplest(self):
         subject = self.board.make_grid()
@@ -291,3 +300,36 @@ class TestGridulate(TestCase):
                 GridCol([self.stories[i] for i in [3, 7, 11, 15]], [self.tagss[2][2]]),
             ])
         ]), subject)
+
+
+
+class TestStoryReplacingTags(TestCase, BoardFixtureMixin):
+    def setUp(self):
+        self.create_board_and_accoutrements()
+
+    def test_replace_one_existing_tag(self):
+        self.stories[0].replace_tags(
+            axes=[self.bags[0]],
+            tags=[self.tagss[0][1]])
+        self.reload_stories()
+
+        self.assertEqual(self.tagss[0][1],
+            self.stories[0].get_tag(self.bags[0]))
+
+    def test_replace_one_existing_tag_with_nothing(self):
+        self.stories[0].replace_tags(
+            axes=[self.bags[0]],
+            tags=[])
+        self.reload_stories()
+
+        with self.assertRaises(Tag.DoesNotExist):
+            self.stories[0].get_tag(self.bags[0])
+
+    def test_replace_one_existing_tag_by_id(self):
+        self.stories[0].replace_tags(
+            axes=[self.bags[0].id],
+            tags=[self.tagss[0][1].id])
+        self.reload_stories()
+
+        self.assertEqual(self.tagss[0][1],
+            self.stories[0].get_tag(self.bags[0]))
