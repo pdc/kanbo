@@ -21,6 +21,35 @@ from django.db import models
 logger = logging.getLogger(__name__)
 
 
+class Grid(object):
+    """Represents a 2d presentation of stories."""
+    def __init__(self, rows):
+        self.rows = rows
+
+    def __eq__(self, other):
+        return self.rows == other.rows
+
+
+class GridRow(object):
+    def __init__(self, cols, tags=None):
+        self.cols = cols
+        self.tags = tags
+
+    def __eq__(self, other):
+        return self.tags == other.tags and self.cols == other.cols
+
+
+class GridCol(object):
+    def __init__(self, stories, tags=None):
+        self.stories = stories
+        self.tags = tags
+
+    def __eq__(self, other):
+        return (self.tags == other.tags
+            and len(self.stories) == len(other.stories)
+            and all(x.id == y.id for (x, y) in zip(self.stories, other.stories)))
+
+
 class Board(models.Model):
     """The universe of stories for one team, or group of teams."""
     label = models.CharField(max_length=200)
@@ -36,12 +65,13 @@ class Board(models.Model):
         stories = toposorted(self.story_set.all())
 
         if columns_def:
-            idss = [[inf['id'] for inf in tag.story_set.values('id')]
+            tag_idss = [(tag, [inf['id'] for inf in tag.story_set.values('id')])
                     for tag in  columns_def.tag_set.all()]
-            storiess = [[x for x in stories if x.id in ids] for ids in idss]
-            missing = [x for x in stories if all(x not in xs for xs in storiess)]
-            return [[missing] + storiess]
-        return [[stories]]
+            cols = [GridCol([x for x in stories if x.id in ids], [tag])
+                for (tag, ids) in tag_idss]
+            missing = GridCol([x for x in stories if all(x not in col.stories for col in cols)])
+            return Grid([GridRow([missing] + cols)])
+        return Grid([GridRow([GridCol(stories)])])
 
 
 class Bag(models.Model):

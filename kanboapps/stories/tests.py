@@ -246,24 +246,33 @@ class TestGridulate(TestCase):
         subject = self.board.make_grid()
 
         # One row containing onc cell containing all the stories.
-        self.assertEqual([[self.stories]], subject)
+        self.assertEqual(Grid([
+            GridRow([
+                GridCol(self.stories)
+            ])
+        ]), subject)
 
     def test_columns(self):
         subject = self.board.make_grid(self.bags[0])
 
         # One row containing 3 cells, the first empty
-        self.assertEqual([[[], self.stories[:8], self.stories[8:]]], subject)
+        self.assertEqual(Grid([
+            GridRow([
+                GridCol(self.stories[:8], [self.tagss[0][0]]),
+                GridCol(self.stories[8:], [self.tagss[0][1]]),
+            ])
+        ]), subject)
+
 
     def test_column_zero_has_unmatched_stories(self):
         subject = self.board.make_grid(self.bags[2])
 
         # One row containing 4 cells, each with one quarter of the items.
-        self.assertEqual([[
-            [self.stories[i] for i in [0, 4, 8, 12]],
-            [self.stories[i] for i in [1, 5, 9, 13]],
-            [self.stories[i] for i in [2, 6, 10, 14]],
-            [self.stories[i] for i in [3, 7, 11, 15]]]], subject)
-
-
-
-
+        self.assertEqual(Grid([
+            GridRow([
+                GridCol([self.stories[i] for i in [0, 4, 8, 12]]),
+                GridCol([self.stories[i] for i in [1, 5, 9, 13]], [self.tagss[2][0]]),
+                GridCol([self.stories[i] for i in [2, 6, 10, 14]], [self.tagss[2][1]]),
+                GridCol([self.stories[i] for i in [3, 7, 11, 15]], [self.tagss[2][2]]),
+            ])
+        ]), subject)
