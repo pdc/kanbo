@@ -28,22 +28,28 @@
             </tr>
         </thead>
         <tbody>
-            {% for storiess in storiesss %}
+            {% for row in grid.rows %}
             <tr>
-                {% for stories in storiess %}
+                {% for bin in row.bins %}
                 <td>
-                    <form class="rearrangement" action="{% url rearrangement board_id=board.id %}" method="post">
+                    <form class="rearrangement" action="{% url rearrangement board_id=board.id col_name=col_name %}" method="post">
                         {% csrf_token %}
-                        <input name="order" id="order" value="{{ order }}" />
+                        {% for tag in bin.tags %}
+                        <input type="hidden" name="tags" value="{{ tag.id }}" />
+                        {% endfor %}
+                        <input name="order" />
+                        <input name="dropped" />
                         <input type="submit" value="Rearrange" />
                     </form>
                     <ul class="story-bin">
-                        {% for story in stories %}
+                        {% for story in bin.stories %}
                         <li id="story-{{ story.id }}">
                             <b>{{ story.id }}</b>
                             <q>{{ story.label }}</q>
                             {% for tag in story.tag_set.all %}
+                                {% if tag != bin.tag %}
                                 <i>{{ tag }}</i>
+                                {% endif %}
                             {% endfor %}
                         </li>
                         {% endfor %}

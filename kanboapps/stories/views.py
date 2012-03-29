@@ -1,10 +1,13 @@
 # -*- coding: UTF-8 -*-
 
+import logging
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse, HttpResponseRedirect
 from django.template import RequestContext
 from django.shortcuts import render_to_response, get_object_or_404, redirect
-from models import Board, Story, Bag, toposorted, rearrange_objects
+from models import Board, Story, Bag, Tag, toposorted, rearrange_objects
+
+logger = logging.getLogger(__name__)
 
 def with_template(template_name):
     """Decorator for view functions.
@@ -51,21 +54,38 @@ def story_grid(request, board_id, col_name):
     board_count = Board.objects.count() # XXX change to includ eonly user’s boards
     board = get_object_or_404(Board, pk=board_id)
     col_bag = get_object_or_404(Bag, board_id=board_id, name=col_name)
-    storiesss = board.make_grid(col_bag)
+    grid = board.make_grid(col_bag)
     return {
         'many_boards': board_count > 1,
         'board': board,
-        'storiesss': storiesss,
-        'col_tags': col_bag.tag_set.all(),
+        'grid': grid,
+        'col_name': col_name,
+        'col_tags': [t for b in grid.rows[0].bins if b.tags for t in b.tags],
     }
 
 @with_template('stories/story-list.html')
-def rearrangement(request, board_id):
+def rearrangement(request, board_id, col_name):
     board = get_object_or_404(Board, pk=board_id)
     if request.method == 'POST':
+        # Update dropped stories
+        dropped_id = request.POST.get('dropped')
+        if dropped_id:
+            dropped = get_object_or_404(Story, id=dropped_id)
+            for old_tag in dropped.tag_set.filter(bag__name=col_name):
+                dropped.tag_set.remove(old_tag)
+            for tag_id in request.POST.getlist('tags'):
+                tag = get_object_or_404(Tag, id=tag_id, bag__name=col_name)
+                dropped.tag_set.add(tag)
+                logger.debug('Set {0} of {1} to {2}'.format(tag.bag, dropped, tag))
+
         ids = [(None if x == '-' else int(x)) for x in request.POST['order'].split()]
         rearrange_objects(Story, ids)
-        return HttpResponseRedirect(reverse('story-list', kwargs={'board_id': board_id}))
+
+        if col_name:
+            u = reverse('story-grid', kwargs={'board_id': board_id, 'col_name': col_name})
+        else:
+            u = reverse('story-list', kwargs={'board_id': board_id})
+        return HttpResponseRedirect(u)
 
     return {
         'board': board,
