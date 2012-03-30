@@ -10,9 +10,12 @@ $(function () {
             for (var i = 0; i < eltIDs.length; ++i) {
                 storyIDs.push(eltIDs[i].replace(/^story-/, ''));
             }
-            if (storyIDs.indexOf(droppedID) >= 0) {
+            var droppedIndex = storyIDs.indexOf(droppedID);
+            if (droppedIndex >= 0) {
+                var succID = (droppedIndex + 1 < storyIDs.length ? storyIDs[droppedIndex + 1] : '-');
+                var abbreviatedIDs = [droppedID, succID];
                 var form$ = $(this).parent().find('form');
-                $('input[name=order]', form$).val(storyIDs.join(' '));
+                $('input[name=order]', form$).val(abbreviatedIDs.join(' '));
                 $('input[name=dropped]', form$).val(droppedID);
             }
         }
