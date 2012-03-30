@@ -302,7 +302,6 @@ class TestGrid(TestCase, BoardFixtureMixin):
         ]), subject)
 
 
-
 class TestStoryReplacingTags(TestCase, BoardFixtureMixin):
     def setUp(self):
         self.create_board_and_accoutrements()

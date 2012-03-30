@@ -14,9 +14,23 @@ $(function () {
             if (droppedIndex >= 0) {
                 var succID = (droppedIndex + 1 < storyIDs.length ? storyIDs[droppedIndex + 1] : '-');
                 var abbreviatedIDs = [droppedID, succID];
-                var form$ = $(this).parent().find('form');
-                $('input[name=order]', form$).val(abbreviatedIDs.join(' '));
-                $('input[name=dropped]', form$).val(droppedID);
+
+                var ajaxEnabled = $('#ajaxEnabled:checked').length;
+                if (ajaxEnabled) {
+                    var url = $(this).parent().attr('data-ajax-url');
+                    $.ajax(url, {
+                        type: 'POST',
+                        dataType: 'json',
+                        data: {
+                            'order': abbreviatedIDs,
+                            'dropped': droppedID,
+                        }
+                    });
+                } else {
+                    var form$ = $(this).parent().find('form');
+                    $('input[name=order]', form$).val(abbreviatedIDs.join(' '));
+                    $('input[name=dropped]', form$).val(droppedID);
+                }
             }
         }
     })

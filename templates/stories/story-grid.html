@@ -11,6 +11,10 @@
 {% block main %}
 <section id="board">
     <h1>{{ board.label }}</h1>
+    <p>
+        <input type="checkbox" id="ajaxEnabled" checked="checked" />
+        <label for="ajaxEnabled">Use Ajax</label>
+    </p>
     <ul class="menu">
         {% for bag in bags %}
         <li>
@@ -41,7 +45,7 @@
                         <input name="dropped" />
                         <input type="submit" value="Rearrange" />
                     </form>
-                    <ul class="story-bin">
+                    <ul class="story-bin" data-ajax-url="{% url rearrangement-ajax board_id=board.id col_name=col_name %}">
                         {% for story in bin.stories %}
                         <li id="story-{{ story.id }}">
                             <b>{{ story.id }}</b>

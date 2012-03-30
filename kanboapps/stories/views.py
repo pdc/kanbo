@@ -1,6 +1,7 @@
 # -*- coding: UTF-8 -*-
 
 import logging
+import json
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse, HttpResponseRedirect
 from django.template import RequestContext
@@ -65,6 +66,25 @@ def story_grid(request, board_id, col_name):
 
 @with_template('stories/story-list.html')
 def rearrangement(request, board_id, col_name):
+    if process_rearrangement(request, board_id, col_name):
+        if col_name:
+            u = reverse('story-grid', kwargs={'board_id': board_id, 'col_name': col_name})
+        else:
+            u = reverse('story-list', kwargs={'board_id': board_id})
+        return HttpResponseRedirect(u)
+    return {
+        'board': board,
+        'stories': toposorted(board.story_set.all()),
+        'order':  request.POST['order'],
+    }
+
+def rearrangement_ajax(request, board_id, col_name):
+    success = process_rearrangement(request, board_id, col_name)
+    res = {}
+    res['success'] = bool(success)
+    return HttpResponse(json.dumps(res), content_type="application/json")
+
+def process_rearrangement(request, board_id, col_name):
     board = get_object_or_404(Board, pk=board_id)
     if request.method == 'POST':
         # Update dropped stories
@@ -73,17 +93,11 @@ def rearrangement(request, board_id, col_name):
             dropped = get_object_or_404(Story, id=dropped_id)
             axis_bag = get_object_or_404(Bag, name=col_name)
             dropped.replace_tags([axis_bag], request.POST.getlist('tags'))
-        ids = [(None if x == '-' else int(x)) for x in request.POST['order'].split()]
+        ids = [(None if x == '-' else int(x)) for s in request.POST.getlist('order') for x in s.split()]
         rearrange_objects(Story, ids)
-
-        if col_name:
-            u = reverse('story-grid', kwargs={'board_id': board_id, 'col_name': col_name})
-        else:
-            u = reverse('story-list', kwargs={'board_id': board_id})
-        return HttpResponseRedirect(u)
-
-    return {
-        'board': board,
-        'stories': toposorted(board.story_set.all()),
-        'order':  request.POST['order'],
-    }
+        success = {
+            'ids': ids,
+        }
+        if dropped_id:
+            success['dropped'] = {'id': dropped_id, 'label': dropped.label}
+        return success
