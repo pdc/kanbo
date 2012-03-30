@@ -15,19 +15,27 @@ $(function () {
                 var succID = (droppedIndex + 1 < storyIDs.length ? storyIDs[droppedIndex + 1] : '-');
                 var abbreviatedIDs = [droppedID, succID];
 
+                var form$ = $(this).parent().find('form');
                 var ajaxEnabled = $('#ajaxEnabled:checked').length;
                 if (ajaxEnabled) {
-                    var url = $(this).parent().attr('data-ajax-url');
+                    var url = $(this).attr('data-ajax-url');
+                    var data = {}
+                    var es = $('input[type=hidden]', form$).get();
+                    for (var i = 0; i < es.length; ++i) {
+                        data[es[i].name] = es[i].value;
+                    }
+                    data[ 'order'] =  abbreviatedIDs.join(' ');
+                    data['dropped'] = droppedID;
                     $.ajax(url, {
                         type: 'POST',
                         dataType: 'json',
-                        data: {
-                            'order': abbreviatedIDs,
-                            'dropped': droppedID,
+                        data: data,
+                        success: function (data, textStatus, jqXHR) {
+                            console.log(data);
+                            console.log(textStatus);
                         }
                     });
                 } else {
-                    var form$ = $(this).parent().find('form');
                     $('input[name=order]', form$).val(abbreviatedIDs.join(' '));
                     $('input[name=dropped]', form$).val(droppedID);
                 }

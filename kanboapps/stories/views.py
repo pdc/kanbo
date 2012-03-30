@@ -79,8 +79,9 @@ def rearrangement(request, board_id, col_name):
     }
 
 def rearrangement_ajax(request, board_id, col_name):
+    logger.debug(request.body)
     success = process_rearrangement(request, board_id, col_name)
-    res = {}
+    res = success or {}
     res['success'] = bool(success)
     return HttpResponse(json.dumps(res), content_type="application/json")
 
@@ -93,11 +94,18 @@ def process_rearrangement(request, board_id, col_name):
             dropped = get_object_or_404(Story, id=dropped_id)
             axis_bag = get_object_or_404(Bag, name=col_name)
             dropped.replace_tags([axis_bag], request.POST.getlist('tags'))
+            dropped.save()
         ids = [(None if x == '-' else int(x)) for s in request.POST.getlist('order') for x in s.split()]
         rearrange_objects(Story, ids)
         success = {
             'ids': ids,
         }
         if dropped_id:
-            success['dropped'] = {'id': dropped_id, 'label': dropped.label}
+            success['dropped'] = {
+                'id': dropped_id,
+                'label': dropped.label,
+                'tags': [{'id': t.id, 'name': t.name, 'axis': t.bag.name} for t in dropped.tag_set.all()],
+            }
+            success['col_axis'] = {'id': axis_bag.id, 'name': axis_bag.name}
+            success['tags'] = [request.POST.getlist('tags')]
         return success
