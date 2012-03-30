@@ -27,6 +27,18 @@ header {
     padding: 10px;
 }
 
+header a:link,
+header a:visited {
+    color: #FFFAE4;
+    text-decoration: none;
+}
+
+header a:hover,
+header a:active {
+    color: #FFF;
+    text-decoration: underline;
+}
+
 header h1 {
     font-size: 3em;
     margin: 1em 10px 0.5em;
