@@ -1,6 +1,8 @@
 // Make the stories be sortable.
 
 $(function () {
+    var ajaxEnabled = true;
+
     $('.story-bin').sortable({
         connectWith: '.story-bin',
         update: function (event, ui) {
@@ -16,7 +18,6 @@ $(function () {
                 var abbreviatedIDs = [droppedID, succID];
 
                 var form$ = $(this).parent().find('form');
-                var ajaxEnabled = $('#ajaxEnabled:checked').length;
                 if (ajaxEnabled) {
                     var url = $(this).attr('data-ajax-url');
                     var data = {}
@@ -26,6 +27,7 @@ $(function () {
                     }
                     data[ 'order'] =  abbreviatedIDs.join(' ');
                     data['dropped'] = droppedID;
+                    ui.item.addClass('ajax-loading');
                     $.ajax(url, {
                         type: 'POST',
                         dataType: 'json',
@@ -33,6 +35,9 @@ $(function () {
                         success: function (data, textStatus, jqXHR) {
                             console.log(data);
                             console.log(textStatus);
+                        },
+                        complete: function (jqXHR, textStatus) {
+                            ui.item.removeClass('ajax-loading');
                         }
                     });
                 } else {
@@ -42,5 +47,6 @@ $(function () {
             }
         }
     })
-    .disableSelection();
+    .disableSelection()
+    .parent().find('form').hide();
 });

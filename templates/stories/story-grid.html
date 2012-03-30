@@ -11,10 +11,6 @@
 {% block main %}
 <section id="board">
     <h1>{{ board.label }}</h1>
-    <p>
-        <input type="checkbox" id="ajaxEnabled" checked="checked" />
-        <label for="ajaxEnabled">Use Ajax</label>
-    </p>
     <ul class="menu">
         {% for bag in bags %}
         <li>
@@ -25,7 +21,7 @@
     <table id="story-grid">
         <thead>
             <tr>
-                <th>--</th>
+                <th>–</th>
                 {% for tag in col_tags %}
                 <th>{{ tag.name }}</th>
                 {% endfor %}

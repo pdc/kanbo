@@ -104,8 +104,8 @@ section li {
 
 .story-bin {
     width: 239px;
+    min-height: 120px;
     border-right: 1px dotted #D67353;
-    border: 1px inset #D67353;
 }
 
 .story-bin li {
@@ -123,6 +123,11 @@ section li {
 .story-bin li.ui-sortable-helper {
     box-shadow: rgba(0, 0, 0, 0.5) 4px 4px 9px;
 }
+.story-bin li.ajax-loading {
+    background: url(ajax-loading.gif) -4px 4px no-repeat;
+    background:  url(ajax-loading.gif) 98% 4px no-repeat, #E9B955;
+}
+
 .story-bin b {
     font-size: 2.1em;
     display: block;
@@ -142,11 +147,21 @@ section li {
     content: none;
 }
 
-td {
+#story-grid th {
+    padding: 0 10px;
+
+    text-align: left;
     vertical-align: baseline;
+    line-height: 1;
+    font-family: "GoudyBookletter1911Regular", serif;
+    font-weight: normal;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+#story-grid td {
+    vertical-align: top;
     text-align: left;
 }
-
 
 form {
     margin: 1.4em 10px;
@@ -156,8 +171,6 @@ form {
     border: 1px inset #007F88;
     border-radius: 0.7em;
 }
-
-
 
 aside li {
     margin: 0.7em 10px;
