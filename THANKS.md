@@ -24,3 +24,14 @@ The demo site <http://kanbo.me.uk/> runs on the following platform:
 The colour scheme is based on [Aztec Nation on the Color Schemer Gallery][1].
 
   [1]: http://www.colorschemer.com/schemes/viewscheme.php?id=9811
+
+I use the following web fonts:
+
+- [Goudy Bookletter 1911][3] – logo and main headings
+- [Sorts Mill Goudy][4] – text
+
+using font kits from [Font Squirrel][2].
+
+  [2]: http://www.fontsquirrel.com/
+  [3]: http://www.theleagueofmoveabletype.com/goudy-bookletter-1911
+  [4]: http://www.theleagueofmoveabletype.com/sorts-mill-goudy
