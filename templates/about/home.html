@@ -12,7 +12,11 @@
         <div id="all">
             <div id="main">
                 <section id="about">
+                    <h2>About Kanbo</h2>
                     <p>Any fool can create a task-list web app. Here’s mine.</p>
+                    <p class="hero-link">
+                        <a href="{% url story-grid board_id=1 col_name="state" %}">Try the demonstration story grid</a>
+                    </p>
                     <p>
                         Project-management styles variously calling themselves Agile, Lean,
                         Scrum, and so on inspired by Toyota’s Kanban method want to
@@ -31,11 +35,12 @@
                     </p>
                 </section>
                 <section id="status">
+                    <h2>Status</h2>
                     <p>
                         This is a work in progress.
-                    </p>
-                    <p>
-                        In fact I have barely started.
+                        For now there is a demo board for you to play on, but
+                        no way to create your own board. And Ihave some way to go before the
+                        story-grid user-interface itself is complete.
                     </p>
                 </section>
                 <section id="boards">

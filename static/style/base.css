@@ -39,15 +39,20 @@ header a:active {
     text-decoration: underline;
 }
 
-header h1 {
-    font-size: 3em;
-    margin: 1em 10px 0.5em;
-
+.wordmark,
+header h1,
+section h1,
+section h2 {
     line-height: 1;
     font-family: "GoudyBookletter1911Regular", serif;
     font-weight: normal;
     text-transform: uppercase;
     letter-spacing: 0.1em;
+}
+
+header h1 {
+    font-size: 3em;
+    margin: 1em 10px 0.5em;
 }
 
 #all {
@@ -96,11 +101,13 @@ section h1 {
     font-size: 2em;
     margin: 1em 10px 0.5em;
 
-    line-height: 1;
-    font-family: "GoudyBookletter1911Regular", serif;
-    font-weight: normal;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
+    color: #D67353;
+}
+
+section h2 {
+    font-size: 1.44em;
+    margin: 1em 10px 0.5em;
+
     color: #D67353;
 }
 
