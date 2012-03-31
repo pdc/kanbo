@@ -47,7 +47,7 @@
                             <b>{{ story.id }}</b>
                             <q>{{ story.label }}</q>
                             {% for tag in story.tag_set.all %}
-                                {% if tag != bin.tag %}
+                                {% if tag.bag.name != col_name %}
                                 <i>{{ tag }}</i>
                                 {% endif %}
                             {% endfor %}
