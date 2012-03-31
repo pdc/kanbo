@@ -87,7 +87,6 @@ class Bag(models.Model):
     board = models.ForeignKey(Board, null=True)
 
     name = models.SlugField(max_length=200)
-    label = models.CharField(max_length=200)
 
     def __unicode__(self):
         return self.label
@@ -115,7 +114,6 @@ class Story(models.Model):
 
     label = models.CharField(max_length=200)
     slug = models.SlugField()
-    description = models.TextField(max_length=2000, blank=True, null=True)
 
     created = models.DateTimeField(auto_now_add=True, editable=False)
     modified = models.DateTimeField(auto_now=True, editable=False)

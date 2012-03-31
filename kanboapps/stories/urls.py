@@ -7,6 +7,8 @@ urlpatterns = patterns('kanboapps.stories.views',
     url(r'^(?P<board_id>\d+)$', 'story_list', name='story-list'),
     url(r'^(?P<board_id>\d+)/grids/(?P<col_name>[\w-]+)$', 'story_grid', name='story-grid'),
     url(r'^(?P<board_id>\d+)/rearrangement$', 'rearrangement', name='rearrangement'),
+    url(r'^(?P<board_id>\d+)/grids/(?P<col_name>[\w-]+)/new$', 'new_story', name='new-story'),
+    url(r'^(?P<board_id>\d+)/grids/(?P<col_name>[\w-]+)/create$', 'create_story', name='create-story'),
     url(r'^(?P<board_id>\d+)/grids/(?P<col_name>[\w-]+)/rearrangement$', 'rearrangement', name='rearrangement'),
     url(r'^(?P<board_id>\d+)/grids/(?P<col_name>[\w-]+)/rearrangement\.json$', 'rearrangement_ajax', name='rearrangement-ajax'),
 )

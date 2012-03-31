@@ -5,6 +5,8 @@ import json
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse, HttpResponseRedirect
 from django.template import RequestContext
+from django.template.defaultfilters import slugify, pluralize
+from django.contrib import messages
 from django.shortcuts import render_to_response, get_object_or_404, redirect
 from models import Board, Story, Bag, Tag, toposorted, rearrange_objects
 
@@ -86,6 +88,7 @@ def rearrangement_ajax(request, board_id, col_name):
     return HttpResponse(json.dumps(res), content_type="application/json")
 
 def process_rearrangement(request, board_id, col_name):
+    """Code common to the 2 rearrangement views."""
     board = get_object_or_404(Board, pk=board_id)
     if request.method == 'POST':
         # Update dropped stories
@@ -109,3 +112,36 @@ def process_rearrangement(request, board_id, col_name):
             success['col_axis'] = {'id': axis_bag.id, 'name': axis_bag.name}
             success['tags'] = [request.POST.getlist('tags')]
         return success
+
+@with_template('stories/new-story.html')
+def new_story(request, board_id, col_name):
+    board = get_object_or_404(Board, pk=board_id)
+    return {
+        'board': board,
+        'col_name': col_name,
+    }
+
+@with_template('stories/new-story.html')
+def create_story(request, board_id, col_name):
+    board = get_object_or_404(Board, pk=board_id)
+    text = None
+    logger.debug('Method = {0!r}'.format(request.method))
+    if request.method == 'POST':
+        text = request.POST['stories']
+        logger.info('Text = {0!r}'.format(text))
+        count = 0
+        for label in text.strip().split('\n'):
+            slug = slugify(label)
+            logger.info('Creating {0}'.format(label))
+            board.story_set.create(label=label, slug=slug)
+            logger.info('Created {0}'.format(label))
+            count += 1
+        if count:
+            messages.info(request, 'Added {0} message{1}'.format(count, pluralize(count)))
+            return redirect(story_grid, board_id=board.id, col_name=col_name)
+        # If failed, fall through to showing form again:
+    return {
+        'board': board,
+        'col_name': col_name,
+        'text': text,
+    }
