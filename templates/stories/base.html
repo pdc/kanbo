@@ -14,6 +14,15 @@
         </header>
         <div id="all">
             <div id="main">
+                {% block messages %}
+                {% if messages %}
+                <ul class="messages">
+                    {% for message in messages %}
+                    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+                {% endblock %}
                 {% block main %}{% endblock %}
             </div>
             <div id="asides">

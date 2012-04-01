@@ -128,16 +128,14 @@ def create_story(request, board_id, col_name):
     logger.debug('Method = {0!r}'.format(request.method))
     if request.method == 'POST':
         text = request.POST['stories']
-        logger.info('Text = {0!r}'.format(text))
         count = 0
         for label in text.strip().split('\n'):
             slug = slugify(label)
-            logger.info('Creating {0}'.format(label))
+            logger.debug('Creating {0}'.format(label))
             board.story_set.create(label=label, slug=slug)
-            logger.info('Created {0}'.format(label))
             count += 1
         if count:
-            messages.info(request, 'Added {0} message{1}'.format(count, pluralize(count)))
+            messages.info(request, 'Added {0} task{1}'.format(count, pluralize(count)))
             return redirect(story_grid, board_id=board.id, col_name=col_name)
         # If failed, fall through to showing form again:
     return {
