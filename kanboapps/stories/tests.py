@@ -8,6 +8,9 @@ Replace this with more appropriate tests for your application.
 """
 
 from django.test import TestCase
+from mock import patch
+import redis
+import fakeredis
 from kanboapps.stories.models import *
 
 
@@ -16,7 +19,7 @@ class TestStory(TestCase):
         pass
 
     def test_get_tag(self):
-        bag = Bag(name='state', label='State')
+        bag = Bag(name='state')
         bag.save()
         new_tag = bag.tag_set.create(name='new')
         progress_tag = bag.tag_set.create(name='in-progress')
@@ -28,7 +31,6 @@ class TestStory(TestCase):
         story.tag_set.add(new_tag)
 
         self.assertEqual('new', story.get_tag(bag).name)
-
 
 
 class TestTopsort(TestCase):
@@ -93,7 +95,8 @@ class TestTopsort(TestCase):
         self.assertEqual(4, len(xs))
         self.assertEqual(set(things), set(xs))
 
-class TestRorderFromOrderedStories(TestCase):
+
+class TestRearrangeOrderedStories(TestCase):
     def setUp(self):
         # Create 7 stories in order.
         self.board = Board(label='boo')
@@ -332,3 +335,5 @@ class TestStoryReplacingTags(TestCase, BoardFixtureMixin):
 
         self.assertEqual(self.tagss[0][1],
             self.stories[0].get_tag(self.bags[0]))
+
+
