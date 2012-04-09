@@ -8,7 +8,7 @@ from django.template import RequestContext
 from django.template.defaultfilters import slugify, pluralize
 from django.contrib import messages
 from django.shortcuts import render_to_response, get_object_or_404, redirect
-from models import Board, Story, Bag, Tag, toposorted, rearrange_objects
+from models import Board, Story, Bag, Tag, toposorted, rearrange_objects, EventRepeater
 
 logger = logging.getLogger(__name__)
 
@@ -90,16 +90,31 @@ def rearrangement_ajax(request, board_id, col_name):
 def process_rearrangement(request, board_id, col_name):
     """Code common to the 2 rearrangement views."""
     board = get_object_or_404(Board, pk=board_id)
+    event  = {
+        'board': board.id,
+    }
     if request.method == 'POST':
         # Update dropped stories
         dropped_id = request.POST.get('dropped')
         if dropped_id:
             dropped = get_object_or_404(Story, id=dropped_id)
             axis_bag = get_object_or_404(Bag, name=col_name)
-            dropped.replace_tags([axis_bag], request.POST.getlist('tags'))
+            tag_strs = request.POST.getlist('tags')
+            dropped.replace_tags([axis_bag], tag_strs)
             dropped.save()
+
+            event.update({
+                'xaxis': [axis_bag.id],
+                'dropped': dropped.id,
+                'tags': [int(x) for x in tag_strs],
+                })
         ids = [(None if x == '-' else int(x)) for s in request.POST.getlist('order') for x in s.split()]
         rearrange_objects(Story, ids)
+
+        event['order'] = ids
+        er = EventRepeater()
+        er.get_stream(board.id).append(event)
+
         success = {
             'ids': ids,
         }

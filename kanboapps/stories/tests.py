@@ -7,11 +7,13 @@ when you run "manage.py test".
 Replace this with more appropriate tests for your application.
 """
 
-from django.test import TestCase
+from django.test import TestCase, Client
 from mock import patch
 import redis
 import fakeredis
+import json
 from kanboapps.stories.models import *
+from kanboapps.stories import models
 
 
 class TestStory(TestCase):
@@ -335,5 +337,105 @@ class TestStoryReplacingTags(TestCase, BoardFixtureMixin):
 
         self.assertEqual(self.tagss[0][1],
             self.stories[0].get_tag(self.bags[0]))
+
+
+class FakeRedisMixin(object):
+    #@patch.object(models, 'get_redis')
+    def prepare_event_repeater(self):
+        #stubbed_get_redis.return_value = fakeredis.FakeRedis()
+        self.event_repeater = EventRepeater()
+        self.assertTrue(isinstance(self.event_repeater.redis, fakeredis.FakeRedis))
+        self.event_repeater.redis.flushall()
+
+
+class TestEventRepeater(TestCase, FakeRedisMixin):
+    def setUp(self):
+        self.prepare_event_repeater()
+
+    def test_no_events(self):
+        strm = self.event_repeater.get_stream(57)
+        self.assertEqual(0, strm.next_seq())
+        self.assertEqual(('[]', 0), strm.as_json_starting_from(0))
+
+    def test_one_event(self):
+        strm = self.event_repeater.get_stream(13)
+        event = dict(marshmellow='banana', frog=['toad', 'ratty'])
+        res = strm.append(event)
+
+        strm2 = self.event_repeater.get_stream(13)
+        self.assertEqual(1, strm2.next_seq())
+        self.assertEqual([event], json.loads(strm2.as_json_starting_from(0)[0]))
+        self.assertEqual(1, strm2.as_json_starting_from(0)[1])
+        self.assertEqual(('[]', 1), strm2.as_json_starting_from(1))
+
+    def test_several_events(self):
+        strm = self.event_repeater.get_stream(99)
+        events = [{'foo': x} for x in ['bar', 'baz', 'quux']]
+        for event in events:
+            res = strm.append(event)
+
+        strm2 = self.event_repeater.get_stream(99)
+        for i in range(len(events) + 1):
+            self.assertEqual((json.dumps(events[i:]), 3), strm2.as_json_starting_from(i))
+
+    def test_several_events_interrupted(self):
+        strm = self.event_repeater.get_stream(42)
+        events = [{'foo': x} for x in ['bar', 'baz', 'quux', 'quux2']]
+        for event in events[:2]:
+            res = strm.append(event)
+
+        # Simulate expiry of the list key:
+        strm.redis.delete(strm.k_list)
+
+        # Now continue with the events.
+        for event in events[2:]:
+            res = strm.append(event)
+
+        # Events after the expiry are available.
+        strm2 = self.event_repeater.get_stream(42)
+        for i in range(3, len(events)):
+            self.assertEqual((json.dumps(events[i:]), 4), strm2.as_json_starting_from(i))
+
+    def test_raises_when_request_is_too_late(self):
+        strm = self.event_repeater.get_stream(42)
+        events = [{'foo': x} for x in ['bar', 'baz', 'quux', 'quux2']]
+        for event in events:
+            res = strm.append(event)
+
+        # Simulate expiry of the list key:
+        strm.redis.delete(strm.k_list)
+
+        # Attempts to get info from before start leads to misery.
+        strm2 = self.event_repeater.get_stream(42)
+        with self.assertRaises(EventsExpired):
+            strm2.as_json_starting_from(2)
+
+
+class TestEventsAreSaved(TestCase, BoardFixtureMixin, FakeRedisMixin):
+    def setUp(self):
+        self.prepare_event_repeater()
+        self.create_board_and_accoutrements()
+        self.client = Client()
+
+    def test_rearrangement_creates_events(self):
+        params = {
+            'order': '2 1',
+            'dropped': '2',
+             'tags': str(self.tagss[0][1].id),
+         }
+        self.client.post('/boards/1/grids/q/rearrangement', params)
+        jevs, next_seq = self.event_repeater.get_stream(1).as_json_starting_from(0)
+
+        self.assertEqual(1, next_seq)
+
+        expected = {
+            'board': 1,
+            'xaxis':  [self.bags[0].id],
+            'order': [2, 1],
+            'dropped': 2,
+            'tags': [self.tagss[0][1].id],
+        }
+        self.assertEqual([expected], json.loads(jevs))
+
 
 

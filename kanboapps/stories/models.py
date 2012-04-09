@@ -14,9 +14,13 @@ Migrations can be applied using this command:
 
 """
 
+import sys
 import logging
 from heapq import heapify, heappop, heappush
+import redis
+import json
 from django.db import models
+from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
@@ -296,3 +300,71 @@ def rearrange_objects(model, ids):
         obj.save()
 
 
+
+_redis_class = None
+def get_redis():
+    global _redis_class
+    if _redis_class is None:
+        module_name, class_name = settings.EVENT_REPEATER['ENGINE'].rsplit('.', 1)
+        module = __import__(module_name, globals(), locals(), [class_name])
+        _redis_class = getattr(module, class_name)
+    return _redis_class(**settings.EVENT_REPEATER['PARAMS'])
+
+class EventsExpired(Exception):
+    pass
+
+class EventRepeater(object):
+    def __init__(self):
+        self.redis = get_redis()
+
+    def get_stream(self, id):
+        return EventStream(self, id)
+
+
+class EventStream(object):
+    """Accepts events and repeats them when polled."""
+
+    def __init__(self, owner, id):
+        """Create a repeater with this ID."""
+        self.owner = owner
+        self.redis = owner.redis
+        self.id = id
+        self.k_info = 'kanbo:ev:{0}:info'.format(self.id)
+        self.k_list = 'kanbo:ev:{0}:list'.format(self.id)
+
+    def next_seq(self):
+        x = self.redis.hget(self.k_info, 'next')
+        return (int(x) if x else 0)
+
+    def append(self, event):
+        jevent = json.dumps(event)
+        def try_append(p):
+            next_seq = p.hget(self.k_info, 'next')
+            len_evs = p.llen(self.k_list)
+
+            p.multi()
+            if not len_evs:
+                p.hset(self.k_info, 'start', next_seq)
+            p.hincrby(self.k_info, 'next', 1)
+            p.rpush(self.k_list, jevent)
+            p.expire(self.k_list, settings.EVENT_REPEATER['TTL'])
+        self.redis.transaction(try_append, self.k_info, self.k_list)
+
+    def as_json_starting_from(self, seq):
+        # As a pipeline to try to avoid race conditons.
+        with self.redis.pipeline() as p:
+            p.watch(self.k_info, self.k_list)
+            next_str = p.hget(self.k_info, 'next')
+            next = (int(next_str) if next_str else 0)
+            if p.exists(self.k_list):
+                start_str = p.hget(self.k_info, 'start')
+                start = (int(start_str) if start_str else 0)
+            else:
+                start = next
+            if seq < start:
+                raise EventsExpired('{0}: events expired'.format(seq))
+            p.multi()
+
+            p.lrange(self.k_list, seq - start, -1)
+            jevs, = p.execute()
+        return '[{0}]'.format(', '.join(jevs)), next
