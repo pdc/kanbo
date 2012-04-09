@@ -91,6 +91,7 @@ def process_rearrangement(request, board_id, col_name):
     """Code common to the 2 rearrangement views."""
     board = get_object_or_404(Board, pk=board_id)
     event  = {
+        'type': 'rearrange',
         'board': board.id,
     }
     if request.method == 'POST':

@@ -429,6 +429,7 @@ class TestEventsAreSaved(TestCase, BoardFixtureMixin, FakeRedisMixin):
         self.assertEqual(1, next_seq)
 
         expected = {
+            'type': 'rearrange',
             'board': 1,
             'xaxis':  [self.bags[0].id],
             'order': [2, 1],
