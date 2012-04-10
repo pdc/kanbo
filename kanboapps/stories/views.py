@@ -28,6 +28,18 @@ def with_template(template_name):
         return decorated_view
     return decorator
 
+def returns_json(func):
+    """Decorator for view fiunctions that return JSON."""
+    def wrapped_func(request, *args, **kwargs):
+        res = func(request, *args, **kwargs)
+        if isinstance(res, basestring):
+            jres = res
+        else:
+            jres = json.dumps(res)
+        return HttpResponse(jres, content_type="application/json")
+    return wrapped_func
+
+
 @with_template('stories/board-list.html')
 def board_list(request):
     # XXX change the following to only list current user’s boards
@@ -80,12 +92,14 @@ def rearrangement(request, board_id, col_name):
         'order':  request.POST['order'],
     }
 
+
+@returns_json
 def rearrangement_ajax(request, board_id, col_name):
     logger.debug(request.body)
     success = process_rearrangement(request, board_id, col_name)
     res = success or {}
     res['success'] = bool(success)
-    return HttpResponse(json.dumps(res), content_type="application/json")
+    return res
 
 def process_rearrangement(request, board_id, col_name):
     """Code common to the 2 rearrangement views."""
@@ -159,3 +173,22 @@ def create_story(request, board_id, col_name):
         'col_name': col_name,
         'text': text,
     }
+
+@returns_json
+def events_ajax(request, board_id, start_seq):
+    board = get_object_or_404(Board, pk=board_id)
+    start_seq = int(start_seq)
+
+    er = EventRepeater()
+    es = er.get_stream(board.id)
+    jevents, next_seq = es.as_json_starting_from(start_seq)
+    res = {
+        'ready': True,
+        'pleaseWait': 1500,
+        'next': reverse('events-ajax', kwargs={'board_id': board.id, 'start_seq': str(next_seq)}),
+        'events': '*',
+    }
+    jres = json.dumps(res).replace('"*"', jevents)
+    return jres
+
+
