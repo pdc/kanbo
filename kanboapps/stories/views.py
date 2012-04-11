@@ -184,7 +184,7 @@ def events_ajax(request, board_id, start_seq):
     jevents, next_seq = board.event_stream().as_json_starting_from(start_seq)
     res = {
         'ready': True,
-        'pleaseWait': 15000 / (next_seq - start_seq) if next_seq > start_seq else 30000,
+        'pleaseWait': 1500, ## 15000 / (next_seq - start_seq) if next_seq > start_seq else 30000,
         'next': reverse('events-ajax', kwargs={'board_id': board.id, 'start_seq': str(next_seq)}),
         'events': '*',
     }

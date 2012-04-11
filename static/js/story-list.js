@@ -15,6 +15,11 @@ var StoryGrid = (function ($) {
                 if (data.ready && data.events) {
                     for (var i = 0; i < data.events.length; ++i) {
                         var event = data.events[i];
+                        if (event.type == 'rearrange' && event.dropped && event.order) {
+                            var succID = event.order[1];
+                            // XXX this will be null iff dropped item goes at the end of the list.
+                            $('#story-' + event.dropped).insertBefore('#story-' + succID);
+                        }
                         console.log(event);
                     }
                 }
