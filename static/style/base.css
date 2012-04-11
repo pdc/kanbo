@@ -27,6 +27,11 @@ header {
     padding: 10px;
 }
 
+.polling>header {
+    /* XXX replace this with a spinner in the header */
+    background: #007F88 url(ajax-loading.gif) 100% 50% no-repeat;
+}
+
 header a:link,
 header a:visited {
     color: #FFFAE4;

@@ -77,13 +77,9 @@ class Board(models.Model):
             return Grid([GridRow([missing] + bins)])
         return Grid([GridRow([GridCol(stories)])])
 
-    def rearrange(self, axes, tags, order, dropped):
-        """Rearrange stories.
-
-
-
-        """
-        pass
+    def event_stream(self):
+        """Return the event stream for this board."""
+        return EventRepeater().get_stream(self.id)
 
 
 class Bag(models.Model):

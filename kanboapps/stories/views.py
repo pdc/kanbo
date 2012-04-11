@@ -70,12 +70,14 @@ def story_grid(request, board_id, col_name):
     board = get_object_or_404(Board, pk=board_id)
     col_bag = get_object_or_404(Bag, board_id=board_id, name=col_name)
     grid = board.make_grid(col_bag)
+    next_seq = board.event_stream().next_seq()
     return {
         'many_boards': board_count > 1,
         'board': board,
         'grid': grid,
         'col_name': col_name,
         'col_tags': [t for b in grid.rows[0].bins if b.tags for t in b.tags],
+        'next_seq': next_seq,
     }
 
 @with_template('stories/story-list.html')
@@ -179,12 +181,10 @@ def events_ajax(request, board_id, start_seq):
     board = get_object_or_404(Board, pk=board_id)
     start_seq = int(start_seq)
 
-    er = EventRepeater()
-    es = er.get_stream(board.id)
-    jevents, next_seq = es.as_json_starting_from(start_seq)
+    jevents, next_seq = board.event_stream().as_json_starting_from(start_seq)
     res = {
         'ready': True,
-        'pleaseWait': 1500,
+        'pleaseWait': 15000 / (next_seq - start_seq) if next_seq > start_seq else 30000,
         'next': reverse('events-ajax', kwargs={'board_id': board.id, 'start_seq': str(next_seq)}),
         'events': '*',
     }
