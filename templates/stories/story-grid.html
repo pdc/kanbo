@@ -37,6 +37,7 @@
             <tr>
                 {% for bin in row.bins %}
                 <td>
+                    <h3>{{ bin.element_id }}</h3>
                     <form class="rearrangement" action="{% url rearrangement board_id=board.id col_name=col_name %}" method="post">
                         {% csrf_token %}
                         {% for tag in bin.tags %}
@@ -46,7 +47,7 @@
                         <input name="dropped" />
                         <input type="submit" value="Rearrange" />
                     </form>
-                    <ul class="story-bin" data-ajax-url="{% url rearrangement-ajax board_id=board.id col_name=col_name %}">
+                    <ul id="{{ bin.element_id }}" class="story-bin" data-ajax-url="{% url rearrangement-ajax board_id=board.id col_name=col_name %}">
                         {% for story in bin.stories %}
                         <li id="story-{{ story.id }}">
                             <b>{{ story.id }}</b>

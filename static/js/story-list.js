@@ -15,12 +15,23 @@ var StoryGrid = (function ($) {
                 if (data.ready && data.events) {
                     for (var i = 0; i < data.events.length; ++i) {
                         var event = data.events[i];
-                        if (event.type == 'rearrange' && event.dropped && event.order) {
+                        if (event.type === 'rearrange' && event.dropped && event.order) {
+                            var droppedSelector = '#story-' + event.dropped;
                             var succID = event.order[1];
-                            // XXX this will be null iff dropped item goes at the end of the list.
-                            $('#story-' + event.dropped).insertBefore('#story-' + succID);
+                            if (succID === null) {
+                                // This story was dropped at the end of its bin.
+                                var binSelector = (event.tags && event.tags.length > 0
+                                        ? '#bin-' + event.tags.join('-')
+                                        : '#untagged-bin');
+                                 $(droppedSelector).appendTo(binSelector);
+                                console.log(droppedSelector + '.appendTo ' + binSelector);
+                            } else {
+                                // This story was dropped before another.
+                                var succSelector = '#story-' + succID;
+                                $(droppedSelector).insertBefore(succSelector);
+                                console.log(droppedSelector + '.insertBefore ' + succSelector);
+                            }
                         }
-                        console.log(event);
                     }
                 }
 

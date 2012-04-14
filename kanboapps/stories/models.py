@@ -43,10 +43,13 @@ class GridRow(object):
         return self.tags == other.tags and self.bins == other.bins
 
 
-class GridCol(object):
+class GridBin(object):
     def __init__(self, stories, tags=None):
         self.stories = stories
         self.tags = tags
+
+        self.element_id =  ('bin-' + '-'.join(str(x.id) for x in self.tags)
+                if tags else 'untagged-bin')
 
     def __eq__(self, other):
         return (self.tags == other.tags
@@ -71,11 +74,11 @@ class Board(models.Model):
         if columns_def:
             tag_idss = [(tag, [inf['id'] for inf in tag.story_set.values('id')])
                     for tag in  columns_def.tag_set.all()]
-            bins = [GridCol([x for x in stories if x.id in ids], [tag])
+            bins = [GridBin([x for x in stories if x.id in ids], [tag])
                 for (tag, ids) in tag_idss]
-            missing = GridCol([x for x in stories if all(x not in bin.stories for bin in bins)])
+            missing = GridBin([x for x in stories if all(x not in bin.stories for bin in bins)])
             return Grid([GridRow([missing] + bins)])
-        return Grid([GridRow([GridCol(stories)])])
+        return Grid([GridRow([GridBin(stories)])])
 
     def event_stream(self):
         """Return the event stream for this board."""

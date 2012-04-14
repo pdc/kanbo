@@ -277,7 +277,7 @@ class TestGrid(TestCase, BoardFixtureMixin):
         # One row containing onc cell containing all the stories.
         self.assert_grids_equal(Grid([
             GridRow([
-                GridCol(self.stories)
+                GridBin(self.stories)
             ])
         ]), subject)
 
@@ -287,9 +287,9 @@ class TestGrid(TestCase, BoardFixtureMixin):
         # One row containing 3 cells, the first empty
         self.assert_grids_equal(Grid([
             GridRow([
-                GridCol([]),
-                GridCol(self.stories[:8], [self.tagss[0][0]]),
-                GridCol(self.stories[8:], [self.tagss[0][1]]),
+                GridBin([]),
+                GridBin(self.stories[:8], [self.tagss[0][0]]),
+                GridBin(self.stories[8:], [self.tagss[0][1]]),
             ])
         ]), subject)
 
@@ -299,10 +299,10 @@ class TestGrid(TestCase, BoardFixtureMixin):
         # One row containing 4 cells, each with one quarter of the items.
         self.assert_grids_equal(Grid([
             GridRow([
-                GridCol([self.stories[i] for i in [0, 4, 8, 12]]),
-                GridCol([self.stories[i] for i in [1, 5, 9, 13]], [self.tagss[2][0]]),
-                GridCol([self.stories[i] for i in [2, 6, 10, 14]], [self.tagss[2][1]]),
-                GridCol([self.stories[i] for i in [3, 7, 11, 15]], [self.tagss[2][2]]),
+                GridBin([self.stories[i] for i in [0, 4, 8, 12]]),
+                GridBin([self.stories[i] for i in [1, 5, 9, 13]], [self.tagss[2][0]]),
+                GridBin([self.stories[i] for i in [2, 6, 10, 14]], [self.tagss[2][1]]),
+                GridBin([self.stories[i] for i in [3, 7, 11, 15]], [self.tagss[2][2]]),
             ])
         ]), subject)
 
