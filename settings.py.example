@@ -29,6 +29,16 @@ DATABASES = {
     }
 }
 
+EVENT_REPEATER = {
+    'ENGINE': ('fakeredis.FakeRedis' if 'test' in sys.argv else 'redis.Redis'),
+    'PARAMS': {
+        'db': 0,
+    },
+    'TTL': 120,
+    'INTERVAL_SECONDS': 1.5,
+    'POLL': True,
+}
+
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
 # although not all choices may be available on all operating systems.

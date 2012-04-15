@@ -8,6 +8,7 @@ from django.template import RequestContext
 from django.template.defaultfilters import slugify, pluralize
 from django.contrib import messages
 from django.shortcuts import render_to_response, get_object_or_404, redirect
+from django.conf import settings
 from models import Board, Story, Bag, Tag, toposorted, rearrange_objects, EventRepeater
 
 logger = logging.getLogger(__name__)
@@ -70,13 +71,16 @@ def story_grid(request, board_id, col_name):
     board = get_object_or_404(Board, pk=board_id)
     col_bag = get_object_or_404(Bag, board_id=board_id, name=col_name)
     grid = board.make_grid(col_bag)
-    next_seq = board.event_stream().next_seq()
+
+    is_polling_enabled = settings.EVENT_REPEATER.get('POLL')
+    next_seq = board.event_stream().next_seq() if is_polling_enabled else None
     return {
         'many_boards': board_count > 1,
         'board': board,
         'grid': grid,
         'col_name': col_name,
         'col_tags': [t for b in grid.rows[0].bins if b.tags for t in b.tags],
+        'is_polling_enabled': is_polling_enabled,
         'next_seq': next_seq,
     }
 
@@ -184,7 +188,8 @@ def events_ajax(request, board_id, start_seq):
     jevents, next_seq = board.event_stream().as_json_starting_from(start_seq)
     res = {
         'ready': True,
-        'pleaseWait': 1500, ## 15000 / (next_seq - start_seq) if next_seq > start_seq else 30000,
+        'pleaseWait': settings.EVENT_REPEATER.get('INTERVAL_SECONDS', 1.5) * 1000,
+        # TODO. Adapt poll interval to time between recent events.
         'next': reverse('events-ajax', kwargs={'board_id': board.id, 'start_seq': str(next_seq)}),
         'events': '*',
     }
