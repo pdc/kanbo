@@ -37,7 +37,6 @@
             <tr>
                 {% for bin in row.bins %}
                 <td>
-                    <h3>{{ bin.element_id }}</h3>
                     <form class="rearrangement" action="{% url rearrangement board_id=board.id col_name=col_name %}" method="post">
                         {% csrf_token %}
                         {% for tag in bin.tags %}
