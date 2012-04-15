@@ -28,8 +28,7 @@ header {
 }
 
 .polling>header {
-    /* XXX replace this with a spinner in the header */
-    background: #007F88 url(ajax-loading.gif) 100% 50% no-repeat;
+    background: #007F88 url(ajax-loading-blue.gif) 100% 50% no-repeat;
 }
 
 header a:link,
