@@ -350,11 +350,13 @@ class EventStream(object):
         self.redis.transaction(try_append, self.k_info, self.k_list)
 
     def as_json_starting_from(self, seq):
-        # As a pipeline to try to avoid race conditons.
-        with self.redis.pipeline() as p:
-            p.watch(self.k_info, self.k_list)
+        # As a transaction in case events arrive while
+        # we are calculating the boundaries of the range.
+        result = [None, None]
+        def try_transaction(p):
             next_str = p.hget(self.k_info, 'next')
             next = (int(next_str) if next_str else 0)
+            result[1] = next
             if p.exists(self.k_list):
                 start_str = p.hget(self.k_info, 'start')
                 start = (int(start_str) if start_str else 0)
@@ -363,7 +365,8 @@ class EventStream(object):
             if seq < start:
                 raise EventsExpired('{0}: events expired'.format(seq))
             p.multi()
-
             p.lrange(self.k_list, seq - start, -1)
-            jevs, = p.execute()
-        return '[{0}]'.format(', '.join(jevs)), next
+
+        jevs, = self.redis.transaction(try_transaction,  self.k_info, self.k_list)
+        result[0] = '[{0}]'.format(', '.join(jevs))
+        return result
