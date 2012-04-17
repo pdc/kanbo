@@ -1,12 +1,12 @@
 KANBO
 =====
 
-Every fool is writing their own kanban, Lean, Scrum, etc. story-grid board. Here’s mine.
+Every fool is writing their own kanban, Lean, Scrum, etc. task board. Here’s mine.
 
 Status
 ------
 
-To early to be sure of anything
+To early to be sure of anything. I have little more than a technology demonstrator for sortable, draggable cards.
 
 Aims
 ----
@@ -30,4 +30,28 @@ Very, very rough
 - Bag: A collection of tags. There might be a bag of project tags.
 - Bag rules: Says whether a story can have one or many tags from that bag.
 
-Tghe board would be laid out with bins as columns and tags of some bag defining the rows.
+The board would be laid out with bins as columns and tags of some bag defining the rows.
+
+Installation
+------------
+
+This is a Django web app.
+
+Create a python virtual environment . With virtualenvwrapper, something like this should do the trick:
+
+    mkvirtualenv --python=$(which pypy) --distribute --no-site kanbo
+
+The `--python` option is optional—this server has so far been tested with
+Python 2.7 and PyPy 1.8. Either is fine.
+
+One of the packages it uses has to be installed from Git for now:
+
+     pip install git+git://github.com/pdc/fakeredis.git
+
+The rest can be installed in the usual way:
+
+    pip install -r REQUIREMENTS
+
+Now you can test it
+
+    ./manage.py test stories
