@@ -369,4 +369,4 @@ class EventStream(object):
 
         jevs, = self.redis.transaction(try_transaction,  self.k_info, self.k_list)
         result[0] = '[{0}]'.format(', '.join(jevs))
-        return result
+        return tuple(result)
