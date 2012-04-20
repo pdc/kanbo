@@ -92,7 +92,7 @@ class Bag(models.Model):
     name = models.SlugField(max_length=200)
 
     def __unicode__(self):
-        return self.label
+        return self.name
 
 
 class Tag(models.Model):
@@ -142,6 +142,7 @@ class Story(models.Model):
             self.tag_set.remove(old_tag)
         for tag in tags:
             self.tag_set.add(tag)
+
 
 class CyclesException(Exception):
     pass
