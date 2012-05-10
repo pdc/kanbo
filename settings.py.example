@@ -144,7 +144,7 @@ INSTALLED_APPS = (
     # 'django.contrib.admindocs',
     'south',
 
-    'kanboapps.stories',
+    'kanboapps.board',
     'kanboapps.about',
 )
 

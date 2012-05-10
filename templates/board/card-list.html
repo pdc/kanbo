@@ -1,4 +1,4 @@
-{% extends "stories/base.html" %}
+{% extends "board/base.html" %}
 {% block title %}{{ board.label }}{% endblock %}
 
 {% block trail %}
@@ -14,16 +14,16 @@
     <ul class="menu">
         {% for bag in bags %}
         <li>
-            <a href="{% url story-grid board_id=board.id col_name=bag.name %}">{{ bag.name }}</a>
+            <a href="{% url card-grid board_id=board.id col_name=bag.name %}">{{ bag.name }}</a>
         </li>
         {% endfor %}
     </ul>
-    <ul id="story-list" class="story-bin">
-        {% for story in stories %}
-        <li id="story-{{ story.id }}">
-            <b>{{ story.id }}</b>
-            <q>{{ story.label }}</q>
-            {% for tag in story.tag_set.all %}
+    <ul id="card-list" class="card-bin">
+        {% for card in cards %}
+        <li id="card-{{ card.id }}">
+            <b>{{ card.id }}</b>
+            <q>{{ card.label }}</q>
+            {% for tag in card.tag_set.all %}
                 <i>{{ tag }}</i>
             {% endfor %}
         </li>
@@ -40,5 +40,5 @@
 {% block javascripts %}
 <script type="text/javascript" src="http://code.jquery.com/jquery-1.7.2.min.js"></script>
 <script type="text/javascript"src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.18/jquery-ui.min.js"></script>
-<script type="text/javascript" src="{{ STATIC_URL }}js/story-list.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}js/board.js"></script>
 {% endblock %}

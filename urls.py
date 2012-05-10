@@ -8,9 +8,9 @@ urlpatterns = patterns('',
     # Examples:
     # url(r'^$', 'kanbo.views.home', name='home'),
     # url(r'^kanbo/', include('kanbo.foo.urls')),
-    
+
     url(r'^$', 'kanboapps.about.views.home', name='home'),
-    url(r'^boards/', include('kanboapps.stories.urls')),
+    url(r'^boards/', include('kanboapps.board.urls')),
 
     # Uncomment the admin/doc line below to enable admin documentation:
     # url(r'^admin/doc/', include('django.contrib.admindocs.urls')),

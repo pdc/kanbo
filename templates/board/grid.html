@@ -1,4 +1,4 @@
-{% extends "stories/base.html" %}
+{% extends "board/base.html" %}
 {% block title %}{{ board.label }}{% endblock %}
 
 {% block trail %}
@@ -13,17 +13,17 @@
     <h1>{{ board.label }}</h1>
     <ul class="menu">
         <li>
-            <a href="{% url new-story board_id=board.id col_name=col_name %}">Add stories</a>
+            <a href="{% url new-card board_id=board.id col_name=col_name %}">Add cards</a>
         </li>
         {% for bag in bags %}
             {% if bag.name != col_name %}
             <li>
-                <a href="{% url story-grid board_id=board.id col_name=bag.name %}">{{ bag.name }}</a>
+                <a href="{% url card-grid board_id=board.id col_name=bag.name %}">{{ bag.name }}</a>
             </li>
             {% endif %}
         {% endfor %}
     </ul>
-    <table id="story-grid">
+    <table id="card-grid">
         <thead>
             <tr>
                 <th>–</th>
@@ -46,12 +46,12 @@
                         <input name="dropped" />
                         <input type="submit" value="Rearrange" />
                     </form>
-                    <ul id="{{ bin.element_id }}" class="story-bin" data-ajax-url="{% url rearrangement-ajax board_id=board.id col_name=col_name %}">
-                        {% for story in bin.stories %}
-                        <li id="story-{{ story.id }}">
-                            <b>{{ story.id }}</b>
-                            <q>{{ story.label }}</q>
-                            {% for tag in story.tag_set.all %}
+                    <ul id="{{ bin.element_id }}" class="card-bin" data-ajax-url="{% url rearrangement-ajax board_id=board.id col_name=col_name %}">
+                        {% for card in bin.cards %}
+                        <li id="card-{{ card.id }}">
+                            <b>{{ card.id }}</b>
+                            <q>{{ card.label }}</q>
+                            {% for tag in card.tag_set.all %}
                                 {% if tag.bag.name != col_name %}
                                 <i>{{ tag }}</i>
                                 {% endif %}
@@ -71,11 +71,11 @@
 {% block javascripts %}
 <script type="text/javascript" src="http://code.jquery.com/jquery-1.7.2.min.js"></script>
 <script type="text/javascript"src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.18/jquery-ui.min.js"></script>
-<script type="text/javascript" src="{{ STATIC_URL }}js/story-list.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}js/board.js"></script>
 
 {% if is_polling_enabled %}
 <script type="text/javascript">
-    StoryGrid.pollForUpdates('{% url events-ajax board_id=board.id start_seq=next_seq %}');
+    CardGrid.pollForUpdates('{% url events-ajax board_id=board.id start_seq=next_seq %}');
 </script>
 {% endif %}
 {% endblock %}

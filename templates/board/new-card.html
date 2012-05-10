@@ -1,0 +1,26 @@
+{% extends "board/base.html" %}
+{% block title %}{{ board.label }}{% endblock %}
+
+{% block trail %}
+    {% if many_boards %}
+    <a href="{% url board_list %}">Boards</a>
+    <span>></span>
+    {% endif %}
+    <a href="{% url card-grid board_id=board.id col_name=col_name %}">{{ board.label }}</a>
+    <span>></span>
+{% endblock %}
+
+{% block main %}
+<section id="new-card">
+    <h1>Add Stories to {{ board.label }}</h1>
+    <p>
+        Enter one or more cards in to the box, one per line.
+    </p>
+
+    <form action="{% url create-card board_id=board.id col_name=col_name %}" method="post">
+        {% csrf_token %}
+        <textarea name="cards">{{ text }}</textarea>
+        <input type="submit" value="Add cards" />
+    </form>
+</section>
+{% endblock %}

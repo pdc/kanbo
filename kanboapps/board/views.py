@@ -9,9 +9,10 @@ from django.template.defaultfilters import slugify, pluralize
 from django.contrib import messages
 from django.shortcuts import render_to_response, get_object_or_404, redirect
 from django.conf import settings
-from models import Board, Story, Bag, Tag, toposorted, rearrange_objects, EventRepeater
+from models import Board, Card, Bag, Tag, toposorted, rearrange_objects, EventRepeater
 
 logger = logging.getLogger(__name__)
+
 
 def with_template(template_name):
     """Decorator for view functions.
@@ -41,32 +42,32 @@ def returns_json(func):
     return wrapped_func
 
 
-@with_template('stories/board-list.html')
+@with_template('board/board-list.html')
 def board_list(request):
     # XXX change the following to only list current user’s boards
     boards = Board.objects.all()
     if len(boards) == 1:
-        return redirect(story_list, board_id=boards[0].id)
+        return redirect(card_list, board_id=boards[0].id)
 
     return {
         'boards': boards,
     }
 
-@with_template('stories/story-list.html')
-def story_list(request, board_id):
+@with_template('board/card-list.html')
+def card_list(request, board_id):
     board_count = Board.objects.count() # XXX change to includ eonly user’s boards
     board = get_object_or_404(Board, pk=board_id)
-    stories = toposorted(board.story_set.all())
+    cards = toposorted(board.card_set.all())
     return {
         'many_boards': board_count > 1,
         'board': board,
-        'stories': stories,
-        'order': ' '.join(str(x.id) for x in stories),
+        'cards': cards,
+        'order': ' '.join(str(x.id) for x in cards),
         'bags': board.bag_set.all(),
     }
 
-@with_template('stories/story-grid.html')
-def story_grid(request, board_id, col_name):
+@with_template('board/grid.html')
+def card_grid(request, board_id, col_name):
     board_count = Board.objects.count() # XXX change to includ eonly user’s boards
     board = get_object_or_404(Board, pk=board_id)
     col_bag = get_object_or_404(Bag, board_id=board_id, name=col_name)
@@ -84,17 +85,17 @@ def story_grid(request, board_id, col_name):
         'next_seq': next_seq,
     }
 
-@with_template('stories/story-list.html')
+@with_template('board/grid.html')
 def rearrangement(request, board_id, col_name):
     if process_rearrangement(request, board_id, col_name):
         if col_name:
-            u = reverse('story-grid', kwargs={'board_id': board_id, 'col_name': col_name})
+            u = reverse('card-grid', kwargs={'board_id': board_id, 'col_name': col_name})
         else:
-            u = reverse('story-list', kwargs={'board_id': board_id})
+            u = reverse('card-list', kwargs={'board_id': board_id})
         return HttpResponseRedirect(u)
     return {
         'board': board,
-        'stories': toposorted(board.story_set.all()),
+        'cards': toposorted(board.card_set.all()),
         'order':  request.POST['order'],
     }
 
@@ -115,10 +116,10 @@ def process_rearrangement(request, board_id, col_name):
         'board': board.id,
     }
     if request.method == 'POST':
-        # Update dropped stories
+        # Update dropped cards
         dropped_id = request.POST.get('dropped')
         if dropped_id:
-            dropped = get_object_or_404(Story, id=dropped_id)
+            dropped = get_object_or_404(Card, id=dropped_id)
             axis_bag = get_object_or_404(Bag, name=col_name)
             tag_strs = request.POST.getlist('tags')
             dropped.replace_tags([axis_bag], tag_strs)
@@ -130,7 +131,7 @@ def process_rearrangement(request, board_id, col_name):
                 'tags': [int(x) for x in tag_strs],
                 })
         ids = [(None if x == '-' else int(x)) for s in request.POST.getlist('order') for x in s.split()]
-        rearrange_objects(Story, ids)
+        rearrange_objects(Card, ids)
 
         event['order'] = ids
         er = EventRepeater()
@@ -149,30 +150,30 @@ def process_rearrangement(request, board_id, col_name):
             success['tags'] = [request.POST.getlist('tags')]
         return success
 
-@with_template('stories/new-story.html')
-def new_story(request, board_id, col_name):
+@with_template('board/new-card.html')
+def new_card(request, board_id, col_name):
     board = get_object_or_404(Board, pk=board_id)
     return {
         'board': board,
         'col_name': col_name,
     }
 
-@with_template('stories/new-story.html')
-def create_story(request, board_id, col_name):
+@with_template('board/new-card.html')
+def create_card(request, board_id, col_name):
     board = get_object_or_404(Board, pk=board_id)
     text = None
     logger.debug('Method = {0!r}'.format(request.method))
     if request.method == 'POST':
-        text = request.POST['stories']
+        text = request.POST['cards']
         count = 0
         for label in text.strip().split('\n'):
             slug = slugify(label)
             logger.debug('Creating {0}'.format(label))
-            board.story_set.create(label=label, slug=slug)
+            board.card_set.create(label=label, slug=slug)
             count += 1
         if count:
             messages.info(request, 'Added {0} task{1}'.format(count, pluralize(count)))
-            return redirect(story_grid, board_id=board.id, col_name=col_name)
+            return redirect(card_grid, board_id=board.id, col_name=col_name)
         # If failed, fall through to showing form again:
     return {
         'board': board,

@@ -1,4 +1,4 @@
-{% extends "stories/base.html" %}
+{% extends "baord/base.html" %}
 {% block title %}Boards{% endblock %}
 {% block main %}
 <section id="board-list">
@@ -10,7 +10,7 @@
     <ul>
         {% for board in boards %}
         <li>
-            <a href="{% url story-list board_id=board.id %}">{{ board.label }}</a>
+            <a href="{% url card-list board_id=board.id %}">{{ board.label }}</a>
         </li>
         {% endfor %}
     </ul>

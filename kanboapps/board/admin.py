@@ -16,11 +16,11 @@ class BagAdmin(admin.ModelAdmin):
 class BoardAdmin(admin.ModelAdmin):
     prepopulated_fields = {"slug": ("label",)}
 
-class StoryAdmin(admin.ModelAdmin):
+class CardAdmin(admin.ModelAdmin):
     prepopulated_fields = {"slug": ("label",)}
     list_display = ['label', 'slug', 'succ', 'created']
 
 admin.site.register(Board, BoardAdmin)
-admin.site.register(Story, StoryAdmin)
+admin.site.register(Card, CardAdmin)
 admin.site.register(Bag, BagAdmin)
 #admin.site.register(Tag, TagInline)

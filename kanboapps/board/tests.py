@@ -12,11 +12,11 @@ from mock import patch
 import redis
 import fakeredis
 import json
-from kanboapps.stories.models import *
-from kanboapps.stories import models
+from kanboapps.board.models import *
+from kanboapps.board import models
 
 
-class TestStory(TestCase):
+class TestCard(TestCase):
     def test_nothing(self):
         pass
 
@@ -29,10 +29,10 @@ class TestStory(TestCase):
 
         board = Board(label='a')
         board.save()
-        story = board.story_set.create(label='This')
-        story.tag_set.add(new_tag)
+        card = board.card_set.create(label='This')
+        card.tag_set.add(new_tag)
 
-        self.assertEqual('new', story.get_tag(bag).name)
+        self.assertEqual('new', card.get_tag(bag).name)
 
 
 class TestTopsort(TestCase):
@@ -100,26 +100,26 @@ class TestTopsort(TestCase):
 
 class TestRearrangeOrderedStories(TestCase):
     def setUp(self):
-        # Create 7 stories in order.
+        # Create 7 cards in order.
         self.board = Board(label='boo')
         self.board.save()
-        self.stories = [self.board.story_set.create(board=self.board, label=x, slug=x.lower())
+        self.cards = [self.board.card_set.create(board=self.board, label=x, slug=x.lower())
                 for x in ['Alpha', 'Bravo', 'Charlie', 'Delta', 'Echo', 'Foxtrot', 'Golf']]
-        for x, y in zip(self.stories, self.stories[1:]):
+        for x, y in zip(self.cards, self.cards[1:]):
             x.succ = y
             x.save()
-        self.stories_by_slug = dict((x.slug, x) for x in self.stories)
-        self.id_by_slug = dict((x.slug, x.id) for x in self.stories)
+        self.cards_by_slug = dict((x.slug, x) for x in self.cards)
+        self.id_by_slug = dict((x.slug, x.id) for x in self.cards)
 
     def rearrange_and_check(self, order_slugs, expected_slugs):
         order = [(self.id_by_slug[x] if x else None) for x in order_slugs]
-        rearrange_objects(Story, order)
+        rearrange_objects(Card, order)
 
         try:
-            self.new_order = toposorted(Story.objects.all())
+            self.new_order = toposorted(Card.objects.all())
             failed = False
         except CyclesException:
-            for obj in Story.objects.all():
+            for obj in Card.objects.all():
                 print obj.slug, obj.succ.slug if obj.succ else '--'
             failed = True
         self.assertFalse(failed, 'Could not toposort the result')
@@ -156,8 +156,8 @@ class TestRearrangeOrderedStories(TestCase):
     def test_does_not_faile_when_cycles(self):
         # Again, cycles should never happen, but
         # if they do we need the system to self-correct.
-        self.stories[-1].succ = self.stories[3]
-        self.stories[-1].save()
+        self.cards[-1].succ = self.cards[3]
+        self.cards[-1].save()
 
         self.rearrange_and_check(['echo', 'golf'],
             [ 'alpha', 'bravo', 'charlie', 'delta', 'foxtrot', 'echo', 'golf'])
@@ -165,8 +165,8 @@ class TestRearrangeOrderedStories(TestCase):
     def test_copes_with_singleton_cycle(self):
         # Again, cycles should never happen, but
         # if they do we need the system to self-correct.
-        self.stories[3].succ = self.stories[3]
-        self.stories[3].save()
+        self.cards[3].succ = self.cards[3]
+        self.cards[3].save()
 
         self.rearrange_and_check(['golf', 'delta', 'charlie', ],
             [ 'alpha', 'bravo', 'echo', 'foxtrot', 'golf', 'delta', 'charlie'])
@@ -222,15 +222,15 @@ class TestRearrangeOrderedStories(TestCase):
 
 class BoardFixtureMixin(object):
     def create_board_and_accoutrements(self):
-        # Create 16 stories
+        # Create 16 cards
         self.board = Board.objects.create(label='z')
-        self.stories = [self.board.story_set.create(board=self.board, label=x, slug=x)
+        self.cards = [self.board.card_set.create(board=self.board, label=x, slug=x)
                 for x in 'abcdefghijklmnop']
-        for x, y in zip(self.stories, self.stories[1:]):
+        for x, y in zip(self.cards, self.cards[1:]):
             x.succ = y
             x.save()
-        self.stories_by_slug = dict((x.slug, x) for x in self.stories)
-        self.id_by_slug = dict((x.slug, x.id) for x in self.stories)
+        self.cards_by_slug = dict((x.slug, x) for x in self.cards)
+        self.id_by_slug = dict((x.slug, x.id) for x in self.cards)
 
         # Create some bags
         self.bags = [self.board.bag_set.create(name=x) for x in 'qtw']
@@ -238,15 +238,15 @@ class BoardFixtureMixin(object):
             for b, ss in zip(self.bags, ['rs', 'uv', 'xyz'])]
 
         # Taggity tag
-        for i, s in enumerate(self.stories):
+        for i, s in enumerate(self.cards):
             s.tag_set.add(self.tagss[0][i // 8])
             s.tag_set.add(self.tagss[1][i % 2])
             if i % 4:
                 s.tag_set.add(self.tagss[2][i % 4 - 1])
             s.save()
 
-    def reload_stories(self):
-        self.stories = [Story.objects.get(id=s.id) for s in self.stories]
+    def reload_cards(self):
+        self.cards = [Card.objects.get(id=s.id) for s in self.cards]
 
     def assert_grids_equal(self, grid1, grid2):
         self.assertTrue(grid1)
@@ -260,7 +260,7 @@ class BoardFixtureMixin(object):
         self.assertEqual(len(row1.bins), len(row2.bins))
         for bin1, bin2 in zip(row1.bins, row2.bins):
             self.assertEqual(bin1.tags, bin2.tags)
-            self.assertEqual(bin1.stories, bin2.stories)
+            self.assertEqual(bin1.cards, bin2.cards)
 
 
 class TestGrid(TestCase, BoardFixtureMixin):
@@ -268,16 +268,16 @@ class TestGrid(TestCase, BoardFixtureMixin):
         self.create_board_and_accoutrements()
 
     def test_fixture(self):
-        self.assertEqual(['r', 'u'], [t.name for t in self.stories[0].tag_set.all()])
-        self.assertEqual(['r', 'v', 'x'], [t.name for t in self.stories[1].tag_set.all()])
+        self.assertEqual(['r', 'u'], [t.name for t in self.cards[0].tag_set.all()])
+        self.assertEqual(['r', 'v', 'x'], [t.name for t in self.cards[1].tag_set.all()])
 
     def test_simplest(self):
         subject = self.board.make_grid()
 
-        # One row containing onc cell containing all the stories.
+        # One row containing onc cell containing all the cards.
         self.assert_grids_equal(Grid([
             GridRow([
-                GridBin(self.stories)
+                GridBin(self.cards)
             ])
         ]), subject)
 
@@ -288,55 +288,55 @@ class TestGrid(TestCase, BoardFixtureMixin):
         self.assert_grids_equal(Grid([
             GridRow([
                 GridBin([]),
-                GridBin(self.stories[:8], [self.tagss[0][0]]),
-                GridBin(self.stories[8:], [self.tagss[0][1]]),
+                GridBin(self.cards[:8], [self.tagss[0][0]]),
+                GridBin(self.cards[8:], [self.tagss[0][1]]),
             ])
         ]), subject)
 
-    def test_column_zero_has_unmatched_stories(self):
+    def test_column_zero_has_unmatched_cards(self):
         subject = self.board.make_grid(self.bags[2])
 
         # One row containing 4 cells, each with one quarter of the items.
         self.assert_grids_equal(Grid([
             GridRow([
-                GridBin([self.stories[i] for i in [0, 4, 8, 12]]),
-                GridBin([self.stories[i] for i in [1, 5, 9, 13]], [self.tagss[2][0]]),
-                GridBin([self.stories[i] for i in [2, 6, 10, 14]], [self.tagss[2][1]]),
-                GridBin([self.stories[i] for i in [3, 7, 11, 15]], [self.tagss[2][2]]),
+                GridBin([self.cards[i] for i in [0, 4, 8, 12]]),
+                GridBin([self.cards[i] for i in [1, 5, 9, 13]], [self.tagss[2][0]]),
+                GridBin([self.cards[i] for i in [2, 6, 10, 14]], [self.tagss[2][1]]),
+                GridBin([self.cards[i] for i in [3, 7, 11, 15]], [self.tagss[2][2]]),
             ])
         ]), subject)
 
 
-class TestStoryReplacingTags(TestCase, BoardFixtureMixin):
+class TestCardReplacingTags(TestCase, BoardFixtureMixin):
     def setUp(self):
         self.create_board_and_accoutrements()
 
     def test_replace_one_existing_tag(self):
-        self.stories[0].replace_tags(
+        self.cards[0].replace_tags(
             axes=[self.bags[0]],
             tags=[self.tagss[0][1]])
-        self.reload_stories()
+        self.reload_cards()
 
         self.assertEqual(self.tagss[0][1],
-            self.stories[0].get_tag(self.bags[0]))
+            self.cards[0].get_tag(self.bags[0]))
 
     def test_replace_one_existing_tag_with_nothing(self):
-        self.stories[0].replace_tags(
+        self.cards[0].replace_tags(
             axes=[self.bags[0]],
             tags=[])
-        self.reload_stories()
+        self.reload_cards()
 
         with self.assertRaises(Tag.DoesNotExist):
-            self.stories[0].get_tag(self.bags[0])
+            self.cards[0].get_tag(self.bags[0])
 
     def test_replace_one_existing_tag_by_id(self):
-        self.stories[0].replace_tags(
+        self.cards[0].replace_tags(
             axes=[self.bags[0].id],
             tags=[self.tagss[0][1].id])
-        self.reload_stories()
+        self.reload_cards()
 
         self.assertEqual(self.tagss[0][1],
-            self.stories[0].get_tag(self.bags[0]))
+            self.cards[0].get_tag(self.bags[0]))
 
 
 class FakeRedisMixin(object):

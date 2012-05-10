@@ -1,6 +1,6 @@
-// Make the stories be sortable.
+// Make the cards be sortable.
 
-var StoryGrid = (function ($) {
+var CardGrid = (function ($) {
     // Poll for updates from the server.
     var pendingPoll;
 
@@ -16,18 +16,18 @@ var StoryGrid = (function ($) {
                     for (var i = 0; i < data.events.length; ++i) {
                         var event = data.events[i];
                         if (event.type === 'rearrange' && event.dropped && event.order) {
-                            var droppedSelector = '#story-' + event.dropped;
+                            var droppedSelector = '#card-' + event.dropped;
                             var succID = event.order[1];
                             if (succID === null) {
-                                // This story was dropped at the end of its bin.
+                                // This card was dropped at the end of its bin.
                                 var binSelector = (event.tags && event.tags.length > 0
                                         ? '#bin-' + event.tags.join('-')
                                         : '#untagged-bin');
                                  $(droppedSelector).appendTo(binSelector);
                                 console.log(droppedSelector + '.appendTo ' + binSelector);
                             } else {
-                                // This story was dropped before another.
-                                var succSelector = '#story-' + succID;
+                                // This card was dropped before another.
+                                var succSelector = '#card-' + succID;
                                 $(droppedSelector).insertBefore(succSelector);
                                 console.log(droppedSelector + '.insertBefore ' + succSelector);
                             }
@@ -58,21 +58,21 @@ var StoryGrid = (function ($) {
 $(function () {
     var ajaxEnabled = true;
 
-    // Make the story bins be sortable with drag-and-drop.
-    $('.story-bin').sortable({
-        connectWith: '.story-bin',
+    // Make the card bins be sortable with drag-and-drop.
+    $('.card-bin').sortable({
+        connectWith: '.card-bin',
         update: function (event, ui) {
             // Report the change to the server.
-            var droppedID = ui.item.attr('id').replace(/^story-/, '');
+            var droppedID = ui.item.attr('id').replace(/^card-/, '');
             var eltIDs = $(this).sortable('toArray');
-            var storyIDs = [];
+            var cardIDs = [];
 
             for (var i = 0; i < eltIDs.length; ++i) {
-                storyIDs.push(eltIDs[i].replace(/^story-/, ''));
+                cardIDs.push(eltIDs[i].replace(/^card-/, ''));
             }
-            var droppedIndex = storyIDs.indexOf(droppedID);
+            var droppedIndex = cardIDs.indexOf(droppedID);
             if (droppedIndex >= 0) {
-                var succID = (droppedIndex + 1 < storyIDs.length ? storyIDs[droppedIndex + 1] : '-');
+                var succID = (droppedIndex + 1 < cardIDs.length ? cardIDs[droppedIndex + 1] : '-');
                 var abbreviatedIDs = [droppedID, succID];
 
                 var form$ = $(this).parent().find('form');

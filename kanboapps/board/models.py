@@ -1,15 +1,15 @@
 # -*- coding: UTF-8 -*-
 
-"""Declarations for models used in the stories app.
+"""Declarations for models used in the board app.
 
 Thes e models are maintained by South.
 After making a change, generate a migration using this command:
 
-    ./manage.py schemamigration  stories --auto
+    ./manage.py schemamigration  board --auto
 
 Migrations can be applied using this command:
 
-    ./manage.py migrate stories
+    ./manage.py migrate board
 
 
 """
@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
 
 
 class Grid(object):
-    """Represents a 2d presentation of stories."""
+    """Represents a 2d presentation of cards."""
     def __init__(self, rows):
         self.rows = rows
 
@@ -44,8 +44,8 @@ class GridRow(object):
 
 
 class GridBin(object):
-    def __init__(self, stories, tags=None):
-        self.stories = stories
+    def __init__(self, cards, tags=None):
+        self.cards = cards
         self.tags = tags
 
         self.element_id =  ('bin-' + '-'.join(str(x.id) for x in self.tags)
@@ -53,12 +53,12 @@ class GridBin(object):
 
     def __eq__(self, other):
         return (self.tags == other.tags
-            and len(self.stories) == len(other.stories)
-            and all(x.id == y.id for (x, y) in zip(self.stories, other.stories)))
+            and len(self.cards) == len(other.cards)
+            and all(x.id == y.id for (x, y) in zip(self.cards, other.cards)))
 
 
 class Board(models.Model):
-    """The universe of stories for one team, or group of teams."""
+    """The universe of cards for one team, or group of teams."""
     label = models.CharField(max_length=200)
     slug = models.SlugField()
 
@@ -69,16 +69,16 @@ class Board(models.Model):
         return self.label
 
     def make_grid(self, columns_def=None):
-        stories = toposorted(self.story_set.all())
+        cards = toposorted(self.card_set.all())
 
         if columns_def:
-            tag_idss = [(tag, [inf['id'] for inf in tag.story_set.values('id')])
+            tag_idss = [(tag, [inf['id'] for inf in tag.card_set.values('id')])
                     for tag in  columns_def.tag_set.all()]
-            bins = [GridBin([x for x in stories if x.id in ids], [tag])
+            bins = [GridBin([x for x in cards if x.id in ids], [tag])
                 for (tag, ids) in tag_idss]
-            missing = GridBin([x for x in stories if all(x not in bin.stories for bin in bins)])
+            missing = GridBin([x for x in cards if all(x not in bin.cards for bin in bins)])
             return Grid([GridRow([missing] + bins)])
-        return Grid([GridRow([GridBin(stories)])])
+        return Grid([GridRow([GridBin(cards)])])
 
     def event_stream(self):
         """Return the event stream for this board."""
@@ -86,7 +86,7 @@ class Board(models.Model):
 
 
 class Bag(models.Model):
-    """A set of tags. One of the axes by which stories are classified."""
+    """A set of tags. One of the axes by which cards are classified."""
     board = models.ForeignKey(Board, null=True)
 
     name = models.SlugField(max_length=200)
@@ -96,7 +96,7 @@ class Bag(models.Model):
 
 
 class Tag(models.Model):
-    """One of the values of one axis of classification of stories."""
+    """One of the values of one axis of classification of cards."""
     bag = models.ForeignKey(Bag)
 
     name = models.SlugField(max_length=200)
@@ -108,12 +108,12 @@ class Tag(models.Model):
         ordering = ['id']
 
 
-class Story(models.Model):
+class Card(models.Model):
     """On thing on a board"""
     board = models.ForeignKey(Board)
-    tag_set = models.ManyToManyField(Tag, related_name='story_set', blank=True)
+    tag_set = models.ManyToManyField(Tag, related_name='card_set', blank=True)
     succ = models.ForeignKey('self', null=True, blank=True,
-        help_text='Another story that follows this one in the queue.')
+        help_text='Another card that follows this one in the queue.')
 
     label = models.CharField(max_length=200)
     slug = models.SlugField()
@@ -122,22 +122,20 @@ class Story(models.Model):
     modified = models.DateTimeField(auto_now=True, editable=False)
 
     class Meta:
-        verbose_name = 'story'
-        verbose_name_plural = 'stories'
         ordering = ['created']
 
     def __unicode__(self):
         return self.label
 
     def get_tag(self, bag):
-        """Get the tag in this bag for this story.
+        """Get the tag in this bag for this card.
 
         This best used with exclusive bags.
         """
         return self.tag_set.get(bag=bag)
 
     def replace_tags(self, axes, tags):
-        """Add the tags to this story, removing any from maching bags."""
+        """Add the tags to this card, removing any from maching bags."""
         for old_tag in self.tag_set.filter(bag__in=axes):
             self.tag_set.remove(old_tag)
         for tag in tags:
@@ -165,9 +163,37 @@ def toposort(xs):
     xs[:] = topoiter(xs)
 
 def toposorted(xs):
+    """Given a list of things with a partial order, return a sorted list.
+
+    Things have  id and  succ_id attributes.
+    The id is unique. All id values are non-false
+    (i.e., not zero, empty string, None)
+
+    succ_id identfies a thing that goes after x.
+    A false value for succ_id means x has no successor.
+
+    Permute the list so that each x preceeds its successor
+    (the thing with id==x.succ_id).
+
+    This returns a fresh list.
+    """
     return list(topoiter(xs))
 
 def topoiter(xs):
+    """Given a list of things with a partial order, yield the things in order.
+
+    Things have  id and  succ_id attributes.
+    The id is unique. All id values are non-false
+    (i.e., not zero, empty string, None)
+
+    succ_id identfies a thing that goes after x.
+    A false value for succ_id means x has no successor.
+
+    Permute the list so that each x preceeds its successor
+    (the thing with id==x.succ_id).
+
+    This is a generator, and yields the things in order.
+    """
     # Here’s one traditional algorith for the general case.
     # We are hoping to simplify based on a simplified graph
     # where each node has at most one outgoing edge.
@@ -215,7 +241,7 @@ def topoiter(xs):
         if not(queue):
             # This shows there are one or more cycles in the input.
             # For our purposes it is more important to
-            # display all the stories than it is to complain
+            # display all the cards than it is to complain
             # about cycles. (But they should never happen.)
             for n in nodes:
                 if n.in_count:
@@ -228,7 +254,7 @@ def topoiter(xs):
                     pass
             else:
                 # None fond. Probably a bug.
-                raise CyclesException('Cycles in story succession links of length at least {0}'.format(count))
+                raise CyclesException('Cycles in card succession links of length at least {0}'.format(count))
 
         n = heappop(queue)
         count -= 1
@@ -298,7 +324,6 @@ def rearrange_objects(model, ids):
     for obj, succ in zip(objs, objs[1:]):
         obj.succ = succ
         obj.save()
-
 
 
 _redis_class = None

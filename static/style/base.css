@@ -154,13 +154,13 @@ section li {
     margin: 0.7em 10px 0.7em 30px;
 }
 
-.story-bin {
+.card-bin {
     width: 239px;
     min-height: 120px;
     border-right: 1px dotted #D67353;
 }
 
-.story-bin li {
+.card-bin li {
     margin: 0.3em 9px 0.4em 10px;
     padding: 0.3em 9px;
     height: 5em;
@@ -172,15 +172,15 @@ section li {
     border-radius: 0.35em;
     box-shadow: rgba(0, 0, 0, 0.5) 2px 2px 5px;
 }
-.story-bin li.ui-sortable-helper {
+.card-bin li.ui-sortable-helper {
     box-shadow: rgba(0, 0, 0, 0.5) 4px 4px 9px;
 }
-.story-bin li.ajax-loading {
+.card-bin li.ajax-loading {
     background: url(ajax-loading.gif) -4px 4px no-repeat;
     background:  url(ajax-loading.gif) 98% 4px no-repeat, #E9B955;
 }
 
-.story-bin b {
+.card-bin b {
     font-size: 2.1em;
     display: block;
     float: left;
@@ -189,17 +189,17 @@ section li {
     line-height: 1;
     font-weight: 200;
 }
-.story-bin q {
+.card-bin q {
     display: block;
     font-weight: bolder;
 }
 
-.story-bin q::before,
-.story-bin q::after {
+.card-bin q::before,
+.card-bin q::after {
     content: none;
 }
 
-#story-grid th {
+#card-grid th {
     padding: 0 10px;
 
     text-align: left;
@@ -210,7 +210,7 @@ section li {
     text-transform: uppercase;
     letter-spacing: 0.1em;
 }
-#story-grid td {
+#card-grid td {
     vertical-align: top;
     text-align: left;
 }
