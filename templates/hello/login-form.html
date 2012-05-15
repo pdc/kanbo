@@ -1,0 +1,55 @@
+{% extends "board/base.html" %}
+{% block title %}Log in  or Register - Kanbo{% endblock %}
+{% block main %}
+        <section id="login-form">
+            <h1>Log in to Kanbo</h1>
+            <p>
+                To save you and us time and effort, Kanbo is set up to delegate user authentication to better-known, OAuth-supporting
+                web sites like Twitter and GitHub.
+            </p>
+            <ul>
+                {% for backend in social_auth.backends %}
+                <li class="log-in-with-{{ backend }}">
+                    <a href="{% url socialauth_begin backend=backend %}">Log in with {{ backend|title }}</a>
+                </li>
+                {% endfor %}
+            </ul>
+            <p>
+                The first time you log in, your provider will ask you to confirm
+                you are content that Kanbo knows you are logged in.
+                Thereafter logging in should be a one-click process.
+            </p>
+        </section>
+        <section>
+            <h2>About OAuth</h2>
+            <p>
+                <a href="http://hueniverse.com/oauth/guide/intro/">OAuth (short for open authentication)</a>
+                is a system for allowing one web site (Kanbo in this case) to
+                access information about you on another (such as Twitter)
+                <em>without</em> handing over your password.
+            </p>
+            <p>
+                We use Twitter authentication purely for identification
+                and to get a display name and user picture. Kanbo will not
+                (for example)
+                create tweets on your behalf.
+            </p>
+            <p>
+                With some other authentication providers, such as GitHub,
+                the future plan is to additionally use
+                your connection to allow you to create task boards
+                based on your public repos.
+            </p>
+            <p>See also</p>
+            <ul>
+                <li>
+                    A <a href="http://dev.opera.com/articles/view/gentle-introduction-to-oauth/">Gentle introduction to OAuth</a> from Opera
+                </li>
+                <li>
+                    An <a href="http://thinkvitamin.com/code/introduction-to-oauth/">Introduction to OAuth</a> on ThinkVitamin
+                </li>
+            </ul>
+        </section>
+{% endblock %}
+{% block auth %}
+{% endblock %}

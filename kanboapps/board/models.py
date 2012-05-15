@@ -24,7 +24,6 @@ from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
-
 class Grid(object):
     """Represents a 2d presentation of cards."""
     def __init__(self, rows):

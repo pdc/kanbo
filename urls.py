@@ -12,6 +12,10 @@ urlpatterns = patterns('',
     url(r'^$', 'kanboapps.about.views.home', name='home'),
     url(r'^boards/', include('kanboapps.board.urls')),
 
+    # Enable logging in with myriad social network sites:
+    url(r'', include('social_auth.urls')),
+    url(r'^hello/', include('kanboapps.hello.urls')),
+
     # Uncomment the admin/doc line below to enable admin documentation:
     # url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
 

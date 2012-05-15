@@ -1,0 +1,22 @@
+
+                {% if user.is_authenticated %}
+                <aside id="auth" class="authenticated logged-in">
+                    <p>
+                        Logged in as
+                        <i>{{ user.get_full_name }}</i>
+                        {% if user.username != user.get_full_name %}
+                        (<i>{{ user.username }}</i>)
+                        {% endif %}.
+                        <form action="{% url hello-log-out %}" method="post">
+                            {% csrf_token %}
+                            <input type="submit" value="Log out">
+                        </form>
+                    <p>
+                </aside>
+                {% else %}
+                <aside id="auth" class="log-in">
+                    <p>
+                        <a href="{% url hello-login-form %}">Log in or Register</a>
+                    <p>
+                </aside>
+                {% endif %}
