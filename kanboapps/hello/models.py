@@ -57,6 +57,14 @@ post_save.connect(on_user_post_save, sender=User)
 
 def on_github_pre_update(sender, user, response, details, **kwargs):
     logger.debug('on_github_pre_update signal')
+    user.extras = [(k, response.get(j)) for (k, j) in [
+        ('nick', 'login'),
+        ('image_url', 'avatar_url'),
+        # ('blog_url', 'blog_url'),
+        # ('github_url', 'html_url'),
+        # ('location': 'location'),
+        ]
+    ]
     return True
 
 def on_twitter_pre_update(sender, user, response, details, **kwargs):

@@ -227,3 +227,19 @@ form {
 aside li {
     margin: 0.7em 10px;
 }
+
+#auth img.userpic {
+    display: inline;
+    width: 16px;
+    height: 16px;
+    vertical-align: middle;
+    vertical-align: -25%;
+}
+
+#auth p {
+    margin: 1.23em 10px 0;
+}
+
+#auth i {
+    font-style: inherit;
+}

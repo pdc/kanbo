@@ -2,7 +2,11 @@
                 {% if user.is_authenticated %}
                 <aside id="auth" class="authenticated logged-in">
                     <p>
+                        {% if user_profile.image_url %}
+                        <img src="{{ user_profile.image_url }}" alt="" class="userpic" />
+                        {% else %}
                         Logged in as
+                        {% endif %}
                         <i>{{ user.get_full_name }}</i>
                         {% if user.username != user.get_full_name %}
                         (<i>{{ user.username }}</i>)
