@@ -215,7 +215,7 @@ section li {
     text-align: left;
 }
 
-form {
+section form {
     margin: 1.4em 10px;
     padding: 9px;
 
@@ -228,6 +228,26 @@ aside li {
     margin: 0.7em 10px;
 }
 
+#auth {
+    position: absolute;
+    right: 0;
+    top: 0;
+    padding: 1px 0;
+
+    background-color: rgba(0, 0, 0, 0.5);
+    color: #CCC;
+    border-bottom-left-radius: 10px;
+}
+
+#auth a {
+    color: #CCC;
+}
+
+#auth a:hover,
+#auth a:active {
+    color: #FFF;
+}
+
 #auth img.userpic {
     display: inline;
     width: 16px;
@@ -237,9 +257,57 @@ aside li {
 }
 
 #auth p {
-    margin: 1.23em 10px 0;
+    margin: 0.615em 10px;
 }
 
 #auth i {
     font-style: inherit;
+}
+
+#login-form ul {
+    margin: 1.23em 10px;
+    padding: 0;
+}
+
+#login-form li {
+    margin:  0.615em 0;
+    list-style-type: none;
+}
+
+#login-form a {
+    display: block;
+}
+
+.log-in-with-twitter a {
+    display: block;
+    width: 151px;
+    height: 24px;
+
+    text-indent: -9999px;
+    background: url(auth-twitter.png) no-repeat;
+}
+
+.log-in-with-github a {
+    font-size: 12px;
+    display: block;
+    width: 120px;
+    height: 16px;
+    padding: 3px 0 3px 26px;
+
+    line-height: 16px;
+    font-weight: bold;
+    color: #333;
+    text-shadow: #FFF 1px 1px 2px;
+    text-decoration: none;
+    background: whiteSmoke url(auth-github.png) 4px 50% no-repeat;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border: 1px outset #DDD;
+    border-radius: 3px;
+}
+
+@media only screen and (-webkit-min-device-pixel-ratio: 2) {
+    .log-in-with-github a {
+        background-image: url(auth-github-2x.png);
+        background-size: 16px 16px;
+    }
 }

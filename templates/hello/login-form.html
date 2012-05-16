@@ -2,11 +2,6 @@
 {% block title %}Log in  or Register - Kanbo{% endblock %}
 {% block main %}
         <section id="login-form">
-            <h1>Log in to Kanbo</h1>
-            <p>
-                To save you and us time and effort, Kanbo is set up to delegate user authentication to better-known, OAuth-supporting
-                web sites like Twitter and GitHub.
-            </p>
             <ul>
                 {% for backend in social_auth.backends %}
                 <li class="log-in-with-{{ backend }}">
@@ -14,6 +9,10 @@
                 </li>
                 {% endfor %}
             </ul>
+            <p>
+                To save you and us time and effort, Kanbo is set up to delegate user authentication to better-known, OAuth-supporting
+                web sites like Twitter and GitHub.
+            </p>
             <p>
                 The first time you log in, your provider will ask you to confirm
                 you are content that Kanbo knows you are logged in.
