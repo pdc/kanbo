@@ -15,7 +15,7 @@ from kanboapps.shortcuts import with_template, returns_json
 logger = logging.getLogger(__name__)
 
 @with_template('board/board-list.html')
-def board_list(request):
+def board_list(request, login):
     # XXX change the following to only list current user’s boards
     boards = Board.objects.all()
     if len(boards) == 1:
@@ -26,7 +26,7 @@ def board_list(request):
     }
 
 @with_template('board/card-list.html')
-def card_list(request, board_id):
+def card_list(request, login, board_id):
     board_count = Board.objects.count() # XXX change to includ eonly user’s boards
     board = get_object_or_404(Board, pk=board_id)
     cards = toposorted(board.card_set.all())
@@ -39,7 +39,7 @@ def card_list(request, board_id):
     }
 
 @with_template('board/grid.html')
-def card_grid(request, board_id, col_name):
+def card_grid(request, login, board_id, col_name):
     board_count = Board.objects.count() # XXX change to includ eonly user’s boards
     board = get_object_or_404(Board, pk=board_id)
     col_bag = get_object_or_404(Bag, board_id=board_id, name=col_name)
@@ -58,7 +58,7 @@ def card_grid(request, board_id, col_name):
     }
 
 @with_template('board/grid.html')
-def rearrangement(request, board_id, col_name):
+def rearrangement(request, login, board_id, col_name):
     if process_rearrangement(request, board_id, col_name):
         if col_name:
             u = reverse('card-grid', kwargs={'board_id': board_id, 'col_name': col_name})
@@ -123,7 +123,7 @@ def process_rearrangement(request, board_id, col_name):
         return success
 
 @with_template('board/new-card.html')
-def new_card(request, board_id, col_name):
+def new_card(request, login, board_id, col_name):
     board = get_object_or_404(Board, pk=board_id)
     return {
         'board': board,
@@ -131,7 +131,7 @@ def new_card(request, board_id, col_name):
     }
 
 @with_template('board/new-card.html')
-def create_card(request, board_id, col_name):
+def create_card(request, login, board_id, col_name):
     board = get_object_or_404(Board, pk=board_id)
     text = None
     logger.debug('Method = {0!r}'.format(request.method))

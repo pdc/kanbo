@@ -2,7 +2,7 @@
 
 """Declarations for models used in the board app.
 
-Thes e models are maintained by South.
+These models are maintained by South.
 After making a change, generate a migration using this command:
 
     ./manage.py schemamigration  board --auto
@@ -11,6 +11,8 @@ Migrations can be applied using this command:
 
     ./manage.py migrate board
 
+This module also includes some functions and classes
+that operate on the model instances.
 
 """
 
@@ -21,6 +23,7 @@ import redis
 import json
 from django.db import models
 from django.conf import settings
+from django.contrib.auth.models import User
 
 logger = logging.getLogger(__name__)
 
@@ -58,6 +61,8 @@ class GridBin(object):
 
 class Board(models.Model):
     """The universe of cards for one team, or group of teams."""
+    owner = models.ForeignKey(User)
+
     label = models.CharField(max_length=200)
     slug = models.SlugField()
 

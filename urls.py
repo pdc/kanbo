@@ -10,7 +10,6 @@ urlpatterns = patterns('',
     # url(r'^kanbo/', include('kanbo.foo.urls')),
 
     url(r'^$', 'kanboapps.about.views.home', name='home'),
-    url(r'^boards/', include('kanboapps.board.urls')),
 
     # Enable logging in with myriad social network sites:
     url(r'', include('social_auth.urls')),
@@ -21,4 +20,7 @@ urlpatterns = patterns('',
 
     # Uncomment the next line to enable the admin:
     url(r'^admin/', include(admin.site.urls)),
+
+    # Because user name is a wildcard it comes last.
+    url(r'', include('kanboapps.board.urls')),
 )
