@@ -1,18 +1,25 @@
-{% extends "baord/base.html" %}
-{% block title %}Boards{% endblock %}
+{% extends "board/base.html" %}
+{% block title %}{{ owner.username }} ({{ owner.get_full_name }}) - Kanbo{% endblock %}
 {% block main %}
 <section id="board-list">
-    <h1>Boards</h1>
-    <p>
-        Generally you only have exactly one board,
-        containing all your projects, themes, and stories.
-    </p>
+    <h1>{{ owner.username }} ({{ owner.get_full_name }})</h1>
+    {% if boards %}
     <ul>
         {% for board in boards %}
         <li>
-            <a href="{% url card-list board_id=board.id %}">{{ board.label }}</a>
+            <a href="{% url card-list owner_username=board.owner.username board_id=board.id %}">{{ board.label }}</a>
         </li>
         {% endfor %}
     </ul>
+    {% elif user == owner %}
+    <p>
+        You do not have any boards of your own yet.
+        Maybe this would be a good time to create one?
+    </p>
+    {% else %}
+    <p>
+        {{ owner.username }} does not have any boards yet.
+    </p>
+    {% endif %}
 </section>
 {% endblock %}

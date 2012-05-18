@@ -14,7 +14,7 @@
     <ul class="menu">
         {% for bag in bags %}
         <li>
-            <a href="{% url card-grid board_id=board.id col_name=bag.name %}">{{ bag.name }}</a>
+            <a href="{% url card-grid owner_username=board.owner.username board_id=board.id col_name=bag.name %}">{{ bag.name }}</a>
         </li>
         {% endfor %}
     </ul>
@@ -29,7 +29,7 @@
         </li>
         {% endfor %}
     </ul>
-    <form class="rearrangement" action="{% url rearrangement board_id=board.id %}" method="post">
+    <form class="rearrangement" action="{% url rearrangement owner_username=board.owner.username board_id=board.id %}" method="post">
         {% csrf_token %}
         <input name="order" id="order" value="{{ order }}" />
         <input type="submit" value="Rearrange" />

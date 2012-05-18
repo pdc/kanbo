@@ -9,26 +9,36 @@ from django.template.defaultfilters import slugify, pluralize
 from django.contrib import messages
 from django.shortcuts import render_to_response, get_object_or_404, redirect
 from django.conf import settings
+from django.contrib.auth.models import User
 from kanboapps.board.models import Board, Card, Bag, Tag, toposorted, rearrange_objects, EventRepeater
 from kanboapps.shortcuts import with_template, returns_json
 
 logger = logging.getLogger(__name__)
 
-@with_template('board/board-list.html')
-def board_list(request, login):
-    # XXX change the following to only list current user’s boards
-    boards = Board.objects.all()
-    if len(boards) == 1:
-        return redirect(card_list, board_id=boards[0].id)
+def that_owner(view_func):
+    def wrapped_view(request, owner_username, *args, **kwargs):
+        owner = get_object_or_404(User, username=owner_username)
+        result = view_func(request, owner, *args, **kwargs)
+        if hasattr(result, 'items'):
+            result['owner'] = owner
+        return result
+    return wrapped_view
 
+@with_template('board/board-list.html')
+@that_owner
+def board_list(request, owner):
+    boards = owner.board_set.all()
+    if False and len(boards) == 1:
+        return redirect(card_list, board_id=boards[0].id)
     return {
         'boards': boards,
     }
 
 @with_template('board/card-list.html')
-def card_list(request, login, board_id):
-    board_count = Board.objects.count() # XXX change to includ eonly user’s boards
-    board = get_object_or_404(Board, pk=board_id)
+@that_owner
+def card_list(request, owner, board_id):
+    board = get_object_or_404(Board, pk=board_id, owner=owner)
+    board_count = Board.objects.filter(owner=owner).count()
     cards = toposorted(board.card_set.all())
     return {
         'many_boards': board_count > 1,
@@ -39,7 +49,8 @@ def card_list(request, login, board_id):
     }
 
 @with_template('board/grid.html')
-def card_grid(request, login, board_id, col_name):
+@that_owner
+def card_grid(request, owner, board_id, col_name):
     board_count = Board.objects.count() # XXX change to includ eonly user’s boards
     board = get_object_or_404(Board, pk=board_id)
     col_bag = get_object_or_404(Bag, board_id=board_id, name=col_name)
@@ -58,7 +69,8 @@ def card_grid(request, login, board_id, col_name):
     }
 
 @with_template('board/grid.html')
-def rearrangement(request, login, board_id, col_name):
+@that_owner
+def rearrangement(request, owner, board_id, col_name):
     if process_rearrangement(request, board_id, col_name):
         if col_name:
             u = reverse('card-grid', kwargs={'board_id': board_id, 'col_name': col_name})
@@ -123,7 +135,8 @@ def process_rearrangement(request, board_id, col_name):
         return success
 
 @with_template('board/new-card.html')
-def new_card(request, login, board_id, col_name):
+@that_owner
+def new_card(request, owner, board_id, col_name):
     board = get_object_or_404(Board, pk=board_id)
     return {
         'board': board,
@@ -131,7 +144,8 @@ def new_card(request, login, board_id, col_name):
     }
 
 @with_template('board/new-card.html')
-def create_card(request, login, board_id, col_name):
+@that_owner
+def create_card(request, owner, board_id, col_name):
     board = get_object_or_404(Board, pk=board_id)
     text = None
     logger.debug('Method = {0!r}'.format(request.method))

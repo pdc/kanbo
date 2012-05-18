@@ -13,12 +13,12 @@
     <h1>{{ board.label }}</h1>
     <ul class="menu">
         <li>
-            <a href="{% url new-card login=board.owner.username board_id=board.id col_name=col_name %}">Add cards</a>
+            <a href="{% url new-card owner_username=board.owner.username board_id=board.id col_name=col_name %}">Add cards</a>
         </li>
         {% for bag in bags %}
             {% if bag.name != col_name %}
             <li>
-                <a href="{% url card-grid  login=board.owner.username board_id=board.id col_name=bag.name %}">{{ bag.name }}</a>
+                <a href="{% url card-grid  owner_username=board.owner.username board_id=board.id col_name=bag.name %}">{{ bag.name }}</a>
             </li>
             {% endif %}
         {% endfor %}
