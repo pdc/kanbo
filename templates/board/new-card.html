@@ -2,8 +2,6 @@
 {% block title %}{{ board.label }}{% endblock %}
 
 {% block trail %}
-    <a href="{% url board-list owner_username=owner.username %}">{{ owner.username }}</a>
-    <span>></span>
     <a href="{% url card-grid owner_username=owner.username board_id=board.id col_name=col_name %}">{{ board.label }}</a>
     <span>></span>
 {% endblock %}

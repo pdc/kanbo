@@ -2,17 +2,17 @@
 {% block title %}{{ board.label }}{% endblock %}
 
 {% block trail %}
-    <a href="{% url board-list owner_username=owner.username %}">{{ owner.username }}</a>
-    <span>></span>
 {% endblock %}
 
 {% block main %}
 <section id="board">
     <h1>{{ board.label }}</h1>
     <ul class="menu">
+        {% if user == owner %}
         <li>
             <a href="{% url new-card owner_username=board.owner.username board_id=board.id col_name=col_name %}">Add cards</a>
         </li>
+        {% endif %}
         {% for bag in bags %}
             {% if bag.name != col_name %}
             <li>

@@ -7,10 +7,11 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.template import RequestContext
 from django.template.defaultfilters import slugify, pluralize
 from django.forms import ModelForm
+from django.contrib.auth.models import User
 from django.contrib import messages
 from django.shortcuts import render_to_response, get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required
 from django.conf import settings
-from django.contrib.auth.models import User
 from kanboapps.board.models import Board, Card, Bag, Tag, toposorted, rearrange_objects, EventRepeater
 from kanboapps.shortcuts import with_template, returns_json
 
@@ -34,6 +35,7 @@ def board_list(request, owner):
         'boards': boards,
     }
 
+@login_required
 @with_template('board/board-new.html')
 @that_owner
 def board_new(request, owner):
@@ -157,6 +159,7 @@ def process_rearrangement(request, board_id, col_name):
             success['tags'] = [request.POST.getlist('tags')]
         return success
 
+@login_required
 @with_template('board/new-card.html')
 @that_owner
 def new_card(request, owner, board_id, col_name):
