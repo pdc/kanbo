@@ -20,6 +20,7 @@ urlpatterns = patterns('',
 
     # Uncomment the next line to enable the admin:
     url(r'^admin/', include(admin.site.urls)),
+    url(r'^admin', include(admin.site.urls)),
 
     # Because user name is a wildcard it comes last.
     url(r'', include('kanboapps.board.urls')),

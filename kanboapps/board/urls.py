@@ -3,7 +3,8 @@
 from django.conf.urls.defaults import patterns, include, url
 
 urlpatterns = patterns('kanboapps.board.views',
-    url(r'^(?P<owner_username>\w+)$', 'board_list', name='board_list'),
+    url(r'^(?P<owner_username>\w+)$', 'board_list', name='board-list'),
+    url(r'^(?P<owner_username>\w+)/new$', 'board_new', name='board-new'),
     url(r'^(?P<owner_username>\w+)/(?P<board_id>\d+)$', 'card_list', name='card-list'),
     url(r'^(?P<owner_username>\w+)/(?P<board_id>\d+)/grids/(?P<col_name>[\w-]+)$', 'card_grid', name='card-grid'),
     url(r'^(?P<owner_username>\w+)/(?P<board_id>\d+)/rearrangement$', 'rearrangement', name='rearrangement'),

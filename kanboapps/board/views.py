@@ -6,6 +6,7 @@ from django.core.urlresolvers import reverse
 from django.http import HttpResponse, HttpResponseRedirect
 from django.template import RequestContext
 from django.template.defaultfilters import slugify, pluralize
+from django.forms import ModelForm
 from django.contrib import messages
 from django.shortcuts import render_to_response, get_object_or_404, redirect
 from django.conf import settings
@@ -16,9 +17,10 @@ from kanboapps.shortcuts import with_template, returns_json
 logger = logging.getLogger(__name__)
 
 def that_owner(view_func):
+    """View decorator that translates  an owner_username in to an owner."""
     def wrapped_view(request, owner_username, *args, **kwargs):
         owner = get_object_or_404(User, username=owner_username)
-        result = view_func(request, owner, *args, **kwargs)
+        result = view_func(request, owner, *args, **kwargs) or {}
         if hasattr(result, 'items'):
             result['owner'] = owner
         return result
@@ -28,10 +30,31 @@ def that_owner(view_func):
 @that_owner
 def board_list(request, owner):
     boards = owner.board_set.all()
-    if False and len(boards) == 1:
-        return redirect(card_list, board_id=boards[0].id)
     return {
         'boards': boards,
+    }
+
+@with_template('board/board-new.html')
+@that_owner
+def board_new(request, owner):
+    # XXX check user==owner
+    class BoardForm(ModelForm):
+        class Meta:
+            model = Board
+            exclude = ['owner']
+    if request.method == 'POST':
+        form = BoardForm(request.POST, instance=Board(owner=owner))
+        if form.is_valid():
+            board = form.save()
+            bag = board.bag_set.create(name='state')
+            for x in ['todo', 'doing', 'done']:
+                bag.tag_set.create(name=x)
+            ##messages.info(request, 'Created a'.format(count, pluralize(count)))
+            return redirect('card-list', owner_username=owner.username, board_id=board.id)
+    else:
+        form = BoardForm() # An unbound form
+    return {
+        'form': form,
     }
 
 @with_template('board/card-list.html')
@@ -104,7 +127,7 @@ def process_rearrangement(request, board_id, col_name):
         dropped_id = request.POST.get('dropped')
         if dropped_id:
             dropped = get_object_or_404(Card, id=dropped_id)
-            axis_bag = get_object_or_404(Bag, name=col_name)
+            axis_bag = get_object_or_404(Bag, board=board, name=col_name)
             tag_strs = request.POST.getlist('tags')
             dropped.replace_tags([axis_bag], tag_strs)
             dropped.save()
@@ -115,7 +138,7 @@ def process_rearrangement(request, board_id, col_name):
                 'tags': [int(x) for x in tag_strs],
                 })
         ids = [(None if x == '-' else int(x)) for s in request.POST.getlist('order') for x in s.split()]
-        rearrange_objects(Card, ids)
+        rearrange_objects(board.card_set, ids)
 
         event['order'] = ids
         er = EventRepeater()
@@ -159,7 +182,7 @@ def create_card(request, owner, board_id, col_name):
             count += 1
         if count:
             messages.info(request, 'Added {0} task{1}'.format(count, pluralize(count)))
-            return redirect(card_grid, board_id=board.id, col_name=col_name)
+            return redirect(card_grid, owner_username=owner.username, board_id=board.id, col_name=col_name)
         # If failed, fall through to showing form again:
     return {
         'board': board,

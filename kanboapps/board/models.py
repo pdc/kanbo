@@ -269,11 +269,11 @@ def topoiter(xs):
             if not m.in_count:
                 heappush(queue, m)
 
-def rearrange_objects(model, ids):
+def rearrange_objects(queryset, ids):
     """Rearrange entities in the model
 
     Arguments --
-        model -- the class defining the universal set of entities
+        queryset -- the universal set of entities
         ids -- identifies some subset of the entities and
             specifies the desired order of them relative to each other
 
@@ -288,7 +288,7 @@ def rearrange_objects(model, ids):
         # Nothing to do.
         return
 
-    objs_by_id = model.objects.in_bulk(ids)
+    objs_by_id = queryset.in_bulk(ids)
     objs = [(objs_by_id[i] if i else None)for i in ids]
 
     # We will insert the new sequence
@@ -319,10 +319,10 @@ def rearrange_objects(model, ids):
         else:
             break
     for i, succ_i in skips.items():
-        model.objects.filter(succ__id=i).update(succ=succ_i)
+        queryset.filter(succ__id=i).update(succ=succ_i)
 
     # Make predecessor of last elt point to start of new order.
-    model.objects.filter(succ__id=ids[-1]).update(succ=ids[0])
+    queryset.filter(succ__id=ids[-1]).update(succ=ids[0])
 
     # Establish the order amongs the new items.
     for obj, succ in zip(objs, objs[1:]):
@@ -368,7 +368,7 @@ class EventStream(object):
     def append(self, event):
         jevent = json.dumps(event)
         def try_append(p):
-            next_seq = p.hget(self.k_info, 'next')
+            next_seq = p.hget(self.k_info, 'next') or 0
             len_evs = p.llen(self.k_list)
 
             p.multi()

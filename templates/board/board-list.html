@@ -14,11 +14,16 @@
     {% elif user == owner %}
     <p>
         You do not have any boards of your own yet.
-        Maybe this would be a good time to create one?
+        Maybe this would be a good time to  create one?
     </p>
     {% else %}
     <p>
         {{ owner.username }} does not have any boards yet.
+    </p>
+    {% endif %}
+    {% if user == owner %}
+    <p class="hero-link">
+        <a href="{% url board-new owner_username=owner.username %}">Create new task board</a>
     </p>
     {% endif %}
 </section>

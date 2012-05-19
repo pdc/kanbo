@@ -8,7 +8,9 @@
                             {% else %}
                             Logged in as
                             {% endif %}
-                            <i>{{ user.username }}</i>
+                            <a href="{% url board-list owner_username=user.username %}">
+                                <i>{{ user.username }}</i>
+                            </a>
 
                             <input type="hidden"  name="csrfmiddlewaretoken" value="{{ csrf_token }}" />
                             <input type="submit" value="Log out">
