@@ -1,11 +1,11 @@
 # Create your views here.
 
-from django.http import HttpResponse
-from django.template import RequestContext
-from django.shortcuts import render_to_response
+from django.core.urlresolvers import reverse
+from django.contrib.auth.models import User
+from kanboapps.board.models import Board
+from kanboapps.shortcuts import with_template, returns_json
 
+@with_template('about/home.html')
 def home(request):
-    template_name = 'about/home.html'
-    template_vars = {}
-    return render_to_response(template_name, template_vars, 
-        context_instance=RequestContext(request))
+    board = Board.objects.get(id=1)
+    return {'board': board}
