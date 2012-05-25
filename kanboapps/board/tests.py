@@ -27,8 +27,8 @@ class TestCard(TestCase):
         progress_tag = bag.tag_set.create(name='in-progress')
         done_tag = bag.tag_set.create(name='done')
 
-        board = Board(label='a')
-        board.save()
+        owner = User.objects.create(username='pop')
+        board = owner.board_set.create(label='a')
         card = board.card_set.create(label='This')
         card.tag_set.add(new_tag)
 
@@ -101,8 +101,8 @@ class TestTopsort(TestCase):
 class TestRearrangeOrderedStories(TestCase):
     def setUp(self):
         # Create 7 cards in order.
-        self.board = Board(label='boo')
-        self.board.save()
+        self.owner = User.objects.create(username='xerxes')
+        self.board = self.owner.board_set.create(label='boo')
         self.cards = [self.board.card_set.create(board=self.board, label=x, slug=x.lower())
                 for x in ['Alpha', 'Bravo', 'Charlie', 'Delta', 'Echo', 'Foxtrot', 'Golf']]
         for x, y in zip(self.cards, self.cards[1:]):
@@ -223,7 +223,8 @@ class TestRearrangeOrderedStories(TestCase):
 class BoardFixtureMixin(object):
     def create_board_and_accoutrements(self):
         # Create 16 cards
-        self.board = Board.objects.create(label='z')
+        self.owner = User.objects.create(username='depyhooves')
+        self.board = self.owner.board_set.create(label='z')
         self.cards = [self.board.card_set.create(board=self.board, label=x, slug=x)
                 for x in 'abcdefghijklmnop']
         for x, y in zip(self.cards, self.cards[1:]):

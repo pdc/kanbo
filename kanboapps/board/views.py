@@ -94,13 +94,18 @@ def card_grid(request, owner, board_id, col_name):
     }
 
 @with_template('board/grid.html')
-@that_owner
-def rearrangement(request, owner, board_id, col_name):
-    if process_rearrangement(request, board_id, col_name):
+def rearrangement(request, board_id, col_name):
+    board = get_object_or_404(Board, pk=board_id)
+    if process_rearrangement(request, board, col_name):
         if col_name:
-            u = reverse('card-grid', kwargs={'board_id': board_id, 'col_name': col_name})
+            u = reverse('card-grid', kwargs={
+                'owner_username': board.owner.username,
+                'board_id': str(board.id),
+                'col_name': col_name})
         else:
-            u = reverse('card-list', kwargs={'board_id': board_id})
+            u = reverse('card-list', kwargs={
+                'owner_username': board.ownber.username,
+                'board_id': str(board_id)})
         return HttpResponseRedirect(u)
     return {
         'board': board,
@@ -111,15 +116,14 @@ def rearrangement(request, owner, board_id, col_name):
 
 @returns_json
 def rearrangement_ajax(request, board_id, col_name):
-    logger.debug(request.body)
-    success = process_rearrangement(request, board_id, col_name)
+    board = get_object_or_404(Board, pk=board_id)
+    success = process_rearrangement(request, board, col_name)
     res = success or {}
     res['success'] = bool(success)
     return res
 
-def process_rearrangement(request, board_id, col_name):
+def process_rearrangement(request, board, col_name):
     """Code common to the 2 rearrangement views."""
-    board = get_object_or_404(Board, pk=board_id)
     event  = {
         'type': 'rearrange',
         'board': board.id,
