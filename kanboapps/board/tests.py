@@ -103,16 +103,16 @@ class TestRearrangeOrderedStories(TestCase):
         # Create 7 cards in order.
         self.owner = User.objects.create(username='xerxes')
         self.board = self.owner.board_set.create(label='boo')
-        self.cards = [self.board.card_set.create(board=self.board, label=x, slug=x.lower())
+        self.cards = [self.board.card_set.create(board=self.board, label=x, name=x.lower())
                 for x in ['Alpha', 'Bravo', 'Charlie', 'Delta', 'Echo', 'Foxtrot', 'Golf']]
         for x, y in zip(self.cards, self.cards[1:]):
             x.succ = y
             x.save()
-        self.cards_by_slug = dict((x.slug, x) for x in self.cards)
-        self.id_by_slug = dict((x.slug, x.id) for x in self.cards)
+        self.cards_by_name = dict((x.name, x) for x in self.cards)
+        self.id_by_name = dict((x.name, x.id) for x in self.cards)
 
-    def rearrange_and_check(self, order_slugs, expected_slugs):
-        order = [(self.id_by_slug[x] if x else None) for x in order_slugs]
+    def rearrange_and_check(self, order_names, expected_names):
+        order = [(self.id_by_name[x] if x else None) for x in order_names]
         rearrange_objects(Card.objects, order)
 
         try:
@@ -120,11 +120,11 @@ class TestRearrangeOrderedStories(TestCase):
             failed = False
         except CyclesException:
             for obj in Card.objects.all():
-                print obj.slug, obj.succ.slug if obj.succ else '--'
+                print obj.name, obj.succ.name if obj.succ else '--'
             failed = True
         self.assertFalse(failed, 'Could not toposort the result')
-        self.slugs = [x.slug for x in self.new_order]
-        self.assertEqual(expected_slugs, self.slugs)
+        self.names = [x.name for x in self.new_order]
+        self.assertEqual(expected_names, self.names)
 
     def test_nop_zero(self):
         # New orders are passed back as a list of IDs
@@ -225,13 +225,13 @@ class BoardFixtureMixin(object):
         # Create 16 cards
         self.owner = User.objects.create(username='derpyhooves')
         self.board = self.owner.board_set.create(name='z', label='Z')
-        self.cards = [self.board.card_set.create(board=self.board, label=x, slug=x)
+        self.cards = [self.board.card_set.create(board=self.board, label=x, name=x)
                 for x in 'abcdefghijklmnop']
         for x, y in zip(self.cards, self.cards[1:]):
             x.succ = y
             x.save()
-        self.cards_by_slug = dict((x.slug, x) for x in self.cards)
-        self.id_by_slug = dict((x.slug, x.id) for x in self.cards)
+        self.cards_by_name = dict((x.name, x) for x in self.cards)
+        self.id_by_name = dict((x.name, x.id) for x in self.cards)
 
         # Create some bags
         self.bags = [self.board.bag_set.create(name=x) for x in 'qtw']

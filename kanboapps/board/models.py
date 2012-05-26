@@ -126,14 +126,15 @@ class Card(models.Model):
     succ = models.ForeignKey('self', null=True, blank=True,
         help_text='Another card that follows this one in the queue.')
 
-    label = models.CharField(max_length=200)
-    slug = models.SlugField()
+    name = models.SlugField(verbose_name='Short name', help_text='Short code or number that uniquely identifies this card')
+    label = models.CharField(max_length=200, help_text='The sentence or phrase written on the card')
 
     created = models.DateTimeField(auto_now_add=True, editable=False)
     modified = models.DateTimeField(auto_now=True, editable=False)
 
     class Meta:
         ordering = ['created']
+        unique_together=[('board', 'name')]
 
     def __unicode__(self):
         return self.label

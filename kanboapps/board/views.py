@@ -5,7 +5,7 @@ import json
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse, HttpResponseRedirect
 from django.template import RequestContext
-from django.template.defaultfilters import slugify, pluralize
+from django.template.defaultfilters import pluralize
 from django.forms import ModelForm
 from django.contrib.auth.models import User
 from django.contrib import messages
@@ -187,13 +187,14 @@ def create_card(request, owner, board, col_name):
     if request.method == 'POST':
         text = request.POST['cards']
         count = 0
+        first_id = board.card_set.count() + 1
         for label in text.strip().split('\n'):
-            slug = slugify(label)
-            logger.debug('Creating {0}'.format(label))
-            board.card_set.create(label=label, slug=slug)
+            name = str(first_id + count)
+            logger.debug('Creating {0} {1}'.format(name, label))
+            board.card_set.create(name=name, label=label)
             count += 1
         if count:
-            messages.info(request, 'Added {0} task{1}'.format(count, pluralize(count)))
+            messages.info(request, 'Added {0} card{1}'.format(count, pluralize(count)))
             return redirect(card_grid, owner_username=owner.username, board_name=board.name, col_name=col_name)
         # If failed, fall through to showing form again:
     return {

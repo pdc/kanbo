@@ -15,24 +15,6 @@
         </li>
         {% endfor %}
     </ul>
-
-    <h2>All cards</h2>
-    <ul id="board-detail" class="card-bin">
-        {% for card in cards %}
-        <li id="card-{{ card.id }}">
-            <b>{{ card.id }}</b>
-            <q>{{ card.label }}</q>
-            {% for tag in card.tag_set.all %}
-                <i>{{ tag }}</i>
-            {% endfor %}
-        </li>
-        {% endfor %}
-    </ul>
-    <form class="rearrangement" action="{% url rearrangement board_id=board.id|stringformat:"d" %}" method="post">
-        {% csrf_token %}
-        <input name="order" id="order" value="{{ order }}" />
-        <input type="submit" value="Rearrange" />
-    </form>
 </section>
 {% endblock %}
 
