@@ -18,8 +18,7 @@ class BoardAdmin(admin.ModelAdmin):
     list_display = ['name', 'label', 'owner', 'created']
 
 class CardAdmin(admin.ModelAdmin):
-    prepopulated_fields = {"slug": ("label",)}
-    list_display = ['slug', 'label', 'succ', 'created']
+    list_display = ['name', 'label', 'succ', 'board', 'created']
 
 admin.site.register(Board, BoardAdmin)
 admin.site.register(Card, CardAdmin)

@@ -47,7 +47,7 @@
                     <ul id="{{ bin.element_id }}" class="card-bin" data-ajax-url="{% url rearrangement-ajax board_id=board.id col_name=col_name %}">
                         {% for card in bin.cards %}
                         <li id="card-{{ card.id }}">
-                            <b>{{ card.id }}</b>
+                            <b>{{ card.name }}</b>
                             <q>{{ card.label }}</q>
                             {% for tag in card.tag_set.all %}
                                 {% if tag.bag.name != col_name %}
