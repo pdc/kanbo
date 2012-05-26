@@ -7,14 +7,17 @@
 {% block main %}
 <section id="board">
     <h1>{{ board.label }}</h1>
+    <p>Choose a tag to base the grid on:</p>
     <ul class="menu">
         {% for bag in bags %}
         <li>
-            <a href="{% url card-grid owner_username=board.owner.username board_id=board.id col_name=bag.name %}">{{ bag.name }}</a>
+            <a href="{% url card-grid owner_username=board.owner.username board_name=board.name col_name=bag.name %}">{{ bag.name }}</a>
         </li>
         {% endfor %}
     </ul>
-    <ul id="card-list" class="card-bin">
+
+    <h2>All cards</h2>
+    <ul id="board-detail" class="card-bin">
         {% for card in cards %}
         <li id="card-{{ card.id }}">
             <b>{{ card.id }}</b>
@@ -25,7 +28,7 @@
         </li>
         {% endfor %}
     </ul>
-    <form class="rearrangement" action="{% url rearrangement owner_username=board.owner.username board_id=board.id %}" method="post">
+    <form class="rearrangement" action="{% url rearrangement board_id=board.id|stringformat:"d" %}" method="post">
         {% csrf_token %}
         <input name="order" id="order" value="{{ order }}" />
         <input type="submit" value="Rearrange" />

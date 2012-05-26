@@ -223,8 +223,8 @@ class TestRearrangeOrderedStories(TestCase):
 class BoardFixtureMixin(object):
     def create_board_and_accoutrements(self):
         # Create 16 cards
-        self.owner = User.objects.create(username='depyhooves')
-        self.board = self.owner.board_set.create(label='z')
+        self.owner = User.objects.create(username='derpyhooves')
+        self.board = self.owner.board_set.create(name='z', label='Z')
         self.cards = [self.board.card_set.create(board=self.board, label=x, slug=x)
                 for x in 'abcdefghijklmnop']
         for x, y in zip(self.cards, self.cards[1:]):

@@ -7,7 +7,7 @@
     <ul>
         {% for board in boards %}
         <li>
-            <a href="{% url card-list owner_username=board.owner.username board_id=board.id %}">{{ board.label }}</a>
+            <a href="{% url board-detail owner_username=board.owner.username board_name=board.name %}">{{ board.label }}</a>
         </li>
         {% endfor %}
     </ul>

@@ -63,11 +63,14 @@ class Board(models.Model):
     """The universe of cards for one team, or group of teams."""
     owner = models.ForeignKey(User)
 
-    label = models.CharField(max_length=200)
-    slug = models.SlugField()
+    name = models.SlugField(verbose_name='Short name', help_text='The unique short name for this board. Lowercase letters, digits, and dashes only.')
+    label = models.CharField(max_length=200, verbose_name='Display name', help_text='The human-readable name for your board.')
 
     created = models.DateTimeField(auto_now_add=True, editable=False)
     modified = models.DateTimeField(auto_now=True, editable=False)
+
+    class Meta:
+        unique_together = (('owner', 'name'),)
 
     def __unicode__(self):
         return self.label

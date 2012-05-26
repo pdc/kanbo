@@ -10,13 +10,13 @@
     <ul class="menu">
         {% if user == owner %}
         <li>
-            <a href="{% url new-card owner_username=board.owner.username board_id=board.id col_name=col_name %}">Add cards</a>
+            <a href="{% url new-card owner_username=board.owner.username board_name=board.name col_name=col_name %}">Add cards</a>
         </li>
         {% endif %}
         {% for bag in bags %}
             {% if bag.name != col_name %}
             <li>
-                <a href="{% url card-grid  owner_username=board.owner.username board_id=board.id col_name=bag.name %}">{{ bag.name }}</a>
+                <a href="{% url card-grid  owner_username=board.owner.username board_name=board.name col_name=bag.name %}">{{ bag.name }}</a>
             </li>
             {% endif %}
         {% endfor %}
@@ -35,7 +35,7 @@
             <tr>
                 {% for bin in row.bins %}
                 <td>
-                    <form class="rearrangement" action="{% url rearrangement  board_id=board.id col_name=col_name %}" method="post">
+                    <form class="rearrangement" action="{% url rearrangement board_id=board.id col_name=col_name %}" method="post">
                         {% csrf_token %}
                         {% for tag in bin.tags %}
                         <input type="hidden" name="tags" value="{{ tag.id }}" />

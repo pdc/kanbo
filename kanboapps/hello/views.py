@@ -47,7 +47,7 @@ def create_association(request):
     if request.user.is_authenticated():
         boards = Board.objects.all()# XXX filter by access
         if len(boards) == 1:
-            return redirect('card-list', board_id=boards[0].id)
+            return redirect('board-detail', board_id=boards[0].id)
         return redirect('board-list')
     return {}
 

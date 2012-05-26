@@ -27,6 +27,18 @@ def that_owner(view_func):
         return result
     return wrapped_view
 
+def that_owner_and_board(view_func):
+    """View decorator that translates  an owner_username in to an owner."""
+    def wrapped_view(request, owner_username, board_name, *args, **kwargs):
+        owner = get_object_or_404(User, username=owner_username)
+        board = get_object_or_404(Board, owner=owner, name=board_name)
+        result = view_func(request, owner, board, *args, **kwargs) or {}
+        if hasattr(result, 'items'):
+            result['owner'] = owner
+            result['board'] = board
+        return result
+    return wrapped_view
+
 @with_template('board/board-list.html')
 @that_owner
 def board_list(request, owner):
@@ -52,17 +64,16 @@ def board_new(request, owner):
             for x in ['todo', 'doing', 'done']:
                 bag.tag_set.create(name=x)
             ##messages.info(request, 'Created a'.format(count, pluralize(count)))
-            return redirect('card-list', owner_username=owner.username, board_id=board.id)
+            return redirect('board-detail', owner_username=owner.username, board_name=board.name)
     else:
         form = BoardForm() # An unbound form
     return {
         'form': form,
     }
 
-@with_template('board/card-list.html')
-@that_owner
-def card_list(request, owner, board_id):
-    board = get_object_or_404(Board, pk=board_id, owner=owner)
+@with_template('board/board-detail.html')
+@that_owner_and_board
+def board_detail(request, owner, board):
     board_count = Board.objects.filter(owner=owner).count()
     cards = toposorted(board.card_set.all())
     return {
@@ -74,17 +85,14 @@ def card_list(request, owner, board_id):
     }
 
 @with_template('board/grid.html')
-@that_owner
-def card_grid(request, owner, board_id, col_name):
-    board_count = Board.objects.count() # XXX change to includ eonly user’s boards
-    board = get_object_or_404(Board, pk=board_id)
-    col_bag = get_object_or_404(Bag, board_id=board_id, name=col_name)
+@that_owner_and_board
+def card_grid(request, owner, board, col_name):
+    col_bag = get_object_or_404(Bag, board=board, name=col_name)
     grid = board.make_grid(col_bag)
 
     is_polling_enabled = settings.EVENT_REPEATER.get('POLL')
     next_seq = board.event_stream().next_seq() if is_polling_enabled else None
     return {
-        'many_boards': board_count > 1,
         'board': board,
         'grid': grid,
         'col_name': col_name,
@@ -100,12 +108,12 @@ def rearrangement(request, board_id, col_name):
         if col_name:
             u = reverse('card-grid', kwargs={
                 'owner_username': board.owner.username,
-                'board_id': str(board.id),
+                'board_name': board.name,
                 'col_name': col_name})
         else:
-            u = reverse('card-list', kwargs={
-                'owner_username': board.ownber.username,
-                'board_id': str(board_id)})
+            u = reverse('board-detail', kwargs={
+                'owner_username': board.owner.username,
+                'board_name': board.name})
         return HttpResponseRedirect(u)
     return {
         'board': board,
@@ -165,18 +173,15 @@ def process_rearrangement(request, board, col_name):
 
 @login_required
 @with_template('board/new-card.html')
-@that_owner
-def new_card(request, owner, board_id, col_name):
-    board = get_object_or_404(Board, pk=board_id)
+@that_owner_and_board
+def new_card(request, owner, board, col_name):
     return {
-        'board': board,
         'col_name': col_name,
     }
 
 @with_template('board/new-card.html')
-@that_owner
-def create_card(request, owner, board_id, col_name):
-    board = get_object_or_404(Board, pk=board_id)
+@that_owner_and_board
+def create_card(request, owner, board, col_name):
     text = None
     logger.debug('Method = {0!r}'.format(request.method))
     if request.method == 'POST':
@@ -189,7 +194,7 @@ def create_card(request, owner, board_id, col_name):
             count += 1
         if count:
             messages.info(request, 'Added {0} task{1}'.format(count, pluralize(count)))
-            return redirect(card_grid, owner_username=owner.username, board_id=board.id, col_name=col_name)
+            return redirect(card_grid, owner_username=owner.username, board_name=board.name, col_name=col_name)
         # If failed, fall through to showing form again:
     return {
         'board': board,

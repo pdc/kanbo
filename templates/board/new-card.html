@@ -2,7 +2,7 @@
 {% block title %}{{ board.label }}{% endblock %}
 
 {% block trail %}
-    <a href="{% url card-grid owner_username=owner.username board_id=board.id col_name=col_name %}">{{ board.label }}</a>
+    <a href="{% url card-grid owner_username=owner.username board_name=board.name col_name=col_name %}">{{ board.label }}</a>
     <span>></span>
 {% endblock %}
 
@@ -14,7 +14,7 @@
     </p>
 
     {%if user == owner %}
-    <form action="{% url create-card owner_username=owner.username board_id=board.id col_name=col_name %}" method="post">
+    <form action="{% url create-card owner_username=owner.username board_name=board.name col_name=col_name %}" method="post">
         {% csrf_token %}
         <textarea name="cards">{{ text }}</textarea>
         <input type="submit" value="Add cards" />
