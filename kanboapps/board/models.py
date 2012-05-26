@@ -63,7 +63,7 @@ class Board(models.Model):
     """The universe of cards for one team, or group of teams."""
     owner = models.ForeignKey(User)
 
-    name = models.SlugField(verbose_name='Short name', help_text='The unique short name for this board. Lowercase letters, digits, and dashes only.')
+    name = models.SlugField(db_index=True, verbose_name='Short name', help_text='The unique short name for this board. Lowercase letters, digits, and dashes only.')
     label = models.CharField(max_length=200, verbose_name='Display name', help_text='The human-readable name for your board.')
 
     created = models.DateTimeField(auto_now_add=True, editable=False)
@@ -96,7 +96,10 @@ class Bag(models.Model):
     """A set of tags. One of the axes by which cards are classified."""
     board = models.ForeignKey(Board, null=True)
 
-    name = models.SlugField(max_length=200)
+    name = models.SlugField(db_index=True, max_length=200)
+
+    class Meta:
+        unique_together = [('board', 'name')]
 
     def __unicode__(self):
         return self.name
@@ -113,6 +116,7 @@ class Tag(models.Model):
 
     class Meta:
         ordering = ['id']
+        unique_together = [('bag', 'name')]
 
 
 class Card(models.Model):
