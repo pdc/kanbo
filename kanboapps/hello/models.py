@@ -36,7 +36,7 @@ def create_profile_if_missing(user):
 
 # Arrange for a user profile to be attached to users on creation.
 def on_user_post_save(sender, instance, created, **kwargs):
-    logger.debug('on_user_post_save signal')
+    #logger.debug('on_user_post_save signal')
     if created:
         profile = Profile.objects.create(user=instance)
     else:
@@ -56,7 +56,7 @@ post_save.connect(on_user_post_save, sender=User)
 
 
 def on_github_pre_update(sender, user, response, details, **kwargs):
-    logger.debug('on_github_pre_update signal')
+    #logger.debug('on_github_pre_update signal')
     user.extras = [(k, response.get(j)) for (k, j) in [
         ('nick', 'login'),
         ('image_url', 'avatar_url'),
@@ -68,7 +68,7 @@ def on_github_pre_update(sender, user, response, details, **kwargs):
     return True
 
 def on_twitter_pre_update(sender, user, response, details, **kwargs):
-    logger.debug('on_twitter_pre_update signal')
+    #logger.debug('on_twitter_pre_update signal')
     user.extras = [
         ( 'nick', response.get('screen_name')),
         ( 'image_url', response.get('profile_image_url')),
