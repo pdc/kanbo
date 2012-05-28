@@ -8,7 +8,7 @@
                             {% else %}
                             Logged in as
                             {% endif %}
-                            <a href="{% url board-list owner_username=user.username %}">
+                            <a href="{% url user-profile owner_username=user.username %}">
                                 <i>{{ user.username }}</i>
                             </a>
 

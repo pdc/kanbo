@@ -39,9 +39,9 @@ def that_owner_and_board(view_func):
         return result
     return wrapped_view
 
-@with_template('board/board-list.html')
+@with_template('board/user-profile.html')
 @that_owner
-def board_list(request, owner):
+def user_profile(request, owner):
     boards = owner.board_set.all()
     return {
         'boards': boards,

@@ -13,7 +13,7 @@
             <p id="trail">
                 <a href="{% url home %}" class="wordmark">Kanbo</a> <span>></span>
                 {% if board %}
-                <a href="{% url board-list owner_username=owner.username %}">{% if owner.id == 1 %}Demonstration boards{% else %}{{ owner.username }}{% endif %}</a>
+                <a href="{% url user-profile owner_username=owner.username %}">{% if owner.id == 1 %}Demonstration boards{% else %}{{ owner.username }}{% endif %}</a>
                 <span>></span>
                 {% endif %}
                 {% block trail %}{% endblock %}

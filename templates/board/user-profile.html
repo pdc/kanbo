@@ -1,7 +1,7 @@
 {% extends "board/base.html" %}
 {% block title %}{{ owner.username }} ({{ owner.get_full_name }}) - Kanbo{% endblock %}
 {% block main %}
-<section id="board-list">
+<section id="user-profile">
     <h1>{{ owner.username }} ({{ owner.get_full_name }})</h1>
     {% if boards %}
     <ul>

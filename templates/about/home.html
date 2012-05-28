@@ -48,11 +48,11 @@
                 </section>
                 <section id="boards">
                     <p>
-                        <a href="{% url board-list owner_username=board.owner.username %}">Demonstration Boards</a>
+                        <a href="{% url user-profile owner_username=board.owner.username %}">Demonstration Boards</a>
                     </p>
                     {% if user.is_authenticated %}
                     <p>
-                        <a href="{% url board-list owner_username=user.username %}">Your Boards</a>
+                        <a href="{% url user-profile owner_username=user.username %}">Your Boards</a>
                     </p>
                     {% endif %}
                 </section>

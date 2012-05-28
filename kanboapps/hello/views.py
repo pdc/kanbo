@@ -33,24 +33,17 @@ def log_out(request):
     logout(request)
     return redirect_to_next(request)
 
-
 @with_template('hello/login-form.html')
 def login_error(request):
     return {}
 
-@with_template('hello/login-form.html')
 def create_user(request):
-    return {}
+    # Created new user – could have profile page.
+    return redirect_to_next(request)
 
-@with_template('hello/login-form.html')
 def create_association(request):
-    if request.user.is_authenticated():
-        boards = Board.objects.all()# XXX filter by access
-        if len(boards) == 1:
-            return redirect('board-detail', board_id=boards[0].id)
-        return redirect('board-list')
-    return {}
+    # New identity associated with exiting user – could go to profile page
+    return redirect_to_next(request)
 
-@with_template('hello/login-form.html')
 def delete_association(request):
-    return {}
+    return redirect_to_next(request)
