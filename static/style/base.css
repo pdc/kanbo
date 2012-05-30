@@ -112,6 +112,10 @@ section {
     border-top: 1px solid #D67353;
 }
 
+section.main {
+    width: 480px;
+}
+
 #about {
     width: 400px;
     font-size: 1.23em;
@@ -216,12 +220,62 @@ section li {
 }
 
 section form {
-    margin: 1.4em 10px;
+    margin: 1.4em 0;
     padding: 9px;
 
-    background: #007F88;
-    border: 1px inset #007F88;
+    /* background: rgba(0, 127, 136, 0.25); */
+    background-color: rgba(233, 137, 85, 0.25);
+    border: 1px inset rgba(233, 137, 85, 0.25);
     border-radius: 0.7em;
+}
+
+form>p {
+    margin: 0 0 0.7em 0;
+}
+
+form>div {
+    padding: 0.35em 0;
+}
+
+form .buttons {
+    margin: 0.7em 0 0 160px;
+}
+
+form .has-errors {
+    /* background-color: rgba(233, 137, 85, 0.5); */
+}
+
+form label {
+    float: left;
+    margin: 0 20px 0 0;
+    width: 140px;
+
+    text-align: right;
+}
+
+form small {
+    font-size: 0.85em; /* If the main size is 13px this is 11px */
+    display: block;
+    margin: 0.3em 0 0 160px;
+
+    line-height: 1.2;
+}
+
+form .errorlist {
+    margin: 0 0 0 160px;
+    color: #D67353;
+}
+
+form .errorlist li {
+    margin: 0.15em 0 0;
+}
+
+input[type="text"] {
+    width: 296px;
+}
+
+input[maxlength="50"] {
+    width: 136px;
 }
 
 aside li {

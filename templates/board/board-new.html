@@ -1,11 +1,25 @@
 {% extends "board/base.html" %}
 {% block title %}New Board- Kanbo{% endblock %}
 {% block main %}
-<section id="user-profile">
+<section id="user-profile" class="main">
     <h1>New Board</h1>
+        <p>Use this to create a new blank board to add tasks to.</p>
     <form method="post">
         {% csrf_token %}
-        {{ form.as_p }}
+        {% for field in form %}
+            {% if field.is_hidden %}
+            {{ field }}
+            {% else %}
+            <div{% if field.errors %} class="has-errors"{% endif %}>
+                {{ field.label_tag }}
+                {{ field }}
+                {% if field.help_text %}
+                <small>{{ field.help_text }}</small>
+                {% endif %}
+                {{ field.errors }}
+            </div>
+            {% endif %}
+        {% endfor %}
         <div class="buttons">
             <input type="submit" value="Create board" />
         </div>
