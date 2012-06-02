@@ -18,9 +18,12 @@ that operate on the model instances.
 
 import sys
 import logging
+import re
 from heapq import heapify, heappop, heappush
 import redis
 import json
+from django.core.exceptions import ValidationError
+from django.core.validators import RegexValidator
 from django.db import models
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -59,12 +62,29 @@ class GridBin(object):
             and all(x.id == y.id for (x, y) in zip(self.cards, other.cards)))
 
 
+class KeywordValidator(object):
+    def __init__(self, ws):
+        self.words = set(ws)
+
+    def __call__(self, value):
+        if value in self.words:
+            raise ValidationError(u'The name \u2018{0}\u2019 is reserved and cannot be used.'.format(value))
+
+board_level_keywords = ['new', 'create', 'edit', 'update', 'delete', 'profile', 'kanbo']
+
 class Board(models.Model):
     """The universe of cards for one team, or group of teams."""
     owner = models.ForeignKey(User)
 
-    name = models.SlugField(db_index=True, verbose_name='Short name', help_text='The unique short name for this board. Lowercase letters, digits, and dashes only.')
-    label = models.CharField(max_length=200, verbose_name='Display name', help_text='The human-readable name for your board.')
+    name = models.CharField(max_length=50, db_index=True,
+        validators=[RegexValidator(re.compile(r'^[a-z\d-]+$'), 'Must be lower-case letters a-z, digits, or hyphens'),
+            KeywordValidator(board_level_keywords)],
+        verbose_name='Short name',
+        help_text='The unique short name for this board. Used to make the URL for the board. Lowercase letters, digits, and dashes only.')
+    label = models.CharField(max_length=200,
+        blank=True,
+        verbose_name='Display name',
+        help_text='The human-readable name or one-line description for your board. Blank means use the short name.')
 
     created = models.DateTimeField(auto_now_add=True, editable=False)
     modified = models.DateTimeField(auto_now=True, editable=False)
@@ -74,6 +94,13 @@ class Board(models.Model):
 
     def __unicode__(self):
         return self.label
+
+    def clean(self):
+        """Called as part of validating a form creating an instance of this model."""
+        super(Board, self).clean()
+        if Board.objects.filter(owner=self.owner, name=self.name
+                ).exclude(id=self.id).exists():
+            raise ValidationError('You already have a board named ‘{0}’.'.format(self.name))
 
     def make_grid(self, columns_def=None):
         cards = toposorted(self.card_set.all())

@@ -2,6 +2,7 @@
 
 import logging
 import json
+from django.core.exceptions import ValidationError, NON_FIELD_ERRORS
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse, HttpResponseRedirect
 from django.template import RequestContext
@@ -47,15 +48,18 @@ def user_profile(request, owner):
         'boards': boards,
     }
 
+
+class BoardForm(ModelForm):
+    class Meta:
+        model = Board
+        exclude = ['owner']
+
+
 @login_required
 @with_template('board/board-new.html')
 @that_owner
 def board_new(request, owner):
     # XXX check user==owner
-    class BoardForm(ModelForm):
-        class Meta:
-            model = Board
-            exclude = ['owner']
     if request.method == 'POST':
         form = BoardForm(request.POST, instance=Board(owner=owner))
         if form.is_valid():
@@ -69,6 +73,7 @@ def board_new(request, owner):
         form = BoardForm() # An unbound form
     return {
         'form': form,
+        'non_field_errors': form.errors.get(NON_FIELD_ERRORS),
     }
 
 @with_template('board/board-detail.html')

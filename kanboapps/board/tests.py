@@ -13,8 +13,8 @@ import redis
 import fakeredis
 import json
 from kanboapps.board.models import *
+from kanboapps.board.views import BoardForm
 from kanboapps.board import models
-
 
 class TestCard(TestCase):
     def test_nothing(self):

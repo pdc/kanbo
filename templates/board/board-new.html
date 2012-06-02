@@ -6,6 +6,9 @@
         <p>Use this to create a new blank board to add tasks to.</p>
     <form method="post">
         {% csrf_token %}
+        {% if non_field_errors %}
+            {{ non_field_errors }}
+        {% endif %}
         {% for field in form %}
             {% if field.is_hidden %}
             {{ field }}
