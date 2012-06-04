@@ -1,0 +1,43 @@
+
+
+header h1 {
+    font-size: 3em;
+    margin: 1em 10px 0.5em;
+}
+
+#main {
+    float: left;
+    width: 720px;
+}
+
+#asides {
+    float: left;
+    width: 240px;
+}
+
+@media screen and (min-width: 1240px) {
+    #all {
+        width: 1200px; /* 15u */
+    }
+    #main {
+        width: 960px; /* 12u */
+    }
+}
+
+@media screen and (min-width: 1480px) {
+    #all {
+        width: 1440px; /* 18u */
+    }
+    #asides {
+        width: 480px; /* 6u */
+    }
+}
+
+@media screen and (min-width: 1960px) {
+    #all {
+        width: 1920px; /* 24u */
+    }
+    #main {
+        width: 1440px; /* 18u */
+    }
+}

@@ -4,10 +4,19 @@
 {% block trail %}
 {% endblock %}
 
+{% block heading %}
+    <a href="{% url user-profile owner_username=owner.username %}">{{ owner }}</a>
+    / {{ board.name }}
+    {% if board.label and board.label != board.name %}
+        ({{ board.label }})
+    {% endif %}
+{% endblock %}
+
 {% block main %}
-<section id="board">
-    <h1>{{ board.label }}</h1>
-    <p>Choose a tag to base the grid on:</p>
+<section id="board" class="main">
+    <h1>
+        </h1>
+    <p>Grids are ways of displaying the cards on this board:</p>
     <ul class="menu">
         {% for bag in bags %}
         <li>
@@ -15,6 +24,32 @@
         </li>
         {% endfor %}
     </ul>
+</section>
+<section id="board-info">
+    <h2>About {{ board.name }}</h2>
+    <p>This board contains {{ board.card_set.count }} card{{ board.card_set.count|pluralize }}.</p>
+    <p>It was created on {{ board.created|date:"j N Y" }}.</p>
+    <p>This board is visible to everybody.</p>
+</section>
+<section id="board-users">
+    <h2>Team Members</h2>
+    <ul>
+        <li>{{ board.owner }} ({{ board.owner.get_full_name }}), owner</li>
+        {% for other in collaborators %}
+        <li>{{ other }} ({{ other.get_full_name }}){% if not other.can_rearrange %}*{% endif %}</li>
+        {% endfor %}
+    </ul>
+    {% if any_cant_rearrange %}
+    <p>*Read-only</p>
+    {% endif %}
+    <form action="{% url add-user owner_username=owner.username board_name=board.name %}" method="POST">
+        {% with form=add_user_form %}
+        {% include "board/form-part.html" %}
+        {% endwith %}
+        <div class="buttons">
+            <input type="submit" value="Add User">
+        </div>
+    </form>
 </section>
 {% endblock %}
 

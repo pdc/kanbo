@@ -3,43 +3,22 @@ import datetime
 from south.db import db
 from south.v2 import SchemaMigration
 from django.db import models
-from kanboapps.board.models import Board, Card
 
 
 class Migration(SchemaMigration):
 
-    def no_dry_run():
-        return True
-
     def forwards(self, orm):
-        # Deleting field 'Card.slug'
-        db.delete_column('board_card', 'slug')
-
-        # Adding field 'Card.name'
-        db.add_column('board_card', 'name',
-                      self.gf('django.db.models.fields.SlugField')(default='card', max_length=50),
-                      keep_default=False)
-
-        # Make the card names unique.
-        for board_info in Board.objects.only('id'):
-            for i, card in enumerate(board.card_set.defer()):
-                card.name =  str(1 + i)
-                card.save()
-
-        # Adding unique constraint on 'Card', fields ['board', 'name']
-        db.create_unique('board_card', ['board_id', 'name'])
+        # Removing M2M table for field collaborators on 'Board'
+        db.delete_table('board_board_collaborators')
 
     def backwards(self, orm):
-        # Removing unique constraint on 'Card', fields ['board', 'name']
-        db.delete_unique('board_card', ['board_id', 'name'])
-
-        # Adding field 'Card.slug'
-        db.add_column('board_card', 'slug',
-                      self.gf('django.db.models.fields.SlugField')(default='card', max_length=50),
-                      keep_default=False)
-
-        # Deleting field 'Card.name'
-        db.delete_column('board_card', 'name')
+        # Adding M2M table for field collaborators on 'Board'
+        db.create_table('board_board_collaborators', (
+            ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True)),
+            ('board', models.ForeignKey(orm['board.board'], null=False)),
+            ('access', models.ForeignKey(orm['board.access'], null=False))
+        ))
+        db.create_unique('board_board_collaborators', ['board_id', 'access_id'])
 
     models = {
         'auth.group': {
@@ -71,6 +50,14 @@ class Migration(SchemaMigration):
             'user_permissions': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['auth.Permission']", 'symmetrical': 'False', 'blank': 'True'}),
             'username': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '30'})
         },
+        'board.access': {
+            'Meta': {'unique_together': "[('user', 'board')]", 'object_name': 'Access'},
+            'board': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['board.Board']"}),
+            'can_rearrange': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
+            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'joined': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
+            'user': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['auth.User']"})
+        },
         'board.bag': {
             'Meta': {'unique_together': "[('board', 'name')]", 'object_name': 'Bag'},
             'board': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['board.Board']", 'null': 'True'}),
@@ -79,11 +66,13 @@ class Migration(SchemaMigration):
         },
         'board.board': {
             'Meta': {'unique_together': "(('owner', 'name'),)", 'object_name': 'Board'},
+            'collaborators': ('django.db.models.fields.related.ManyToManyField', [], {'symmetrical': 'False', 'related_name': "'board_access_set'", 'blank': 'True', 'through': "orm['board.Access']", 'to': "orm['auth.User']"}),
             'created': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'label': ('django.db.models.fields.CharField', [], {'max_length': '200'}),
+            'is_public': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'label': ('django.db.models.fields.CharField', [], {'max_length': '200', 'blank': 'True'}),
             'modified': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'blank': 'True'}),
-            'name': ('django.db.models.fields.SlugField', [], {'max_length': '50'}),
+            'name': ('django.db.models.fields.CharField', [], {'max_length': '50', 'db_index': 'True'}),
             'owner': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['auth.User']"})
         },
         'board.card': {

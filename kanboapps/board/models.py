@@ -75,6 +75,10 @@ board_level_keywords = ['new', 'create', 'edit', 'update', 'delete', 'profile', 
 class Board(models.Model):
     """The universe of cards for one team, or group of teams."""
     owner = models.ForeignKey(User)
+    collaborators = models.ManyToManyField(User, through='Access',
+            related_name='board_access_set',
+            blank=True,
+            help_text='People who have been given access to this board (part from the owner).')
 
     name = models.CharField(max_length=50, db_index=True,
         validators=[RegexValidator(re.compile(r'^[a-z\d-]+$'), 'Must be lower-case letters a-z, digits, or hyphens'),
@@ -85,6 +89,9 @@ class Board(models.Model):
         blank=True,
         verbose_name='Display name',
         help_text='The human-readable name or one-line description for your board. Blank means use the short name.')
+    is_public = models.BooleanField(default=False,
+        verbose_name='Public board',
+        help_text='Allows anyone at all to add or rearrange cards.')
 
     created = models.DateTimeField(auto_now_add=True, editable=False)
     modified = models.DateTimeField(auto_now=True, editable=False)
@@ -102,6 +109,32 @@ class Board(models.Model):
                 ).exclude(id=self.id).exists():
             raise ValidationError('You already have a board named ‘{0}’.'.format(self.name))
 
+    def allows_rearrange(self, user):
+        if self.is_public:
+            return True
+        if not user.is_authenticated():
+            return False
+        if user == self.owner:
+            return True
+        try:
+            access = Access.objects.get(user=user, board=self)
+            return access.can_rearrange
+        except Access.DoesNotExist:
+            return False
+        return False
+
+    allows_add_card = allows_rearrange
+
+    def allow_add_remove_user(self, user):
+        if self.is_public:
+            return False # Can’t add users because everyone is invited.
+        if not user.is_authenticated():
+            return False
+        if user == self.owner:
+            return True
+        return False
+
+
     def make_grid(self, columns_def=None):
         cards = toposorted(self.card_set.all())
 
@@ -117,6 +150,22 @@ class Board(models.Model):
     def event_stream(self):
         """Return the event stream for this board."""
         return EventRepeater().get_stream(self.id)
+
+
+class Access(models.Model):
+    """Links a user to a board they have been given access to."""
+    user = models.ForeignKey(User)
+    board = models.ForeignKey(Board)
+
+    can_rearrange = models.BooleanField(default=True, help_text='Can this user rearrange the cards on this board?')
+
+    joined = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = [('user', 'board')]
+
+    def __unicode__(self):
+        return u'{0}/{1}–{2}'.format(self.board.owner.username, self.board.name, self.user.username)
 
 
 class Bag(models.Model):

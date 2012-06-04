@@ -2,7 +2,7 @@
 
 import logging
 import json
-from django.core.exceptions import ValidationError, NON_FIELD_ERRORS
+from django.core.exceptions import PermissionDenied, ValidationError, NON_FIELD_ERRORS
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse, HttpResponseRedirect
 from django.template import RequestContext
@@ -13,7 +13,8 @@ from django.contrib import messages
 from django.shortcuts import render_to_response, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
-from kanboapps.board.models import Board, Card, Bag, Tag, toposorted, rearrange_objects, EventRepeater
+from kanboapps.board.models import Board, Access, Card, Bag, Tag, toposorted, rearrange_objects, EventRepeater
+from kanboapps.board.forms import BoardForm, AccessForm
 from kanboapps.shortcuts import with_template, returns_json
 
 logger = logging.getLogger(__name__)
@@ -37,6 +38,7 @@ def that_owner_and_board(view_func):
         if hasattr(result, 'items'):
             result['owner'] = owner
             result['board'] = board
+            result['allows_rearrange'] = board.allows_rearrange(request.user)
         return result
     return wrapped_view
 
@@ -48,18 +50,13 @@ def user_profile(request, owner):
         'boards': boards,
     }
 
-
-class BoardForm(ModelForm):
-    class Meta:
-        model = Board
-        exclude = ['owner']
-
-
 @login_required
-@with_template('board/board-new.html')
+@with_template('board/new-board.html')
 @that_owner
 def board_new(request, owner):
-    # XXX check user==owner
+    if owner != request.user:
+        messages.info(request, 'You can’t create a board in someone else’s profile.')
+        return redirect('new-board', owner_username=request.user.username)
     if request.method == 'POST':
         form = BoardForm(request.POST, instance=Board(owner=owner))
         if form.is_valid():
@@ -79,15 +76,44 @@ def board_new(request, owner):
 @with_template('board/board-detail.html')
 @that_owner_and_board
 def board_detail(request, owner, board):
-    board_count = Board.objects.filter(owner=owner).count()
-    cards = toposorted(board.card_set.all())
+    #cards = toposorted(board.card_set.all())
+    collaborators = board.collaborators.all()
+    for x in collaborators:
+        x.can_rearrange = board.allows_rearrange(x)
     return {
-        'many_boards': board_count > 1,
         'board': board,
-        'cards': cards,
-        'order': ' '.join(str(x.id) for x in cards),
+        'collaborators': collaborators,
+        'any_cant_rearrange': any(not x.can_rearrange for x in collaborators),
         'bags': board.bag_set.all(),
+        'add_user_form': AccessForm(instance=Access(board=board)),
     }
+
+@with_template('board/add-user.html')
+@that_owner_and_board
+def add_user(request, owner, board):
+    if not board.allow_add_remove_user(request.user):
+        messages.info(request, 'You can’t add users to this board.')
+        return redirect('board-detail', owner_username=owner.username, board_name=board.name)
+
+    if request.method == 'POST':
+        form = AccessForm(request.POST, instance=Access(board=board))
+        if form.is_valid():
+            try:
+                access = Access.objects.get(user=form.cleaned_data['user'], board=board)
+                access.can_rearrange = form.cleaned_data['can_rearrange']
+                access.save()
+                messages.info(request, '{0} was already a member.'.format(access.user.username))
+            except Access.DoesNotExist:
+                access = form.save()
+            return redirect('board-detail', owner_username=owner.username, board_name=board.name)
+    else:
+        form = AccessForm(instance=Access(board=board)) # blank form
+    return {
+        'form': form,
+        'non_field_errors': form.errors.get(NON_FIELD_ERRORS),
+    }
+
+
 
 @with_template('board/grid.html')
 @that_owner_and_board
@@ -137,6 +163,10 @@ def rearrangement_ajax(request, board_id, col_name):
 
 def process_rearrangement(request, board, col_name):
     """Code common to the 2 rearrangement views."""
+    # Check this user has permission.
+    if not board.allows_rearrange(request.user):
+        raise PermissionDenied('You cannot rearrange this board')
+
     event  = {
         'type': 'rearrange',
         'board': board.id,

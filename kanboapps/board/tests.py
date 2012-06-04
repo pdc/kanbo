@@ -12,6 +12,7 @@ from mock import patch
 import redis
 import fakeredis
 import json
+from django.contrib.auth.models import User, AnonymousUser
 from kanboapps.board.models import *
 from kanboapps.board.views import BoardForm
 from kanboapps.board import models
@@ -108,11 +109,11 @@ class TestRearrangeOrderedStories(TestCase):
         for x, y in zip(self.cards, self.cards[1:]):
             x.succ = y
             x.save()
-        self.cards_by_name = dict((x.name, x) for x in self.cards)
-        self.id_by_name = dict((x.name, x.id) for x in self.cards)
+        self.cards_name = dict((x.name, x) for x in self.cards)
+        self.id_name = dict((x.name, x.id) for x in self.cards)
 
     def rearrange_and_check(self, order_names, expected_names):
-        order = [(self.id_by_name[x] if x else None) for x in order_names]
+        order = [(self.id_name[x] if x else None) for x in order_names]
         rearrange_objects(Card.objects, order)
 
         try:
@@ -224,14 +225,17 @@ class BoardFixtureMixin(object):
     def create_board_and_accoutrements(self):
         # Create 16 cards
         self.owner = User.objects.create(username='derpyhooves')
+        self.owner.set_password('jubilee')
+        self.owner.save()
+
         self.board = self.owner.board_set.create(name='z', label='Z')
         self.cards = [self.board.card_set.create(board=self.board, label=x, name=x)
                 for x in 'abcdefghijklmnop']
         for x, y in zip(self.cards, self.cards[1:]):
             x.succ = y
             x.save()
-        self.cards_by_name = dict((x.name, x) for x in self.cards)
-        self.id_by_name = dict((x.name, x.id) for x in self.cards)
+        self.cards_name = dict((x.name, x) for x in self.cards)
+        self.id_name = dict((x.name, x.id) for x in self.cards)
 
         # Create some bags
         self.bags = [self.board.bag_set.create(name=x) for x in 'qtw']
@@ -330,7 +334,7 @@ class TestCardReplacingTags(TestCase, BoardFixtureMixin):
         with self.assertRaises(Tag.DoesNotExist):
             self.cards[0].get_tag(self.bags[0])
 
-    def test_replace_one_existing_tag_by_id(self):
+    def test_replace_one_existing_tag_id(self):
         self.cards[0].replace_tags(
             axes=[self.bags[0].id],
             tags=[self.tagss[0][1].id])
@@ -418,7 +422,10 @@ class TestEventsAreSaved(TestCase, BoardFixtureMixin, FakeRedisMixin):
         self.create_board_and_accoutrements()
         self.client = Client()
 
+
     def test_rearrangement_creates_events(self):
+        self.client.login(username='derpyhooves', password='jubilee')
+
         params = {
             'order': '2 1',
             'dropped': '2',
@@ -438,6 +445,72 @@ class TestEventsAreSaved(TestCase, BoardFixtureMixin, FakeRedisMixin):
             'tags': [self.tagss[0][1].id],
         }
         self.assertEqual([expected], json.loads(jevs))
+
+    def test_when_not_owner_rearrangement_is_forbidden(self):
+        other = User.objects.create(username='eve')
+        other.set_password('7wi1i8h7')
+        other.save()
+
+        self.client.login(username='eve', password='7wi1i8h7')
+
+        params = {
+            'order': '2 1',
+            'dropped': '2',
+             'tags': str(self.tagss[0][1].id),
+         }
+        response = self.client.post('/boards/1/grids/q/rearrangement', params)
+
+        self.assertEqual(403, response.status_code)
+
+
+class TestBoardMembership(TestCase):
+    def setUp(self):
+        self.alice = User.objects.create(username='Alice')
+        self.bob = User.objects.create(username='Bob')
+        self.charley = User.objects.create(username='Charley')
+        self.dick = User.objects.create(username='Dick')
+
+        self.subject = self.alice.board_set.create(name='derp')
+
+        Access.objects.create(user=self.bob, board=self.subject)
+        Access.objects.create(user=self.dick, board=self.subject, can_rearrange=False)
+
+    def test_fixture(self):
+        pass
+
+    def test_alice_can_rearrange_board(self):
+        self.assertTrue(self.subject.allows_rearrange(self.alice))
+
+    def test_bob_can_rearrange_board(self):
+        self.assertTrue(self.subject.allows_rearrange(self.bob))
+
+    def test_charley_cannot_rearrange_board(self):
+        self.assertFalse(self.subject.allows_rearrange(self.charley))
+
+    def test_dick_cannot_rearrange_board(self):
+        self.assertFalse(self.subject.allows_rearrange(self.dick))
+
+    def test_anonymous_cannot_rearrange_board(self):
+        anon = AnonymousUser()
+        self.assertFalse(self.subject.allows_rearrange(anon))
+
+
+class TestPublicBoardMembership(TestCase):
+    def setUp(self):
+        self.alice = User.objects.create(username='Alice')
+        self.bob = User.objects.create(username='Bob')
+
+        self.subject = self.bob.board_set.create(name='yup', is_public=True)
+
+    def test_is_rearrangeable_by_owner(self):
+        self.assertTrue(self.subject.allows_rearrange(self.bob))
+
+    def test_is_rearrangeable_by_others(self):
+        self.assertTrue(self.subject.allows_rearrange(self.alice))
+
+    def test_is_rearrangeable_by_anon(self):
+        self.assertTrue(self.subject.allows_rearrange(AnonymousUser()))
+
 
 
 

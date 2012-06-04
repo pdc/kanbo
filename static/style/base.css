@@ -50,28 +50,24 @@ section h2 {
     line-height: 1;
     font-family: "GoudyBookletter1911Regular", serif;
     font-weight: normal;
+}
+
+.wordmark,
+section h1,
+section h2  {
+    font-family: "GoudyBookletter1911Regular", serif;
     text-transform: uppercase;
     letter-spacing: 0.1em;
 }
 
 header h1 {
-    font-size: 3em;
+    font-size: 2em;
     margin: 1em 10px 0.5em;
 }
 
 #all {
-    width: 960px;
+    width: 960px; /* 12u */
     margin: 0 auto;
-}
-
-#main {
-    float: left;
-    width: 720px;
-}
-
-#asides {
-    float: left;
-    width: 240px;
 }
 
 ul.messages {
@@ -104,8 +100,9 @@ ul.messages {
 }
 
 section {
+    display: block;
     float: left;
-    width: 320px;
+    width: 240px;
     margin-top: 1px;
     padding-top: 1px;
 
@@ -113,7 +110,7 @@ section {
 }
 
 section.main {
-    width: 480px;
+    width: 480px; /* 6u */
 }
 
 #about {
@@ -143,15 +140,13 @@ section h1 {
 
 section h2 {
     font-size: 1.44em;
-    margin: 1em 10px 0.5em;
+    margin: 1.75em 10px 0.5em;
 
     color: #D67353;
 }
 
 section p {
-    margin: 1.4em 10px;
-
-
+    margin: 0.7em 10px;
 }
 
 section li {
@@ -230,14 +225,18 @@ section form {
 }
 
 form>p {
-    margin: 0 0 0.7em 0;
+    margin: 0 0 0.35em 0;
 }
 
 form>div {
     padding: 0.35em 0;
 }
 
-form .buttons {
+ form .buttons {
+    margin: 0.7em 0 0;
+}
+
+.main form .buttons {
     margin: 0.7em 0 0 160px;
 }
 
@@ -245,7 +244,7 @@ form .has-errors {
     /* background-color: rgba(233, 137, 85, 0.5); */
 }
 
-form label {
+.main form label {
     float: left;
     margin: 0 20px 0 0;
     width: 140px;
@@ -256,18 +255,24 @@ form label {
 form small {
     font-size: 0.85em; /* If the main size is 13px this is 11px */
     display: block;
-    margin: 0.3em 0 0 160px;
+    margin: 0.3em 0 0 0;
 
     line-height: 1.2;
 }
 
+
 form .errorlist {
-    margin: 0 0 0 160px;
+    margin: 0;
     color: #D67353;
 }
 
 form .errorlist li {
     margin: 0.15em 0 0;
+}
+
+.main form small,
+.main form .errorlist {
+    margin-left: 160px;
 }
 
 input[type="text"] {
@@ -363,5 +368,25 @@ aside li {
     .log-in-with-github a {
         background-image: url(auth-github-2x.png);
         background-size: 16px 16px;
+    }
+}
+
+/* Adjustments for different width screens */
+
+@media screen and (min-width: 1240px) {
+    #all {
+        width: 1200px; /* 15u */
+    }
+}
+
+@media screen and (min-width: 1480px) {
+    #all {
+        width: 1440px; /* 18u */
+    }
+}
+
+@media screen and (min-width: 1960px) {
+    #all {
+        width: 1920px; /* 24u */
     }
 }

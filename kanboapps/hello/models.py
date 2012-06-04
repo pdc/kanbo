@@ -22,6 +22,8 @@ class Profile(models.Model):
     image_url = models.URLField(max_length=400, null=True, blank=True, help_text='User picture for this user.')
     created_at = models.DateTimeField(null=True, help_text='When provider reports user was created.')
 
+    def __unicode__(self):
+        return self.user.username
 
 def create_profile_if_missing(user):
     """Given a user object, return that user’s profile.

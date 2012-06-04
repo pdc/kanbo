@@ -18,6 +18,7 @@
                 {% endif %}
                 {% block trail %}{% endblock %}
             </p>
+            <h1>{% block heading %}KANBOOO{% endblock %}</h1>
         </header>
         <div id="all">
             <div id="main">
@@ -32,17 +33,7 @@
                 {% endblock %}
                 {% block main %}{% endblock %}
             </div>
-            <div id="asides">
-                {% block auth %}{% include "hello/auth-part.html" %}{% endblock %}
-                <aside>
-                    <ul>
-                        <li>
-                            <a href="https://github.com/pdc/kanbo">Code on GitHub</a>
-                        </li>
-                    </ul>
-                </aside>
-                {% block asides %}{% endblock %}
-            </div>
+            {% block auth %}{% include "hello/auth-part.html" %}{% endblock %}
         </div>
         {% block javascripts %}{% endblock %}
     </body>

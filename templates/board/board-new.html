@@ -5,24 +5,7 @@
     <h1>New Board</h1>
         <p>Use this to create a new blank board to add tasks to.</p>
     <form method="post">
-        {% csrf_token %}
-        {% if non_field_errors %}
-            {{ non_field_errors }}
-        {% endif %}
-        {% for field in form %}
-            {% if field.is_hidden %}
-            {{ field }}
-            {% else %}
-            <div{% if field.errors %} class="has-errors"{% endif %}>
-                {{ field.label_tag }}
-                {{ field }}
-                {% if field.help_text %}
-                <small>{{ field.help_text }}</small>
-                {% endif %}
-                {{ field.errors }}
-            </div>
-            {% endif %}
-        {% endfor %}
+        {% include "board/form-part.html" %}
         <div class="buttons">
             <input type="submit" value="Create board" />
         </div>

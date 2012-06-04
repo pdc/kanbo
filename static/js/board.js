@@ -53,63 +53,69 @@ var CardGrid = (function ($) {
         pollForUpdates(pendingPollUrl);
     }
 
+    function addMessage(msg) {
+        alert(msg);
+    }
+
+    function enableRearrange(ajaxUrl) {
+        // Make the card bins be sortable with drag-and-drop.
+        $('.card-bin').sortable({
+            connectWith: '.card-bin',
+            update: function (event, ui) {
+                // Report the change to the server.
+                var droppedID = ui.item.attr('id').replace(/^card-/, '');
+                var eltIDs = $(this).sortable('toArray');
+                var cardIDs = [];
+
+                for (var i = 0; i < eltIDs.length; ++i) {
+                    cardIDs.push(eltIDs[i].replace(/^card-/, ''));
+                }
+
+                // Turns out MSIE does not support Array.indexOf.
+                var droppedIndex  = cardIDs.length;
+                while(--droppedIndex >= 0) {
+                    if  (cardIDs[droppedIndex] == droppedID) {
+                        break;
+                    }
+                }
+                if (droppedIndex >= 0) {
+                    var succID = (droppedIndex + 1 < cardIDs.length ? cardIDs[droppedIndex + 1] : '-');
+                    var abbreviatedIDs = [droppedID, succID];
+
+                    var form$ = $(this).parent().find('form');
+                    if (ajaxUrl) {
+                        var data = {}
+                        var es = $('input[type=hidden]', form$).get();
+                        for (var i = 0; i < es.length; ++i) {
+                            data[es[i].name] = es[i].value;
+                        }
+                        data[ 'order'] =  abbreviatedIDs.join(' ');
+                        data['dropped'] = droppedID;
+                        ui.item.addClass('ajax-loading');
+                        $.ajax(ajaxUrl, {
+                            type: 'POST',
+                            dataType: 'json',
+                            data: data
+                        }).error(function (jqXHT) {
+                            CardGrid.addMessage('Failed to store the new position of the card on the server: refresh this page to see their real positions.')
+                        }).always(function () {
+                            ui.item.removeClass('ajax-loading');
+                        });
+                    } else {
+                        $('input[name=order]', form$).val(abbreviatedIDs.join(' '));
+                        $('input[name=dropped]', form$).val(droppedID);
+                    }
+                }
+            }
+        })
+        .disableSelection()
+        .parent().find('form').hide();
+    }
+
     return {
-        pollForUpdates: pollForUpdates
+        enableRearrange: enableRearrange,
+        pollForUpdates: pollForUpdates,
+        addMessage: addMessage
     };
 })(jQuery);
 
-$(function () {
-    var ajaxEnabled = true;
-
-    // Make the card bins be sortable with drag-and-drop.
-    $('.card-bin').sortable({
-        connectWith: '.card-bin',
-        update: function (event, ui) {
-            // Report the change to the server.
-            var droppedID = ui.item.attr('id').replace(/^card-/, '');
-            var eltIDs = $(this).sortable('toArray');
-            var cardIDs = [];
-
-            for (var i = 0; i < eltIDs.length; ++i) {
-                cardIDs.push(eltIDs[i].replace(/^card-/, ''));
-            }
-
-            // Turns out MSIE does not support Array.indexOf.
-            var droppedIndex  = cardIDs.length;
-            while(--droppedIndex >= 0) {
-                if  (cardIDs[droppedIndex] == droppedID) {
-                    break;
-                }
-            }
-            if (droppedIndex >= 0) {
-                var succID = (droppedIndex + 1 < cardIDs.length ? cardIDs[droppedIndex + 1] : '-');
-                var abbreviatedIDs = [droppedID, succID];
-
-                var form$ = $(this).parent().find('form');
-                if (ajaxEnabled) {
-                    var url = $(this).attr('data-ajax-url');
-                    var data = {}
-                    var es = $('input[type=hidden]', form$).get();
-                    for (var i = 0; i < es.length; ++i) {
-                        data[es[i].name] = es[i].value;
-                    }
-                    data[ 'order'] =  abbreviatedIDs.join(' ');
-                    data['dropped'] = droppedID;
-                    ui.item.addClass('ajax-loading');
-                    $.ajax(url, {
-                        type: 'POST',
-                        dataType: 'json',
-                        data: data
-                    }).always(function () {
-                        ui.item.removeClass('ajax-loading');
-                    });
-                } else {
-                    $('input[name=order]', form$).val(abbreviatedIDs.join(' '));
-                    $('input[name=dropped]', form$).val(droppedID);
-                }
-            }
-        }
-    })
-    .disableSelection()
-    .parent().find('form').hide();
-});
