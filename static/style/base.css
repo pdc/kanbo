@@ -74,6 +74,7 @@ ul.messages {
     width: 640px;
     float: left;
     margin: -0.7em 0 1.4em 0;
+    position: relative;
 
     background-color: #FFF;
     border-radius: 7px;
@@ -97,6 +98,19 @@ ul.messages {
 
 .messages li.error {
     background-position: left -64px;
+}
+
+.messages a {
+    display: block;
+    position: absolute;
+    right: 4px;
+    top: 4px;
+    height: 12px;
+    width: 12px;
+    overflow: hidden;
+
+    text-indent: -1000px;
+    background: url(close.png) right top no-repeat;
 }
 
 section {
@@ -129,6 +143,10 @@ section.main {
     font-size: 1.23em;
     color: #D67353;
     font-weight: bold;
+}
+
+#board {
+    clear: both;
 }
 
 section h1 {

@@ -89,4 +89,9 @@
     CardGrid.pollForUpdates('{% url events-ajax board_id=board.id start_seq=next_seq %}');
 </script>
 {% endif %}
+{% if messages %}
+<script type="text/javascript">
+    CardGrid.addCloseButtonToMessages();
+</script>
+{% endif %}
 {% endblock %}
