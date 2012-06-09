@@ -6,9 +6,36 @@
     <span>></span>
 {% endblock %}
 
+{% block heading %}New card{% endblock %}
+
 {% block main %}
-<section id="new-card">
-    <h1>Add Stories to {{ board.label }}</h1>
+<section id="new-card" class="main">
+    <p>
+        Use this form to add a card to the board.
+    </p>
+    <form method="POST">
+        {% include "board/form-part.html" %}
+        <div class="buttons">
+            <input type="submit" value="Create Card">
+            or <a href="{% url card-grid owner_username=owner.username board_name=board.name col_name=col_name %}">cancel</a>
+        </div>
+    </form>
+</section>
+<section id="hint">
+    <p>
+        The short name  uniquely identifies the new card on the board.
+        It can just be a number, or it might be a code from some
+        other tracker.
+    </p>
+    <p>
+        The card label is generally the one-sentence statement of the task or story
+        the card represents.
+    </p>
+</section>
+
+{% comment %}
+<section id="new-cards">
+    <h2>Add many cards at once</h2>
     <p>
         Enter one or more cards in to the box, one per line.
     </p>
@@ -21,4 +48,5 @@
     </form>
     {% endif %}
 </section>
+{% endcomment %}
 {% endblock %}

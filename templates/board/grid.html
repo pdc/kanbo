@@ -14,7 +14,7 @@
     <ul class="menu">
         {% if user == owner %}
         <li>
-            <a href="{% url new-card owner_username=board.owner.username board_name=board.name col_name=col_name %}">Add cards</a>
+            <a href="{% url new-card owner_username=board.owner.username board_name=board.name col_name=col_name %}">New card</a>
         </li>
         {% endif %}
         {% for bag in bags %}

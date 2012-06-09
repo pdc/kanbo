@@ -14,7 +14,7 @@ from django.shortcuts import render_to_response, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from kanboapps.board.models import Board, Access, Card, Bag, Tag, toposorted, rearrange_objects, EventRepeater
-from kanboapps.board.forms import BoardForm, AccessForm
+from kanboapps.board.forms import BoardForm, CardForm, AccessForm
 from kanboapps.shortcuts import with_template, returns_json
 
 logger = logging.getLogger(__name__)
@@ -113,8 +113,6 @@ def add_user(request, owner, board):
         'non_field_errors': form.errors.get(NON_FIELD_ERRORS),
     }
 
-
-
 @with_template('board/grid.html')
 @that_owner_and_board
 def card_grid(request, owner, board, col_name):
@@ -210,8 +208,17 @@ def process_rearrangement(request, board, col_name):
 @with_template('board/new-card.html')
 @that_owner_and_board
 def new_card(request, owner, board, col_name):
+    if request.method == 'POST':
+        form = CardForm(request.POST, instance=Card(board=board))
+        if form.is_valid():
+            card = form.save()
+            return redirect(card_grid, owner_username=owner.username, board_name=board.name, col_name=col_name)
+    else:
+        default_name = str(1 + board.card_set.count())
+        form = CardForm(instance=Card(board=board, name=default_name))
     return {
         'col_name': col_name,
+        'form': form,
     }
 
 @with_template('board/new-card.html')
@@ -233,7 +240,6 @@ def create_card(request, owner, board, col_name):
             return redirect(card_grid, owner_username=owner.username, board_name=board.name, col_name=col_name)
         # If failed, fall through to showing form again:
     return {
-        'board': board,
         'col_name': col_name,
         'text': text,
     }
