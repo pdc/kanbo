@@ -223,7 +223,7 @@ def new_card(request, owner, board, col_name):
 
 @with_template('board/new-card.html')
 @that_owner_and_board
-def create_card(request, owner, board, col_name):
+def create_many_cards(request, owner, board, col_name):
     text = None
     logger.debug('Method = {0!r}'.format(request.method))
     if request.method == 'POST':

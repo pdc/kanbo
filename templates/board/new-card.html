@@ -41,7 +41,7 @@
     </p>
 
     {%if user == owner %}
-    <form action="{% url create-card owner_username=owner.username board_name=board.name col_name=col_name %}" method="post">
+    <form action="{% url create-many-cards owner_username=owner.username board_name=board.name col_name=col_name %}" method="post">
         {% csrf_token %}
         <textarea name="cards">{{ text }}</textarea>
         <input type="submit" value="Add cards" />
