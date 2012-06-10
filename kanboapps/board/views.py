@@ -14,7 +14,7 @@ from django.shortcuts import render_to_response, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from kanboapps.board.models import Board, Access, Card, Bag, Tag, toposorted, rearrange_objects, EventRepeater
-from kanboapps.board.forms import BoardForm, CardForm, AccessForm
+from kanboapps.board.forms import BoardForm, card_form_for_board, AccessForm
 from kanboapps.shortcuts import with_template, returns_json
 
 logger = logging.getLogger(__name__)
@@ -121,6 +121,7 @@ def card_grid(request, owner, board, col_name):
 
     is_polling_enabled = settings.EVENT_REPEATER.get('POLL')
     next_seq = board.event_stream().next_seq() if is_polling_enabled else None
+
     return {
         'board': board,
         'grid': grid,
@@ -128,6 +129,7 @@ def card_grid(request, owner, board, col_name):
         'col_tags': [t for b in grid.rows[0].bins if b.tags for t in b.tags],
         'is_polling_enabled': is_polling_enabled,
         'next_seq': next_seq,
+        'new_card_form': card_form_for_board(board),
     }
 
 @with_template('board/grid.html')
@@ -209,13 +211,12 @@ def process_rearrangement(request, board, col_name):
 @that_owner_and_board
 def new_card(request, owner, board, col_name):
     if request.method == 'POST':
-        form = CardForm(request.POST, instance=Card(board=board))
+        form = card_form_for_board(board, request.POST)
         if form.is_valid():
             card = form.save()
             return redirect(card_grid, owner_username=owner.username, board_name=board.name, col_name=col_name)
     else:
-        default_name = str(1 + board.card_set.count())
-        form = CardForm(instance=Card(board=board, name=default_name))
+        form = card_form_for_board(board)
     return {
         'col_name': col_name,
         'form': form,

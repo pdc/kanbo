@@ -12,9 +12,9 @@
 {% block main %}
 <section id="board">
     <ul class="menu">
-        {% if user == owner %}
+        {% if allows_rearrange %}
         <li>
-            <a href="{% url new-card owner_username=board.owner.username board_name=board.name col_name=col_name %}">New card</a>
+            <a id="new-card-link" href="#new-card-form">New card</a>
         </li>
         {% endif %}
         {% for bag in bags %}
@@ -70,6 +70,18 @@
         </tbody>
     </table>
 </section>
+{% if allows_rearrange %}
+<section id="editor">
+    <form id="new-card-form" action="{% url new-card owner_username=owner.username board_name=board.name col_name=col_name %}" method="POST">
+        {% with form=new_card_form %}
+            {% include "board/form-part.html" %}
+            <div class="buttons">
+                <input type="submit" value="Create Card">
+            </div>
+        {% endwith %}
+    </form>
+</section>
+{% endif %}
 {% endblock %}
 
 {% block javascripts %}
@@ -81,6 +93,7 @@
 <script type="text/javascript">
     $(function () {
         CardGrid.enableRearrange('{% url rearrangement-ajax board_id=board.id col_name=col_name %}');
+        CardGrid.makeNewCardButtonMagic();
     });
 </script>
 {% endif %}

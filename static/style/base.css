@@ -146,6 +146,7 @@ section.main {
 }
 
 #board {
+    width: auto;
     clear: both;
 }
 
@@ -178,7 +179,7 @@ section li {
 }
 
 .card-bin li {
-    margin: 0.3em 9px 0.4em 10px;
+    margin: 0.3em 10px 0.4em 9px;
     padding: 0.3em 9px;
     height: 5em;
     overflow: hidden;
@@ -214,6 +215,12 @@ section li {
 .card-bin q::before,
 .card-bin q::after {
     content: none;
+}
+
+#card-grid {
+    margin: 0;
+    padding: 0;
+    border-collapse: collapse;
 }
 
 #card-grid th {
@@ -278,7 +285,6 @@ form small {
     line-height: 1.2;
 }
 
-
 form .errorlist {
     margin: 0;
     color: #D67353;
@@ -299,6 +305,41 @@ input[type="text"] {
 
 input[maxlength="50"] {
     width: 136px;
+}
+
+
+section form#new-card-form {
+    margin: 1.4em 10px;
+    padding: 0 9px;
+
+    border: 1px outset #E9B955;
+    border-radius: 0.35em;
+    box-shadow: rgba(0, 0, 0, 0.5) 2px 2px 5px;
+}
+
+#new-card-form label {
+    display: block;
+    color: rgba(0, 0, 0, 0.5);
+}
+
+#new-card-form small {
+    display: none;
+}
+
+#new-card-form :hover small {
+    position: absolute;
+    display: block;
+    padding: 0.3em 5px;
+
+    background: #FFF;
+    border: 1px solid #007F88;
+}
+
+#new-card-form input[type="text"] {
+    width: 196px;
+}
+#new-card-form .buttons {
+    margin: 0 0 0.35em 0;
 }
 
 aside li {

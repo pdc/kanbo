@@ -134,7 +134,6 @@ class Board(models.Model):
             return True
         return False
 
-
     def make_grid(self, columns_def=None):
         cards = toposorted(self.card_set.all())
 

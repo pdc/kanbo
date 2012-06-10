@@ -124,8 +124,20 @@ var CardGrid = (function ($) {
         });
     }
 
+    function makeNewCardButtonMagic() {
+        var form = $('#new-card-form').remove();
+        $('#new-card-link').click(function (event) {
+            var cell =  $('#card-grid td').get(0);
+            form.appendTo(cell);
+            form.slideDown();
+            $('#id_label').focus();
+        });
+
+    }
+
     return {
         addCloseButtonToMessages: addCloseButtonToMessages,
+        makeNewCardButtonMagic: makeNewCardButtonMagic,
         enableRearrange: enableRearrange,
         pollForUpdates: pollForUpdates,
         addMessage: addMessage
