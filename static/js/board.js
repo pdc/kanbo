@@ -130,9 +130,17 @@ var CardGrid = (function ($) {
             var cell =  $('#card-grid td').get(0);
             form.appendTo(cell);
             form.slideDown();
+            $('a', buttons).click(function (ev) {
+                form.remove();
+            });
             $('#id_label').focus();
         });
-
+        var buttons = form.find('.buttons');
+        $('<span>', {text: 'or '}).appendTo(buttons);
+        $('<a/>', {
+            href: '#menu',
+            text: 'Cancel',
+        }).appendTo(buttons);
     }
 
     return {
