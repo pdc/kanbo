@@ -152,3 +152,5 @@ var CardGrid = (function ($) {
     };
 })(jQuery);
 
+$('body').removeClass('no-js').addClass('js');
+

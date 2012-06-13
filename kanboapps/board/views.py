@@ -14,7 +14,7 @@ from django.shortcuts import render_to_response, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from kanboapps.board.models import Board, Access, Card, Bag, Tag, toposorted, rearrange_objects, EventRepeater
-from kanboapps.board.forms import BoardForm, card_form_for_board, AccessForm
+from kanboapps.board.forms import BoardForm, card_form_for_board, CardForm, AccessForm
 from kanboapps.shortcuts import with_template, returns_json
 
 logger = logging.getLogger(__name__)
@@ -53,7 +53,7 @@ def user_profile(request, owner):
 @login_required
 @with_template('board/new-board.html')
 @that_owner
-def board_new(request, owner):
+def new_board(request, owner):
     if owner != request.user:
         messages.info(request, 'You can’t create a board in someone else’s profile.')
         return redirect('new-board', owner_username=request.user.username)
@@ -220,6 +220,25 @@ def new_card(request, owner, board, col_name):
     return {
         'col_name': col_name,
         'form': form,
+        'non_field_errors': form.errors.get(NON_FIELD_ERRORS),
+    }
+
+@login_required
+@with_template('board/edit-card.html')
+@that_owner_and_board
+def edit_card(request, owner, board, col_name, card_name):
+    card = get_object_or_404(Card, board=board, name=card_name)
+    if request.method == 'POST':
+        form = CardForm(request.POST, instance=card)
+        if form.is_valid():
+            form.save()
+            return redirect(card_grid, owner_username=owner.username, board_name=board.name, col_name=col_name)
+    else:
+        form = CardForm(instance=card)
+    return {
+        'col_name': col_name,
+        'form': form,
+        'non_field_errors': form.errors.get(NON_FIELD_ERRORS),
     }
 
 @with_template('board/new-card.html')

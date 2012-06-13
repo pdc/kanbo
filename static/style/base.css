@@ -217,6 +217,19 @@ section li {
     content: none;
 }
 
+/* Cards are links for the sake of non-JS editong */
+.card-bin a {
+    display: block;
+    color: inherit;
+    text-decoration: none;
+}
+
+.no-js .card-bin a:hover q,
+.no-js .card-bin a:active q {
+    color: #D67353;
+    text-decoration: underline;
+}
+
 #card-grid {
     margin: 0;
     padding: 0;

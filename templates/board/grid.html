@@ -11,7 +11,7 @@
 
 {% block main %}
 <section id="board">
-    <ul class="menu">
+    <ul class="menu" id="menu">
         {% if allows_rearrange %}
         <li>
             <a id="new-card-link" href="#new-card-form">New card</a>
@@ -53,8 +53,15 @@
                     <ul id="{{ bin.element_id }}" class="card-bin">
                         {% for card in bin.cards %}
                         <li id="card-{{ card.id }}">
+                            {% if allows_rearrange %}
+                            <a href="{% url edit-card owner_username=owner.username board_name=board.name col_name=col_name card_name=card.name %}">
+                                <b>{{ card.name }}</b>
+                                <q>{{ card.label }}</q>
+                            </a>
+                            {% else %}
                             <b>{{ card.name }}</b>
                             <q>{{ card.label }}</q>
+                            {% endif %}
                             {% for tag in card.tag_set.all %}
                                 {% if tag.bag.name != col_name %}
                                 <i>{{ tag }}</i>

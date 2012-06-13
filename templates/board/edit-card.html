@@ -1,0 +1,32 @@
+{% extends "board/base.html" %}
+{% block title %}{{ board.label }}{% endblock %}
+
+{% block trail %}
+    <a href="{% url card-grid owner_username=owner.username board_name=board.name col_name=col_name %}">{{ board.label }}</a>
+    <span>></span>
+{% endblock %}
+
+{% block heading %}Edit card{% endblock %}
+
+{% block main %}
+<section id="new-card" class="main">
+    <form method="POST">
+        {% include "board/form-part.html" %}
+        <div class="buttons">
+            <input type="submit" value="Save Changes">
+            or <a href="{% url card-grid owner_username=owner.username board_name=board.name col_name=col_name %}">cancel</a>
+        </div>
+    </form>
+</section>
+<section id="hint">
+    <p>
+        The short name  uniquely identifies the new card on the board.
+        It can just be a number, or it might be a code from some
+        other tracker.
+    </p>
+    <p>
+        The card label is generally the one-sentence statement of the task or story
+        the card represents.
+    </p>
+</section>
+{% endblock %}
