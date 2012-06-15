@@ -2,7 +2,10 @@
 
 header h1 {
     font-size: 3em;
-    margin: 1em 10px 0.5em;
+    padding: 1em 10px 0.25em 120px;
+    margin: 0;
+
+    background: url(logo2-96x64.png) 10px 15px no-repeat;
 }
 
 #main {
