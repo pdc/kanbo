@@ -268,12 +268,15 @@ class BoardFixtureMixin(object):
             self.assertEqual(bin1.cards, bin2.cards)
 
 
-class TestBoard(TestCase, BoardFixtureMixin):
+class TestUrls(TestCase, BoardFixtureMixin):
     def setUp(self):
         self.create_board_and_accoutrements()
 
-    def test_has_absolute_url(self):
+    def test_board_has_absolute_url(self):
         self.assertEqual('/derpyhooves/z/grids/q', self.board.get_absolute_url())
+
+    def test_bag_has_new_tag_url(self):
+        self.assertEqual('/derpyhooves/z/bags/q/tags/new', self.bags[0].get_new_tag_url())
 
 
 class TestGrid(TestCase, BoardFixtureMixin):

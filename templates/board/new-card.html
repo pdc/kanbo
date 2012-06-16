@@ -1,10 +1,5 @@
 {% extends "board/base.html" %}
-{% block title %}{{ board.label }}{% endblock %}
-
-{% block trail %}
-    <a href="{% url card-grid owner_username=owner.username board_name=board.name col_name=col_name %}">{{ board.label }}</a>
-    <span>></span>
-{% endblock %}
+{% block title %}New card - {{ board.ownber.username }}/{{ board.name }}{% endblock %}
 
 {% block heading %}New card{% endblock %}
 

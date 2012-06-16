@@ -31,7 +31,10 @@ from django.contrib.auth.models import User
 logger = logging.getLogger(__name__)
 
 class Grid(object):
-    """Represents a 2d presentation of cards."""
+    """Represents a 2d presentation of cards.
+
+    Not stored in the db, but constructed on demand.
+    """
     def __init__(self, rows):
         self.rows = rows
 
@@ -112,6 +115,13 @@ class Board(models.Model):
             'col_name': self.bag_set.all()[0].name,
         }
 
+    @models.permalink
+    def get_detail_url(self):
+        return 'board-detail', (), {
+            'owner_username': self.owner.username,
+            'board_name': self.name,
+        }
+
     def clean(self):
         """Called as part of validating a form creating an instance of this model."""
         super(Board, self).clean()
@@ -188,6 +198,22 @@ class Bag(models.Model):
 
     def __unicode__(self):
         return self.name
+
+    @models.permalink
+    def get_absolute_url(self):
+        return 'bag-detail', (), {
+            'owner_username': self.board.owner.username,
+            'board_name': self.board.name,
+            'bag_name': self.name,
+        }
+
+    @models.permalink
+    def get_new_tag_url(self):
+        return 'new-tag', (), {
+            'owner_username': self.board.owner.username,
+            'board_name': self.board.name,
+            'bag_name': self.name,
+        }
 
 
 class Tag(models.Model):

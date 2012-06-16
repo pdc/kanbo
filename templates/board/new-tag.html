@@ -1,0 +1,35 @@
+{% extends "board/base.html" %}
+{% block title %}New tag - {{ board.owner.username }}/{{ board.name }}{% endblock %}
+
+{% block details-tab %}
+<strong>Details</strong>
+{% endblock %}
+
+{% block heading %}New card{% endblock %}
+
+{% block main %}
+<section id="new-card" class="main">
+    <p>
+        Use this form to add a possible value for {{ bag.name }}.
+    </p>
+    <form method="POST">
+        {% include "board/form-part.html" %}
+        <div class="buttons">
+            <input type="submit" value="Create Card">
+            or <a href="{{ board.get_detail_url }}">cancel</a>
+        </div>
+    </form>
+</section>
+<section id="hint">
+    <p>
+        Kanbo uses the term <i>tag</i> to refer to any valye used to classify
+        cards in Kanbo. Tags an be used as the values for columns or rows in the grid.
+    </p>
+    <p>
+        Tags should have short, symbollic names.
+        If the tags correspond to stories or projects that have
+        IDs in some other database, use those IDs as the tag names.
+    </p>
+</section>
+
+{% endblock %}

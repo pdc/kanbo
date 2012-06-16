@@ -2,12 +2,17 @@
 
 from django.forms import ModelForm
 from django.contrib.auth.models import User
-from kanboapps.board.models import Board, Card, Access
+from kanboapps.board.models import Board, Bag, Tag, Card, Access
 
 class BoardForm(ModelForm):
     class Meta:
         model = Board
         exclude = ['owner', 'collaborators']
+
+class TagForm(ModelForm):
+    class Meta:
+        model = Tag
+        exclude = ['bag']
 
 class CardForm(ModelForm):
     class Meta:

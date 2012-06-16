@@ -15,8 +15,7 @@
 
 {% block main %}
 <section id="board" class="main">
-    <h1>
-        </h1>
+    <h1>Grids</h1>
     <p>Grids are ways of displaying the cards on this board:</p>
     <ul class="menu">
         {% for bag in bags %}
@@ -26,12 +25,24 @@
         {% endfor %}
     </ul>
 </section>
+
 <section id="board-info">
     <h2>About {{ board.name }}</h2>
     <p>This board contains {{ board.card_set.count }} card{{ board.card_set.count|pluralize }}.</p>
     <p>It was created on {{ board.created|date:"j N Y" }}.</p>
     <p>This board is visible to everybody.</p>
+
+    <p>Cards are classified using</p>
+    <ul>
+        {% for bag in board.bag_set.all %}
+        <li>
+            <a href="{{ bag.get_absolute_url }}">{{ bag.name }}
+                with {{ bag.tag_set.count }} values</a>
+        </li>
+        {% endfor %}
+    </ul>
 </section>
+
 <section id="board-users">
     <h2>Team Members</h2>
     <ul>

@@ -14,7 +14,7 @@ from django.shortcuts import render_to_response, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from kanboapps.board.models import Board, Access, Card, Bag, Tag, toposorted, rearrange_objects, EventRepeater
-from kanboapps.board.forms import BoardForm, card_form_for_board, CardForm, AccessForm
+from kanboapps.board.forms import BoardForm, TagForm, card_form_for_board, CardForm, AccessForm
 from kanboapps.shortcuts import with_template, returns_json
 
 logger = logging.getLogger(__name__)
@@ -29,7 +29,7 @@ def that_owner(view_func):
         return result
     return wrapped_view
 
-def that_owner_and_board(view_func):
+def that_board(view_func):
     """View decorator that translates  an owner_username in to an owner."""
     def wrapped_view(request, owner_username, board_name, *args, **kwargs):
         owner = get_object_or_404(User, username=owner_username)
@@ -41,6 +41,26 @@ def that_owner_and_board(view_func):
             result['allows_rearrange'] = board.allows_rearrange(request.user)
         return result
     return wrapped_view
+
+def redirect_to_board_detail(board, view_name='board-detail'):
+    return redirect(view_name,
+        owner_username=board.owner.username,
+        board_name=board.name)
+
+def redirect_to_board(board, col_name=None, view_name='card-grid'):
+    """Return a HttpresponseRedirect to this board.
+
+    If col_name is specified, jump to the specified grid.
+    Otherwise go to teh default page for that board
+    (currently the default grid view).
+    """
+    if not col_name:
+        col_name=board.bags[0].name
+    return redirect(view_name,
+        owner_username=board.owner.username,
+        board_name=board.name,
+        col_name=col_name)
+
 
 @with_template('board/user-profile.html')
 @that_owner
@@ -65,7 +85,7 @@ def new_board(request, owner):
             for x in ['todo', 'doing', 'done']:
                 bag.tag_set.create(name=x)
             ##messages.info(request, 'Created a'.format(count, pluralize(count)))
-            return redirect('board-detail', owner_username=owner.username, board_name=board.name)
+            return redirect_to_board_detail(board)
     else:
         form = BoardForm() # An unbound form
     return {
@@ -74,7 +94,7 @@ def new_board(request, owner):
     }
 
 @with_template('board/board-detail.html')
-@that_owner_and_board
+@that_board
 def board_detail(request, owner, board):
     #cards = toposorted(board.card_set.all())
     collaborators = board.collaborators.all()
@@ -89,11 +109,11 @@ def board_detail(request, owner, board):
     }
 
 @with_template('board/add-user.html')
-@that_owner_and_board
+@that_board
 def add_user(request, owner, board):
     if not board.allows_add_remove_user(request.user):
         messages.info(request, 'You can’t add users to this board.')
-        return redirect('board-detail', owner_username=owner.username, board_name=board.name)
+        return redirect_to_board_detail(board)
 
     if request.method == 'POST':
         form = AccessForm(request.POST, instance=Access(board=board))
@@ -105,7 +125,7 @@ def add_user(request, owner, board):
                 messages.info(request, '{0} was already a member.'.format(access.user.username))
             except Access.DoesNotExist:
                 access = form.save()
-            return redirect('board-detail', owner_username=owner.username, board_name=board.name)
+            return redirect_to_board_detail(board)
     else:
         form = AccessForm(instance=Access(board=board)) # blank form
     return {
@@ -114,7 +134,7 @@ def add_user(request, owner, board):
     }
 
 @with_template('board/grid.html')
-@that_owner_and_board
+@that_board
 def card_grid(request, owner, board, col_name):
     col_bag = get_object_or_404(Bag, board=board, name=col_name)
     grid = board.make_grid(col_bag)
@@ -137,15 +157,9 @@ def rearrangement(request, board_id, col_name):
     board = get_object_or_404(Board, pk=board_id)
     if process_rearrangement(request, board, col_name):
         if col_name:
-            u = reverse('card-grid', kwargs={
-                'owner_username': board.owner.username,
-                'board_name': board.name,
-                'col_name': col_name})
+            return redirect_to_board(board, col_name)
         else:
-            u = reverse('board-detail', kwargs={
-                'owner_username': board.owner.username,
-                'board_name': board.name})
-        return HttpResponseRedirect(u)
+            return redirect_to_board_detail(board)
     return {
         'board': board,
         'cards': toposorted(board.card_set.all()),
@@ -208,13 +222,13 @@ def process_rearrangement(request, board, col_name):
 
 @login_required
 @with_template('board/new-card.html')
-@that_owner_and_board
+@that_board
 def new_card(request, owner, board, col_name):
     if request.method == 'POST':
         form = card_form_for_board(board, request.POST)
         if form.is_valid():
             card = form.save()
-            return redirect(card_grid, owner_username=owner.username, board_name=board.name, col_name=col_name)
+            return redirect_to_board(board, col_name)
     else:
         form = card_form_for_board(board)
     return {
@@ -225,14 +239,14 @@ def new_card(request, owner, board, col_name):
 
 @login_required
 @with_template('board/edit-card.html')
-@that_owner_and_board
+@that_board
 def edit_card(request, owner, board, col_name, card_name):
     card = get_object_or_404(Card, board=board, name=card_name)
     if request.method == 'POST':
         form = CardForm(request.POST, instance=card)
         if form.is_valid():
             form.save()
-            return redirect(card_grid, owner_username=owner.username, board_name=board.name, col_name=col_name)
+            return redirect_to_board(board, col_name)
     else:
         form = CardForm(instance=card)
     return {
@@ -242,7 +256,7 @@ def edit_card(request, owner, board, col_name, card_name):
     }
 
 @with_template('board/new-card.html')
-@that_owner_and_board
+@that_board
 def create_many_cards(request, owner, board, col_name):
     text = None
     logger.debug('Method = {0!r}'.format(request.method))
@@ -257,7 +271,7 @@ def create_many_cards(request, owner, board, col_name):
             count += 1
         if count:
             messages.info(request, 'Added {0} card{1}'.format(count, pluralize(count)))
-            return redirect(card_grid, owner_username=owner.username, board_name=board.name, col_name=col_name)
+            return redirect_to_board(board, col_name)
         # If failed, fall through to showing form again:
     return {
         'col_name': col_name,
@@ -280,4 +294,30 @@ def events_ajax(request, board_id, start_seq):
     jres = json.dumps(res).replace('"*"', jevents)
     return jres
 
+
+@with_template('board/bag-detail.html')
+@that_board
+def bag_detail(request, owner, board, bag_name):
+    bag = get_object_or_404(Bag, board=board, name=bag_name)
+    return {
+        'bag': bag,
+        'form': TagForm(instance=Tag(bag=bag))
+    }
+
+@with_template('board/new-tag.html')
+@that_board
+def new_tag(request, owner, board, bag_name):
+    bag = get_object_or_404(Bag, board=board, name=bag_name)
+    if request.method == 'POST':
+        form = TagForm(request.POST, instance=Tag(bag=bag))
+        if form.is_valid():
+            tag = form.save()
+            return HttpResponseRedirect(bag.get_absolute_url())
+    else:
+        form = TagForm(instance=Tag(bag=bag))
+    return {
+        'bag': bag,
+        'form': form,
+        'non_field_errors': form.errors.get(NON_FIELD_ERRORS),
+    }
 
