@@ -72,6 +72,7 @@ class KeywordValidator(object):
 
 board_level_keywords = ['new', 'create', 'edit', 'update', 'delete', 'profile', 'kanbo']
 
+
 class Board(models.Model):
     """The universe of cards for one team, or group of teams."""
     owner = models.ForeignKey(User)
@@ -101,6 +102,15 @@ class Board(models.Model):
 
     def __unicode__(self):
         return self.label
+
+    @models.permalink
+    def get_absolute_url(self):
+        """Returns the canonical link to this board."""
+        return 'card-grid', (), {
+            'owner_username': self.owner.username,
+            'board_name': self.name,
+            'col_name': self.bag_set.all()[0].name,
+        }
 
     def clean(self):
         """Called as part of validating a form creating an instance of this model."""
