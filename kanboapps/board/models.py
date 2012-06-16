@@ -135,7 +135,7 @@ class Board(models.Model):
 
     allows_add_card = allows_rearrange
 
-    def allow_add_remove_user(self, user):
+    def allows_add_remove_user(self, user):
         if self.is_public:
             return False # Can’t add users because everyone is invited.
         if not user.is_authenticated():

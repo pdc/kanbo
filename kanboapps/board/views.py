@@ -91,7 +91,7 @@ def board_detail(request, owner, board):
 @with_template('board/add-user.html')
 @that_owner_and_board
 def add_user(request, owner, board):
-    if not board.allow_add_remove_user(request.user):
+    if not board.allows_add_remove_user(request.user):
         messages.info(request, 'You can’t add users to this board.')
         return redirect('board-detail', owner_username=owner.username, board_name=board.name)
 
