@@ -12,14 +12,39 @@
     <body class="no-js">
         <header>
             <p id="trail">
-                <a href="{% url home %}" class="wordmark">Kanbo</a> <span>></span>
-                {% if board %}
-                <a href="{% url user-profile owner_username=owner.username %}">{% if owner.id == 1 %}Demonstration boards{% else %}{{ owner.username }}{% endif %}</a>
-                <span>></span>
-                {% endif %}
-                {% block trail %}{% endblock %}
+                <a href="{% url home %}" class="wordmark">Kanbo</a>
             </p>
-            <h1>{% block heading %}KANBOOO{% endblock %}</h1>
+
+            {% if board %}
+            <p id="board-name">
+                <a href="{% url user-profile owner_username=owner.username %}">{% if owner.id == 1 %}Demonstration boards{% else %}{{ owner.username }}{% endif %}</a>
+                /
+                <a href="{{ board.get_absolute_url }}">{{ board.name }}</a>
+                {% if board.label != board.name %}
+                <span class="label">({{ board.label }})</span>
+                {% endif %}
+            </p>
+
+            <ul id="tabs">
+                {% for bag in board.bag_set.all %}
+                <li>
+                    {% if bag.name == col_name %}
+                    <strong>By {{ bag.name }}</strong>
+                    {% else %}
+                    <a href="{% url card-grid owner_username=board.owner.username board_name=board.name col_name=bag.name %}">By {{ bag.name }}</a>
+                    {% endif %}
+                </li>
+                {% endfor %}
+                <li>
+                    {% block details-tab %}
+                    <a href="{% url board-detail owner_username=board.owner.username board_name=board.name %}">Details</a>
+                    {% endblock %}
+                </li>
+            </ul>
+            {% else %}
+            <h1>{% block heading %}{% endblock %}</h1>
+            {% endif %}
+
         </header>
         <div id="all">
             <div id="main">

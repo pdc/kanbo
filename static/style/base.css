@@ -24,7 +24,7 @@ body {
 header {
     background: #007F88;
     color: #FFFAE4;
-    padding: 10px;
+    padding: 10px 0 0 ;
 }
 
 .polling>header {
@@ -46,7 +46,8 @@ header a:active {
 .wordmark,
 header h1,
 section h1,
-section h2 {
+section h2,
+header  #board-name {
     line-height: 1;
     font-family: "GoudyBookletter1911Regular", serif;
     font-weight: normal;
@@ -63,12 +64,71 @@ section h2  {
 header #trail  {
     background: url(logo-31x21.png) 0 0 no-repeat;
     padding: 6px 0 0 40px;
-    margin: 0;
+    margin: 0 10px 10px;
+}
+
+header  #board-name {
+    font-size: 2em;
+    margin: 0.25em 0 0.5em 50px;
 }
 
 header h1 {
     font-size: 2em;
     margin: 1em 10px 0.5em;
+}
+
+#tabs {
+    float: left;
+    margin: 0 0 0 50px;
+    padding: 0;
+}
+
+#tabs li {
+    float: left;
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
+
+#tabs li a,
+#tabs li strong {
+    float: left;
+    display: block;
+    min-width: 140px;
+    margin: 0;
+    padding: 0.5em 9px;
+    border-top-right-radius: 0.5em;
+    border-top-left-radius: 0.5em;
+}
+
+#tabs li a {
+    color: #222;
+    background-color: #D67353;
+    border: 1px outset #D67353;
+    border-bottom: 1px inset #832;
+}
+#tabs li a:hover,
+#tabs li a:active {
+    color: #333;
+    background-color: #FFFAE4;
+    border: 1px outset #FFFAE4;
+    border-bottom: 1px inset #887;
+}
+#tabs li strong {
+    color: #333;
+    background-color: #FFFAE4;
+    border: 1px outset #FFFAE4;
+    border-bottom: 1px solid #FFFAE4;
+}
+
+header::after {
+    display: block;
+    clear: both;
+    margin: 0;
+    height: 0;
+    overflow: none;
+
+    content: ".";
 }
 
 #all {
@@ -125,8 +185,6 @@ section {
     width: 240px;
     margin-top: 1px;
     padding-top: 1px;
-
-    border-top: 1px solid #D67353;
 }
 
 section.main {
