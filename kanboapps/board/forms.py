@@ -12,7 +12,7 @@ class BoardForm(ModelForm):
 class TagForm(ModelForm):
     class Meta:
         model = Tag
-        exclude = ['bag']
+        exclude = ['bag', 'succ']
 
 class CardForm(ModelForm):
     class Meta:

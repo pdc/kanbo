@@ -153,9 +153,9 @@ def card_grid(request, owner, board, col_name):
     }
 
 @with_template('board/grid.html')
-def rearrangement(request, board_id, col_name):
+def card_arrangement(request, board_id, col_name):
     board = get_object_or_404(Board, pk=board_id)
-    if process_rearrangement(request, board, col_name):
+    if process_card_arrangement(request, board, col_name):
         if col_name:
             return redirect_to_board(board, col_name)
         else:
@@ -166,17 +166,16 @@ def rearrangement(request, board_id, col_name):
         'order':  request.POST['order'],
     }
 
-
 @returns_json
-def rearrangement_ajax(request, board_id, col_name):
+def card_arrangement_ajax(request, board_id, col_name):
     board = get_object_or_404(Board, pk=board_id)
-    success = process_rearrangement(request, board, col_name)
+    success = process_card_arrangement(request, board, col_name)
     res = success or {}
     res['success'] = bool(success)
     return res
 
-def process_rearrangement(request, board, col_name):
-    """Code common to the 2 rearrangement views."""
+def process_card_arrangement(request, board, col_name):
+    """Code common to the 2 card_arrangement views."""
     # Check this user has permission.
     if not board.allows_rearrange(request.user):
         raise PermissionDenied('You cannot rearrange this board')
@@ -301,7 +300,8 @@ def bag_detail(request, owner, board, bag_name):
     bag = get_object_or_404(Bag, board=board, name=bag_name)
     return {
         'bag': bag,
-        'form': TagForm(instance=Tag(bag=bag))
+        'form': TagForm(instance=Tag(bag=bag)),
+        'order': ' '.join(str(x.id) for x in bag.tags_sorted()),
     }
 
 @with_template('board/new-tag.html')
@@ -321,3 +321,46 @@ def new_tag(request, owner, board, bag_name):
         'non_field_errors': form.errors.get(NON_FIELD_ERRORS),
     }
 
+@with_template('board/bag-detail.html')
+def tag_arrangement(request, bag_id):
+    bag = get_object_or_404(Bag, id=bag_id)
+    if request.method == 'POST':
+        if process_tag_arrangement(request, bag):
+            return HttpResponseRedirect(bag.get_absolute_url())
+    return {
+        'bag': bag,
+        'form': TagForm(instance=Tag(bag=bag)),
+        'order':  request.POST['order'],
+    }
+
+@returns_json
+def tag_arrangement_ajax(request, bag_id):
+    bag = get_object_or_404(Bag, pk=bag_id)
+    success = process_tag_arrangement(request, bag)
+    res = success or {}
+    res['success'] = bool(success)
+    return res
+
+def process_tag_arrangement(request, bag):
+    """Code common to the 2 card_arrangement views."""
+    # Check this user has permission.
+    if not bag.allows_rearrange(request.user):
+        raise PermissionDenied('You cannot arrange tags on this board')
+
+    event  = {
+        'type': 'tags-arranged',
+        'board': bag.board.id,
+        'bag': bag.id,
+    }
+    if request.method == 'POST':
+        ids = [(None if x == '-' else int(x)) for s in request.POST.getlist('order') for x in s.split()]
+        rearrange_objects(bag.tag_set, ids)
+
+        event['order'] = ids
+        er = EventRepeater()
+        er.get_stream(bag.board.id).append(event)
+
+        success = {
+            'ids': ids,
+        }
+        return success

@@ -57,22 +57,22 @@ var CardGrid = (function ($) {
         alert(msg);
     }
 
-    function enableRearrange(ajaxUrl) {
+    function enableRearrange(binSelector, ajaxUrl) {
       // Make the card bins be sortable with drag-and-drop.
-      $('.card-bin').sortable({
-        connectWith: '.card-bin',
+      $(binSelector).sortable({
+        connectWith: binSelector,
         update: function (event, ui) {
             // Report the change to the server.
-            var droppedID = ui.item.attr('id').replace(/^card-/, '');
+            var droppedID = ui.item.attr('id').replace(/^[a-z]+-/, '');
             var eltIDs = $(this).sortable('toArray');
             var cardIDs = [];
             for (var i = 0; i < eltIDs.length; ++i) {
-                cardIDs.push(eltIDs[i].replace(/^card-/, ''));
+                cardIDs.push(eltIDs[i].replace(/^[a-z]+-/, ''));
             }
 
             // Turns out MSIE does not support Array.indexOf.
             var droppedIndex  = cardIDs.length;
-            while(--droppedIndex >= 0) {
+            while (--droppedIndex >= 0) {
                 if  (cardIDs[droppedIndex] == droppedID) {
                     break;
                 }
@@ -83,13 +83,18 @@ var CardGrid = (function ($) {
 
                 var form$ = $(this).parent().find('form');
                 if (ajaxUrl) {
-                    var data = {}
+                    var data = {
+                        order: abbreviatedIDs.join(' '),
+                        dropped: droppedID
+                    };
+
+                    // Copy tag IDs (applicable to arranging cards on the grid).
                     var es = $('input[type=hidden]', form$).get();
                     for (var i = 0; i < es.length; ++i) {
                         data[es[i].name] = es[i].value;
                     }
-                    data[ 'order'] =  abbreviatedIDs.join(' ');
-                    data['dropped'] = droppedID;
+
+                    // Send to the server.
                     ui.item.addClass('ajax-loading');
                     $.ajax(ajaxUrl, {
                         type: 'POST',

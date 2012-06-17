@@ -40,7 +40,7 @@
                 {% for bin in row.bins %}
                 <td>
                     {% if allows_rearrange %}
-                    <form class="rearrangement" action="{% url rearrangement board_id=board.id col_name=col_name %}" method="post">
+                    <form class="card_arrangement" action="{% url card-arrangement board_id=board.id col_name=col_name %}" method="post">
                         {% csrf_token %}
                         {% for tag in bin.tags %}
                         <input type="hidden" name="tags" value="{{ tag.id }}" />
@@ -99,7 +99,9 @@
 {% if allows_rearrange %}
 <script type="text/javascript">
     $(function () {
-        CardGrid.enableRearrange('{% url rearrangement-ajax board_id=board.id col_name=col_name %}');
+        CardGrid.enableRearrange(
+            '.card-bin',
+            '{% url card-arrangement-ajax board_id=board.id col_name=col_name %}');
         CardGrid.makeNewCardButtonMagic();
     });
 </script>

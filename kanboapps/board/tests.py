@@ -434,7 +434,7 @@ class TestEventsAreSaved(TestCase, BoardFixtureMixin, FakeRedisMixin):
         self.client = Client()
 
 
-    def test_rearrangement_creates_events(self):
+    def test_card_arrangement_creates_events(self):
         self.client.login(username='derpyhooves', password='jubilee')
 
         params = {
@@ -442,7 +442,7 @@ class TestEventsAreSaved(TestCase, BoardFixtureMixin, FakeRedisMixin):
             'dropped': '2',
              'tags': str(self.tagss[0][1].id),
          }
-        self.client.post('/boards/1/grids/q/rearrangement', params)
+        self.client.post('/boards/1/grids/q/arrangement', params)
         jevs, next_seq = self.event_repeater.get_stream(1).as_json_starting_from(0)
 
         self.assertEqual(1, next_seq)
@@ -457,7 +457,7 @@ class TestEventsAreSaved(TestCase, BoardFixtureMixin, FakeRedisMixin):
         }
         self.assertEqual([expected], json.loads(jevs))
 
-    def test_when_not_owner_rearrangement_is_forbidden(self):
+    def test_when_not_owner_card_arrangement_is_forbidden(self):
         other = User.objects.create(username='eve')
         other.set_password('7wi1i8h7')
         other.save()
@@ -469,7 +469,7 @@ class TestEventsAreSaved(TestCase, BoardFixtureMixin, FakeRedisMixin):
             'dropped': '2',
              'tags': str(self.tagss[0][1].id),
          }
-        response = self.client.post('/boards/1/grids/q/rearrangement', params)
+        response = self.client.post('/boards/1/grids/q/arrangement', params)
 
         self.assertEqual(403, response.status_code)
 
@@ -521,6 +521,24 @@ class TestPublicBoardMembership(TestCase):
 
     def test_is_rearrangeable_by_anon(self):
         self.assertTrue(self.subject.allows_rearrange(AnonymousUser()))
+
+
+
+
+class TestSortingTags(TestCase, BoardFixtureMixin):
+    def setUp(self):
+        self.bag = Bag.objects.create(name='bonk')
+        self.tags = [self.bag.tag_set.create(name=x) for x in 'fred']
+        self.tags_by_name = dict((x.name, x) for x in self.tags)
+        self.ids_by_name = dict((x.name, x.id) for x in self.tags)
+
+    def test_default_order_is_creation_order(self):
+        self.assertEqual('f r e d'.split(), [x.name for x in self.bag.tags_sorted()])
+
+    def test_rearrange(self):
+        ids = [self.ids_by_name[x] for x in 'e r d'.split()]
+        rearrange_objects(self.bag.tag_set, ids)
+        self.assertEqual('f e r d'.split(), [x.name for x in self.bag.tags_sorted()])
 
 
 

@@ -13,21 +13,32 @@
     <p>
         Each card can optionally be tagged with one of the following values:
     </p>
-    <ul>
-        {% for tag in bag.tag_set.all %}
-        <li>
-            {{ tag.name }}
-        </li>
-        {% endfor %}
-    </ul>
+
+    <div>
+        <form method="POST" action="{% url tag-arrangement bag_id=bag.id %}">
+            {% csrf_token %}
+            <input name="order" />
+            <input name="dropped" />
+            <input type="submit" value="Arrange tags" />
+        </form>
+
+        <ul class="tag-bag">
+            {% for tag in bag.tags_sorted %}
+            <li id="tag-{{ tag.id }}">
+                {{ tag.name }}
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
 
     <form method="POST" action="{% url new-tag owner_username=owner.username board_name=board.name bag_name=bag.name %}">
         {% include "board/form-part.html" %}
         <div class="buttons">
-            <input type="submit" value="Add Tag">
+            <input type="submit" value="Add tag">
         </div>
     </form>
 </section>
+
 <section id="hint">
     <p>
         Kanbo uses the term <i>tag</i> to refer to a value used to classify
@@ -40,4 +51,27 @@
     </p>
 </section>
 
+{% endblock %}
+
+
+{% block javascripts %}
+<script type="text/javascript" src="http://code.jquery.com/jquery-1.7.2.min.js"></script>
+<script type="text/javascript"src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.18/jquery-ui.min.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}js/board.js"></script>
+
+{% if allows_rearrange %}
+<script type="text/javascript">
+    $(function () {
+        CardGrid.enableRearrange(
+            '.tag-bag',
+            '{% url tag-arrangement-ajax bag_id=board.id %}');
+        $('.tag-bag').parent().append('<p>Drag and drop the tags in the above list to change the order that are shown in on the grid.</p>');
+    });
+</script>
+{% endif %}
+{% if messages %}
+<script type="text/javascript">
+    CardGrid.addCloseButtonToMessages();
+</script>
+{% endif %}
 {% endblock %}

@@ -159,7 +159,7 @@ class Board(models.Model):
 
         if columns_def:
             tag_idss = [(tag, [inf['id'] for inf in tag.card_set.values('id')])
-                    for tag in  columns_def.tag_set.all()]
+                    for tag in  columns_def.tags_sorted()]
             bins = [GridBin([x for x in cards if x.id in ids], [tag])
                 for (tag, ids) in tag_idss]
             missing = GridBin([x for x in cards if all(x not in bin.cards for bin in bins)])
@@ -199,6 +199,9 @@ class Bag(models.Model):
     def __unicode__(self):
         return self.name
 
+    def allows_rearrange(self, user):
+        return self.board.allows_rearrange(user)
+
     @models.permalink
     def get_absolute_url(self):
         return 'bag-detail', (), {
@@ -215,10 +218,16 @@ class Bag(models.Model):
             'bag_name': self.name,
         }
 
+    def tags_sorted(self):
+        """A list of tag objects."""
+        return toposorted(self.tag_set.all())
+
 
 class Tag(models.Model):
     """One of the values of one axis of classification of cards."""
     bag = models.ForeignKey(Bag)
+    succ = models.ForeignKey('self', null=True, blank=True,
+        help_text='Another tag that follows this one in conventional order')
 
     name = models.SlugField(max_length=200)
 
