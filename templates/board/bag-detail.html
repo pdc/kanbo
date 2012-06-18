@@ -15,12 +15,14 @@
     </p>
 
     <div>
+        {%if allows_rearrange %}
         <form method="POST" action="{% url tag-arrangement bag_id=bag.id %}">
             {% csrf_token %}
             <input name="order" />
             <input name="dropped" />
             <input type="submit" value="Arrange tags" />
         </form>
+        {% endif %}
 
         <ul class="tag-bag">
             {% for tag in bag.tags_sorted %}
@@ -31,12 +33,14 @@
         </ul>
     </div>
 
+    {% if allows_rearrange %}
     <form method="POST" action="{% url new-tag owner_username=owner.username board_name=board.name bag_name=bag.name %}">
         {% include "board/form-part.html" %}
         <div class="buttons">
             <input type="submit" value="Add tag">
         </div>
     </form>
+    {% endif %}
 </section>
 
 <section id="hint">
@@ -50,9 +54,7 @@
         IDs in some other database, use those IDs as the tag names.
     </p>
 </section>
-
 {% endblock %}
-
 
 {% block javascripts %}
 <script type="text/javascript" src="http://code.jquery.com/jquery-1.7.2.min.js"></script>

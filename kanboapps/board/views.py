@@ -331,6 +331,7 @@ def tag_arrangement(request, bag_id):
         'bag': bag,
         'form': TagForm(instance=Tag(bag=bag)),
         'order':  request.POST['order'],
+        'allows_rearrange': bag.allows_rearrange(request.user),
     }
 
 @returns_json
