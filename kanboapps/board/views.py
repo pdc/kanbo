@@ -105,6 +105,7 @@ def board_detail(request, owner, board):
         'collaborators': collaborators,
         'any_cant_rearrange': any(not x.can_rearrange for x in collaborators),
         'bags': board.bag_set.all(),
+        'allows_add_remove_user': board.allows_add_remove_user(request.user),
         'add_user_form': AccessForm(instance=Access(board=board)),
     }
 

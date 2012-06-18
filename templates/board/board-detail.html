@@ -54,6 +54,7 @@
     {% if any_cant_rearrange %}
     <p>*Read-only</p>
     {% endif %}
+    {% if allows_add_remove_user %}
     <form action="{% url add-user owner_username=owner.username board_name=board.name %}" method="POST">
         {% with form=add_user_form %}
         {% include "board/form-part.html" %}
@@ -62,6 +63,7 @@
             <input type="submit" value="Add User">
         </div>
     </form>
+    {% endif %}
 </section>
 {% endblock %}
 
