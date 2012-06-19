@@ -242,24 +242,54 @@ section .menu li {
     padding: 0;
 }
 
+/*[[[cog
+def gradient(params):
+    for prefix in ['', '-o-', '-ms-', '-moz-', '-webkit-']:
+        cog.outl('background: {0}linear-gradient({1});'.format(prefix, params))
+]]]*/
+/*[[[end]]]*/
+
 section .menu a {
     display: block;
     float: left;
     margin: 0;
     padding: 1px 10px;
 
+    /*[[[cog gradient('bottom, #F4CF80 0%, #F4D99F 20%, #FFFAE4 66%') ]]]*/
+    background: linear-gradient(bottom, #F4CF80 0%, #F4D99F 20%, #FFFAE4 66%);
+    background: -o-linear-gradient(bottom, #F4CF80 0%, #F4D99F 20%, #FFFAE4 66%);
+    background: -ms-linear-gradient(bottom, #F4CF80 0%, #F4D99F 20%, #FFFAE4 66%);
+    background: -moz-linear-gradient(bottom, #F4CF80 0%, #F4D99F 20%, #FFFAE4 66%);
+    background: -webkit-linear-gradient(bottom, #F4CF80 0%, #F4D99F 20%, #FFFAE4 66%);
+    /*[[[end]]]*/
     color: inherit;
     text-decoration: none;
     border: 1px outset #888;
 }
 
+section .menu a.disabled {
+    color: #999;
+    /*[[[cog gradient('top, #F4CF80 0%, #F4D99F 20%, #FFFAE4 66%') ]]]*/
+    background: linear-gradient(top, #F4CF80 0%, #F4D99F 20%, #FFFAE4 66%);
+    background: -o-linear-gradient(top, #F4CF80 0%, #F4D99F 20%, #FFFAE4 66%);
+    background: -ms-linear-gradient(top, #F4CF80 0%, #F4D99F 20%, #FFFAE4 66%);
+    background: -moz-linear-gradient(top, #F4CF80 0%, #F4D99F 20%, #FFFAE4 66%);
+    background: -webkit-linear-gradient(top, #F4CF80 0%, #F4D99F 20%, #FFFAE4 66%);
+    /*[[[end]]]*/
+}
+
 section .menu a:hover,
 section .menu a:active {
     text-decoration: underline;
-    color: #D67353;
-    background: #FFF;
-    box-shadow: rgba(0, 0, 0, 0.5) 0px 0px 1px;
+    /*[[[cog #gradient('bottom, rgb(233,186,85) 5%, rgb(255,250,228) 75%') ]]]*/
+    /*[[[end]]]*/
 }
+
+section .menu a.disabled:hover,
+section .menu a.disabled:active {
+    text-decoration: none;
+}
+
 
 .menu+p {
     clear: both;

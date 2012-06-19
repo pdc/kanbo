@@ -135,8 +135,10 @@ var CardGrid = (function ($) {
             var cell =  $('#card-grid td').get(0);
             form.appendTo(cell);
             form.slideDown();
-            $('a', buttons).click(function (ev) {
+            $('#new-card-link').addClass('disabled');
+            $('.buttons a', form).click(function (ev) {
                 form.remove();
+                $('#new-card-link').removeClass('disabled');
             });
             $('#id_label').focus();
         });
@@ -161,13 +163,17 @@ var CardGrid = (function ($) {
             .appendTo($(listSelector).parent());
         var button = $('<a>', {
             href: '#' + form.attr('id'),
-            text: $('input[type=submit]', form).val(),
+            text: $('input[type=submit]', form).val() + '…',
             click: function (ev) {
-                $(listSelector).append(form);
-                form.slideDown();
-                $('.buttons a', form).click(function (ev) {
-                    form.remove();
-                });
+                if (!button.hasClass('disabled')) {
+                    $(listSelector).append(form);
+                    form.slideDown();
+                    button.addClass('disabled')
+                    $('.buttons a', form).click(function (ev) {
+                        form.remove();
+                        button.removeClass('disabled');
+                    });
+                }
             }
         }).appendTo(buttonBar);
     }
