@@ -11,7 +11,7 @@
 <section id="detail" class="main">
     <h1>Values for {{ bag.name }}</h1>
     <p>
-        Each card can optionally be tagged with one of the following values:
+        Each card can be tagged with one of the following values:
     </p>
 
     <div>
@@ -24,7 +24,7 @@
         </form>
         {% endif %}
 
-        <ul class="tag-bag">
+        <ul id="tag-list" class="tag-list">
             {% for tag in bag.tags_sorted %}
             <li id="tag-{{ tag.id }}">
                 {{ tag.name }}
@@ -34,7 +34,7 @@
     </div>
 
     {% if allows_rearrange %}
-    <form method="POST" action="{% url new-tag owner_username=owner.username board_name=board.name bag_name=bag.name %}">
+    <form id="new-tag-form" method="POST" action="{% url new-tag owner_username=owner.username board_name=board.name bag_name=bag.name %}">
         {% include "board/form-part.html" %}
         <div class="buttons">
             <input type="submit" value="Add tag">
@@ -65,9 +65,10 @@
 <script type="text/javascript">
     $(function () {
         CardGrid.enableRearrange(
-            '.tag-bag',
+            '.tag-list',
             '{% url tag-arrangement-ajax bag_id=board.id %}');
-        $('.tag-bag').parent().append('<p>Drag and drop the tags in the above list to change the order that are shown in on the grid.</p>');
+        CardGrid.addAddButtonToList('#tag-list', '#new-tag-form');
+        $('#tag-list').parent().append('<p>Drag and drop the tags in the above list to change the order that are shown in on the grid.</p>');
     });
 </script>
 {% endif %}

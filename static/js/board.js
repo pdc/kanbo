@@ -140,16 +140,41 @@ var CardGrid = (function ($) {
             });
             $('#id_label').focus();
         });
+        addCancelLinkToForm(form);
+    }
+
+    function addCancelLinkToForm(form) {
         var buttons = form.find('.buttons');
         $('<span>', {text: 'or '}).appendTo(buttons);
         $('<a/>', {
             href: '#menu',
             text: 'Cancel',
         }).appendTo(buttons);
+        return form;
+    }
+
+    function addAddButtonToList(listSelector, formSelector) {
+        var form = $(formSelector).remove();
+        addCancelLinkToForm(form);
+
+        var buttonBar = $('<div>', {'class': 'menu'})
+            .appendTo($(listSelector).parent());
+        var button = $('<a>', {
+            href: '#' + form.attr('id'),
+            text: $('input[type=submit]', form).val(),
+            click: function (ev) {
+                $(listSelector).append(form);
+                form.slideDown();
+                $('.buttons a', form).click(function (ev) {
+                    form.remove();
+                });
+            }
+        }).appendTo(buttonBar);
     }
 
     return {
         addCloseButtonToMessages: addCloseButtonToMessages,
+        addAddButtonToList: addAddButtonToList,
         makeNewCardButtonMagic: makeNewCardButtonMagic,
         enableRearrange: enableRearrange,
         pollForUpdates: pollForUpdates,

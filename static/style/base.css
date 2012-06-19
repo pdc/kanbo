@@ -228,6 +228,43 @@ section h2 {
     color: #D67353;
 }
 
+
+section .menu {
+    float: left;
+    margin: 0.7em 10px;
+    padding: 0;
+    background-color: rgba(233, 137, 85, 0.25);
+}
+
+section .menu li {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
+
+section .menu a {
+    display: block;
+    float: left;
+    margin: 0;
+    padding: 1px 10px;
+
+    color: inherit;
+    text-decoration: none;
+    border: 1px outset #888;
+}
+
+section .menu a:hover,
+section .menu a:active {
+    text-decoration: underline;
+    color: #D67353;
+    background: #FFF;
+    box-shadow: rgba(0, 0, 0, 0.5) 0px 0px 1px;
+}
+
+.menu+p {
+    clear: both;
+}
+
 section p {
     margin: 0.7em 10px;
 }
