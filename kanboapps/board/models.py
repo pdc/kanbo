@@ -231,12 +231,19 @@ class Tag(models.Model):
 
     name = models.SlugField(max_length=200)
 
-    def __unicode__(self):
-        return u'{0}:{1}'.format(self.bag.name, self.name)
-
     class Meta:
         ordering = ['id']
         unique_together = [('bag', 'name')]
+
+    def __unicode__(self):
+        return u'{0}:{1}'.format(self.bag.name, self.name)
+
+    def clean(self):
+        """Called as part of validating a form creating an instance of this model."""
+        super(Tag, self).clean()
+        if Tag.objects.filter(bag=self.bag, name=self.name
+                ).exclude(id=self.id).exists():
+            raise ValidationError('You already have a {0} tag ‘{1}’.'.format(self.bag.name, self.name))
 
 
 class Card(models.Model):

@@ -14,7 +14,7 @@ import fakeredis
 import json
 from django.contrib.auth.models import User, AnonymousUser
 from kanboapps.board.models import *
-from kanboapps.board.views import BoardForm
+from kanboapps.board.forms import BoardForm, TagForm
 from kanboapps.board import models
 
 class TestCard(TestCase):
@@ -523,8 +523,6 @@ class TestPublicBoardMembership(TestCase):
         self.assertTrue(self.subject.allows_rearrange(AnonymousUser()))
 
 
-
-
 class TestSortingTags(TestCase, BoardFixtureMixin):
     def setUp(self):
         self.bag = Bag.objects.create(name='bonk')
@@ -539,6 +537,19 @@ class TestSortingTags(TestCase, BoardFixtureMixin):
         ids = [self.ids_by_name[x] for x in 'e r d'.split()]
         rearrange_objects(self.bag.tag_set, ids)
         self.assertEqual('f e r d'.split(), [x.name for x in self.bag.tags_sorted()])
+
+class TestTagFormChecksUniqueness(TestCase):
+    def setUp(self):
+        self.user = User.objects.create(username='username')
+        self.board = self.user.board_set.create(name='boardname')
+        self.bag = self.board.bag_set.create(name='bagname')
+        self.tags = [self.bag.tag_set.create(name=x) for x in 'lmnop']
+
+    def test_requires_unique(self):
+        subject = TagForm({'name': 'p'}, instance=Tag(bag=self.bag))
+
+        self.assertFalse(subject.is_valid())
+
 
 
 
