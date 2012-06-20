@@ -14,7 +14,7 @@ from django.shortcuts import render_to_response, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from kanboapps.board.models import Board, Access, Card, Bag, Tag, toposorted, rearrange_objects, EventRepeater
-from kanboapps.board.forms import BoardForm, TagForm, card_form_for_board, CardForm, AccessForm
+from kanboapps.board.forms import BoardForm, BagForm, TagForm, card_form_for_board, CardForm, AccessForm
 from kanboapps.shortcuts import with_template, returns_json
 
 logger = logging.getLogger(__name__)
@@ -294,6 +294,25 @@ def events_ajax(request, board_id, start_seq):
     jres = json.dumps(res).replace('"*"', jevents)
     return jres
 
+
+@with_template('board/new-bag.html')
+@that_board
+def new_bag(request, owner, board):
+    if request.method == 'POST':
+        form = BagForm(request.POST, instance=Bag(board=board))
+        if form.is_valid():
+            bag = form.save()
+            tag_names = [x.strip() for x in form.cleaned_data['initial_tags'].split()]
+            for tag_name in tag_names:
+                bag.tag_set.create(name=tag_name)
+            return HttpResponseRedirect(board.get_detail_url())
+    else:
+        form = BagForm(instance=Bag(board=board))
+    return {
+        'board': board,
+        'form': form,
+        'non_field_errors': form.errors.get(NON_FIELD_ERRORS),
+    }
 
 @with_template('board/bag-detail.html')
 @that_board

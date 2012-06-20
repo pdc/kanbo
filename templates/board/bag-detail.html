@@ -2,7 +2,7 @@
 {% block title %}{{ bag.name }} - {{ board.owner.username }}/{{ board.name }}{% endblock %}
 
 {% block details-tab %}
-<strong>Details</strong>
+<a class="active" href="{{ bag.board.get_detail_url }}">Details</a>
 {% endblock %}
 
 {% block heading %}Values for {{ bag.name }}{% endblock %}

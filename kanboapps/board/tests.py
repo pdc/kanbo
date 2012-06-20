@@ -14,7 +14,7 @@ import fakeredis
 import json
 from django.contrib.auth.models import User, AnonymousUser
 from kanboapps.board.models import *
-from kanboapps.board.forms import BoardForm, TagForm
+from kanboapps.board.forms import BoardForm, BagForm, TagForm
 from kanboapps.board import models
 
 class TestCard(TestCase):
@@ -537,6 +537,22 @@ class TestSortingTags(TestCase, BoardFixtureMixin):
         ids = [self.ids_by_name[x] for x in 'e r d'.split()]
         rearrange_objects(self.bag.tag_set, ids)
         self.assertEqual('f e r d'.split(), [x.name for x in self.bag.tags_sorted()])
+
+
+class TestBagFormIncludesInialTags(TestCase):
+    def setUp(self):
+        self.user = User.objects.create(username='username')
+        self.board = self.user.board_set.create(name='boardname')
+
+    def test_has_inital_tags_field(self):
+        subject = BagForm({'name': 'foo', 'initial_tags': 'formvalue'}, instance=Bag(board=self.board))
+
+        self.assertTrue(subject.is_valid())
+        self.assertEqual('formvalue', subject.cleaned_data['initial_tags'])
+
+
+
+
 
 class TestTagFormChecksUniqueness(TestCase):
     def setUp(self):

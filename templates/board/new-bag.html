@@ -1,0 +1,28 @@
+{% extends "board/base.html" %}
+{% block title %}New tag - {{ board.owner.username }}/{{ board.name }}{% endblock %}
+
+{% block details-tab %}
+<strong>Details</strong>
+{% endblock %}
+
+{% block heading %}New tag bag{% endblock %}
+
+{% block main %}
+<section id="new-card" class="main">
+    <h1>New tag bag for {{ board.name }}</h1>
+    <p>
+        Each tag bag represents a different way of categorizing
+        cards. There should be no overlap between the set of
+        tag values in different bags.
+    </p>
+
+    <form method="POST">
+        {% include "board/form-part.html" %}
+        <div class="buttons">
+            <input type="submit" value="Create bag">
+            or <a href="{{ board.get_detail_url }}">cancel</a>
+        </div>
+    </form>
+</section>
+
+{% endblock %}

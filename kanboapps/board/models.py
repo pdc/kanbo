@@ -191,7 +191,8 @@ class Bag(models.Model):
     """A set of tags. One of the axes by which cards are classified."""
     board = models.ForeignKey(Board, null=True)
 
-    name = models.SlugField(db_index=True, max_length=200)
+    name = models.SlugField(db_index=True, max_length=200,
+        help_text='Uniquely identifies this bag in the scope of its board. Used in URLs. Consists of letters, digits, and dashes only (no spaces).')
 
     class Meta:
         unique_together = [('board', 'name')]
@@ -229,7 +230,8 @@ class Tag(models.Model):
     succ = models.ForeignKey('self', null=True, blank=True,
         help_text='Another tag that follows this one in conventional order')
 
-    name = models.SlugField(max_length=200)
+    name = models.SlugField(max_length=200,
+        help_text='Uniquely identifies this tag in the scope of its bag. Consists of letters, digits, and dashes only (no spaces).')
 
     class Meta:
         ordering = ['id']

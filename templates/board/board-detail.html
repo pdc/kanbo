@@ -32,14 +32,21 @@
     <p>It was created on {{ board.created|date:"j N Y" }}.</p>
     <p>This board is visible to everybody.</p>
 
-    <p>Cards are classified using</p>
+    <p>Cards are classified using the following tag bags:</p>
     <ul>
         {% for bag in board.bag_set.all %}
         <li>
             <a href="{{ bag.get_absolute_url }}">{{ bag.name }}
-                with {{ bag.tag_set.count }} values</a>
+                with {{ bag.tag_set.count }} tag values</a>
         </li>
         {% endfor %}
+    </ul>
+    <p>Click to edit the tag values.</p>
+
+    <ul class="menu">
+        <li>
+            <a href="{% url new-bag owner_username=owner.username board_name=board.name %}">New tag bag…</a>
+        </li>
     </ul>
 </section>
 
