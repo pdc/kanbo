@@ -545,11 +545,20 @@ class TestBagFormIncludesInialTags(TestCase):
         self.board = self.user.board_set.create(name='boardname')
 
     def test_has_inital_tags_field(self):
-        subject = BagForm({'name': 'foo', 'initial_tags': 'formvalue'}, instance=Bag(board=self.board))
+        subject = BagForm({'name': 'foo', 'initial_tags': 'tag1\ntag2'}, instance=Bag(board=self.board))
 
         self.assertTrue(subject.is_valid())
-        self.assertEqual('formvalue', subject.cleaned_data['initial_tags'])
+        self.assertEqual('tag1\ntag2', subject.cleaned_data['initial_tags'])
 
+    def test_requires_lowercase(self):
+        subject = BagForm({'name': 'Foo', 'initial_tags': 'tag1\ntag2'}, instance=Bag(board=self.board))
+
+        self.assertFalse(subject.is_valid())
+
+    def test_forbids_spaces_in_tags(self):
+        subject = BagForm({'name': 'foo', 'initial_tags': 'too many spaces\nanother spacy tag'}, instance=Bag(board=self.board))
+
+        self.assertFalse(subject.is_valid())
 
 
 

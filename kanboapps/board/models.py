@@ -65,6 +65,7 @@ class GridBin(object):
             and all(x.id == y.id for (x, y) in zip(self.cards, other.cards)))
 
 
+lowercase_validator = RegexValidator(re.compile(r'^[a-z\d-]+$'), 'Must be lower-case letters a-z, digits, or hyphens')
 class KeywordValidator(object):
     def __init__(self, ws):
         self.words = set(ws)
@@ -85,8 +86,7 @@ class Board(models.Model):
             help_text='People who have been given access to this board (part from the owner).')
 
     name = models.CharField(max_length=50, db_index=True,
-        validators=[RegexValidator(re.compile(r'^[a-z\d-]+$'), 'Must be lower-case letters a-z, digits, or hyphens'),
-            KeywordValidator(board_level_keywords)],
+        validators=[lowercase_validator, KeywordValidator(board_level_keywords)],
         verbose_name='Short name',
         help_text='The unique short name for this board. Used to make the URL for the board. Lowercase letters, digits, and dashes only.')
     label = models.CharField(max_length=200,
@@ -192,6 +192,7 @@ class Bag(models.Model):
     board = models.ForeignKey(Board, null=True)
 
     name = models.SlugField(db_index=True, max_length=200,
+        validators=[lowercase_validator],
         help_text='Uniquely identifies this bag in the scope of its board. Used in URLs. Consists of letters, digits, and dashes only (no spaces).')
 
     class Meta:
@@ -231,6 +232,7 @@ class Tag(models.Model):
         help_text='Another tag that follows this one in conventional order')
 
     name = models.SlugField(max_length=200,
+        validators=[lowercase_validator],
         help_text='Uniquely identifies this tag in the scope of its bag. Consists of letters, digits, and dashes only (no spaces).')
 
     class Meta:

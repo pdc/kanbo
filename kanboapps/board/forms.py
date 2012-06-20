@@ -1,7 +1,9 @@
 # -*- coding: UTF-8 -*-
 
+import re
 from django import forms
 from django.forms import ModelForm
+from django.core.validators import RegexValidator
 from django.contrib.auth.models import User
 from kanboapps.board.models import Board, Bag, Tag, Card, Access
 
@@ -18,6 +20,7 @@ class BagForm(ModelForm):
     initial_tags = forms.CharField(max_length=1000,
         required=False,
         widget=forms.Textarea,
+        validators=[RegexValidator(re.compile(r'^[a-z\d\n-]*$'))],
         help_text='Initial set of tag values, one per line. Tags should consist of letters, digits, and dashes only (no spaces). Tags must be unique within the scope of this bag.')
 
 class TagForm(ModelForm):
