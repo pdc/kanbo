@@ -561,6 +561,14 @@ class TestBagFormIncludesInialTags(TestCase):
 
         self.assertFalse(subject.is_valid())
 
+    def test_when_initial_tags_has_three_items_it_should_be_valid(self):
+        text = """head
+toes
+liver"""
+        subject = BagForm({'name': 'foo', 'initial_tags': text}, instance=Bag(board=self.board))
+
+        self.assertTrue(subject.is_valid())
+
 class TestTagFormChecksUniqueness(TestCase):
     def setUp(self):
         self.user = User.objects.create(username='username')

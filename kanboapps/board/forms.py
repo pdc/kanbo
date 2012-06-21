@@ -20,7 +20,7 @@ class BagForm(ModelForm):
     initial_tags = forms.CharField(max_length=1000,
         required=False,
         widget=forms.Textarea,
-        validators=[RegexValidator(re.compile(r'^[a-z\d\n-]*$'))],
+        validators=[RegexValidator(re.compile(r'^[a-z\d\n-]*$', re.MULTILINE), )],
         help_text='Initial set of tag values, one per line. Tags should consist of letters, digits, and dashes only (no spaces). Tags must be unique within the scope of this bag.')
 
 class TagForm(ModelForm):
