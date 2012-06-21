@@ -9,6 +9,7 @@ Replace this with more appropriate tests for your application.
 
 from django.test import TestCase, Client
 from mock import patch
+
 import redis
 import fakeredis
 import json
@@ -560,9 +561,6 @@ class TestBagFormIncludesInialTags(TestCase):
 
         self.assertFalse(subject.is_valid())
 
-
-
-
 class TestTagFormChecksUniqueness(TestCase):
     def setUp(self):
         self.user = User.objects.create(username='username')
@@ -570,12 +568,78 @@ class TestTagFormChecksUniqueness(TestCase):
         self.bag = self.board.bag_set.create(name='bagname')
         self.tags = [self.bag.tag_set.create(name=x) for x in 'lmnop']
 
-    def test_requires_unique(self):
+    def test_when_tag_exists_form_should_be_invalid(self):
         subject = TagForm({'name': 'p'}, instance=Tag(bag=self.bag))
 
         self.assertFalse(subject.is_valid())
 
+    def test_when_tag_is_new_form_should_be_valid(self):
+        subject = TagForm({'name': 'zz9'}, instance=Tag(bag=self.bag))
 
+        self.assertTrue(subject.is_valid())
+
+class DeleteBagBehaviour(TestCase):
+    def setUp(self):
+        self.user = User.objects.create(username='username')
+        self.user.set_password('userpassword')
+        self.user.save()
+
+        self.other = User.objects.create(username='othername')
+        self.other.set_password('otherpassword')
+        self.other.save()
+
+        self.board = self.user.board_set.create(name='boardname')
+        self.bag = self.board.bag_set.create(name='bagname')
+        self.tags = [self.bag.tag_set.create(name=x) for x in 'lmnop']
+
+        self.other_bag = self.board.bag_set.create(name='otherbag')
+        self.other_tags = [self.other_bag.tag_set.create(name=x) for x in 'pqrst']
+
+        self.client = Client()
+
+    def test_when_logged_in_as_owner_it_should_allow_link(self):
+        self.client.login(username='username', password='userpassword')
+
+        response = self.client.get('/username/boardname/bags/bagname')
+
+        self.assertTrue(response.context['allows_delete'])
+
+    def test_when_logged_in_as_other_it_should_not_allow_link(self):
+        self.client.login(username='othernane', password='otherpassword')
+
+        response = self.client.get('/username/boardname/bags/bagname')
+
+        self.assertFalse(response.context['allows_delete'])
+
+    def test_when_not_logged_in_it_should_redirect(self):
+        response = self.client.get('/username/boardname/bags/bagname/delete')
+
+        self.assertEqual(302, response.status_code)
+
+    def test_when_logged_in_as_someone_else_it_should_redirect(self):
+        self.client.login(username='othername', password='otherpassword')
+
+        response = self.client.get('/username/boardname/bags/bagname/delete')
+
+        self.assertRedirects(response, '/username/boardname')
+
+    def test_when_logged_in_as_owner_it_should_show_form(self):
+        self.client.login(username='username', password='userpassword')
+
+        response = self.client.get('/username/boardname/bags/bagname/delete')
+
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(self.bag, response.context['bag'])
+
+    def test_when_posting_as_owner_it_should_delete_bag(self):
+        self.client.login(username='username', password='userpassword')
+
+        response = self.client.post('/username/boardname/bags/bagname/delete')
+
+        self.assertRedirects(response, '/username/boardname')
+        self.assertEqual(1, Bag.objects.filter(board=self.board).count()) # No longer in db
+        self.assertEqual(0, Tag.objects.filter(bag=self.bag).count()) # Also delets dependents
+        self.assertEqual(5, self.other_bag.tag_set.count()) # Doesn‘t delete anything else
 
 
 

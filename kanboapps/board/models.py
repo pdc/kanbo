@@ -204,6 +204,9 @@ class Bag(models.Model):
     def allows_rearrange(self, user):
         return self.board.allows_rearrange(user)
 
+    def allows_delete(self, user):
+        return user == self.board.owner
+
     @models.permalink
     def get_absolute_url(self):
         return 'bag-detail', (), {
@@ -223,6 +226,8 @@ class Bag(models.Model):
     def tags_sorted(self):
         """A list of tag objects."""
         return toposorted(self.tag_set.all())
+
+
 
 
 class Tag(models.Model):

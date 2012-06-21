@@ -10,6 +10,17 @@
 {% block main %}
 <section id="detail" class="main">
     <h1>Values for {{ bag.name }}</h1>
+
+    {% if allows_rearrange %}
+    <ul class="menu">
+        {% if allows_delete %}
+        <li>
+            <a href="{% url delete-bag owner_username=owner.username board_name=board.name bag_name=bag.name %}">Delete bag…</a>
+        </li>
+        {% endif %}
+    </ul>
+    {% endif %}
+
     <p>
         Each card can be tagged with one of the following values:
     </p>
@@ -41,6 +52,8 @@
         </div>
     </form>
     {% endif %}
+
+
 </section>
 {% include "board/new-tag-hint-part.html" %}
 {% endblock %}

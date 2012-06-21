@@ -159,23 +159,28 @@ var CardGrid = (function ($) {
         var form = $(formSelector).remove();
         addCancelLinkToForm(form);
 
-        var buttonBar = $('<div>', {'class': 'menu'})
-            .appendTo($(listSelector).parent());
-        var button = $('<a>', {
+        var section = $(listSelector).closest('section');
+        var buttonBar = $('ul.menu', section);
+        if (buttonBar.size() == 0) {
+            buttonBar = $('<div>', {'class': 'menu'})
+                .appendTo(section);
+        }
+        var buttonLink = $('<a>', {
             href: '#' + form.attr('id'),
             text: $('input[type=submit]', form).val() + '…',
             click: function (ev) {
-                if (!button.hasClass('disabled')) {
+                if (!buttonLink.hasClass('disabled')) {
                     $(listSelector).append(form);
                     form.slideDown();
-                    button.addClass('disabled')
+                    buttonLink.addClass('disabled')
                     $('.buttons a', form).click(function (ev) {
                         form.remove();
-                        button.removeClass('disabled');
+                        buttonLink.removeClass('disabled');
                     });
                 }
             }
-        }).appendTo(buttonBar);
+        });
+        $('<li>').append(buttonLink).prependTo(buttonBar);
     }
 
     return {

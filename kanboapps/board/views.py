@@ -322,6 +322,21 @@ def bag_detail(request, owner, board, bag_name):
         'bag': bag,
         'form': TagForm(instance=Tag(bag=bag)),
         'order': ' '.join(str(x.id) for x in bag.tags_sorted()),
+        'allows_delete': bag.allows_delete(request.user),
+    }
+
+@login_required
+@with_template('board/delete-bag.html')
+@that_board
+def delete_bag(request, owner, board, bag_name):
+    if request.user != owner:
+        return HttpResponseRedirect(board.get_detail_url())
+    bag = get_object_or_404(Bag, board=board, name=bag_name)
+    if request.method == 'POST':
+        bag.delete()
+        return HttpResponseRedirect(board.get_detail_url())
+    return {
+        'bag': bag,
     }
 
 @with_template('board/new-tag.html')

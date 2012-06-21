@@ -1,0 +1,24 @@
+{% extends "board/base.html" %}
+{% block title %}Delete {{ bag.name }} - {{ board.owner.username }}/{{ board.name }}{% endblock %}
+
+{% block details-tab %}
+<a class="active" href="{{ bag.board.get_detail_url }}">Details</a>
+{% endblock %}
+
+{% block heading %}Delete {{ bag.name }}?{% endblock %}
+
+{% block main %}
+<section id="detail" class="main">
+    <h1>Values for {{ bag.name }}</h1>
+    <p>
+        Time to delete this tag bag? This cannot be undone.
+    </p>
+
+    <form method="POST">
+        {% csrf_token %}
+        <input type="submit" value="Delete {{ bag.name }}" />
+        or,
+        <a href="{{ bag.get_absolute_url }}">Cancel
+    </form>
+</section>
+{% endblock %}
