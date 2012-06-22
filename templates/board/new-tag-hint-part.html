@@ -1,11 +1,27 @@
 <section id="hint">
+    <h2>Tags and bags</h2>
     <p>
-        Kanbo uses the term <i>tag</i> to refer to a value used to classify
-        cards in Kanbo. Tags an be used as the values for columns or rows in the grid.
+        Kanbo uses the term <dfn>tag</dfn> to refer
+        generically
+        to a value or token used to classify
+        cards in Kanbo.
+    </p>
+    <p>
+        We use <dfn>bags</dfn>
+        to group tags that qualify cards in the same way.
+        For example, you might have a bag of
+        project tags, or a bag of tags representing components.
+        A card can be tagged with at most <em>one</em> tag from each bag.
+        Bags are used to label the columns or rows of the grid.
     </p>
     <p>
         Tags should have short, symbollic names.
-        If the tags correspond to stories or projects that have
-        IDs in some other database, use those IDs as the tag names.
+        To avoid ambiguity in spelling,
+        and to allow them to be easily used in URLs,
+        Kanbo requires them to be all-lower-case and
+        to consist of letters, digits, and dashes only.
+        It is OK for tags to be numbers.
+        This might be useful if they correspond to
+        things that are in a numbered list somewhere else.
     </p>
 </section>

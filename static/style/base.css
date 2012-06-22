@@ -114,7 +114,8 @@ header h1 {
     border: 1px outset #FFFAE4;
     border-bottom: 1px inset #887;
 }
-#tabs li strong {
+#tabs li strong,
+#tabs li a.active {
     color: #333;
     background-color: #FFFAE4;
     border: 1px outset #FFFAE4;
