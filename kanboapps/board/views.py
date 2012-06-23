@@ -47,19 +47,19 @@ def redirect_to_board_detail(board, view_name='board-detail'):
         owner_username=board.owner.username,
         board_name=board.name)
 
-def redirect_to_board(board, col_name=None, view_name='card-grid'):
+def redirect_to_board(board, axes=None, view_name='card-grid'):
     """Return a HttpresponseRedirect to this board.
 
-    If col_name is specified, jump to the specified grid.
+    If axes is specified, jump to the specified grid.
     Otherwise go to teh default page for that board
     (currently the default grid view).
     """
-    if not col_name:
-        col_name=board.bags[0].name
+    if not axes:
+        axes=board.bags[0].name
     return redirect(view_name,
         owner_username=board.owner.username,
         board_name=board.name,
-        col_name=col_name)
+        axes=axes)
 
 
 @with_template('board/user-profile.html')
@@ -136,9 +136,9 @@ def add_user(request, owner, board):
 
 @with_template('board/grid.html')
 @that_board
-def card_grid(request, owner, board, col_name):
-    col_bag = get_object_or_404(Bag, board=board, name=col_name)
-    grid = board.make_grid(col_bag)
+def card_grid(request, owner, board, axes):
+    axis_spec = board.parse_axis_spec(axes)
+    grid = board.make_grid(axis_spec)
 
     is_polling_enabled = settings.EVENT_REPEATER.get('POLL')
     next_seq = board.event_stream().next_seq() if is_polling_enabled else None
@@ -146,7 +146,7 @@ def card_grid(request, owner, board, col_name):
     return {
         'board': board,
         'grid': grid,
-        'col_name': col_name,
+        'axes': axis_spec,
         'col_tags': [t for b in grid.rows[0].bins if b.tags for t in b.tags],
         'is_polling_enabled': is_polling_enabled,
         'next_seq': next_seq,
@@ -154,11 +154,11 @@ def card_grid(request, owner, board, col_name):
     }
 
 @with_template('board/grid.html')
-def card_arrangement(request, board_id, col_name):
+def card_arrangement(request, board_id, axes):
     board = get_object_or_404(Board, pk=board_id)
-    if process_card_arrangement(request, board, col_name):
-        if col_name:
-            return redirect_to_board(board, col_name)
+    if process_card_arrangement(request, board, axes):
+        if axes:
+            return redirect_to_board(board, axes)
         else:
             return redirect_to_board_detail(board)
     return {
@@ -168,14 +168,14 @@ def card_arrangement(request, board_id, col_name):
     }
 
 @returns_json
-def card_arrangement_ajax(request, board_id, col_name):
+def card_arrangement_ajax(request, board_id, axes):
     board = get_object_or_404(Board, pk=board_id)
-    success = process_card_arrangement(request, board, col_name)
+    success = process_card_arrangement(request, board, axes)
     res = success or {}
     res['success'] = bool(success)
     return res
 
-def process_card_arrangement(request, board, col_name):
+def process_card_arrangement(request, board, axes):
     """Code common to the 2 card_arrangement views."""
     # Check this user has permission.
     if not board.allows_rearrange(request.user):
@@ -190,7 +190,7 @@ def process_card_arrangement(request, board, col_name):
         dropped_id = request.POST.get('dropped')
         if dropped_id:
             dropped = get_object_or_404(Card, id=dropped_id)
-            axis_bag = get_object_or_404(Bag, board=board, name=col_name)
+            axis_bag = get_object_or_404(Bag, board=board, name=axes)
             tag_strs = request.POST.getlist('tags')
             dropped.replace_tags([axis_bag], tag_strs)
             dropped.save()
@@ -223,16 +223,16 @@ def process_card_arrangement(request, board, col_name):
 @login_required
 @with_template('board/new-card.html')
 @that_board
-def new_card(request, owner, board, col_name):
+def new_card(request, owner, board, axes):
     if request.method == 'POST':
         form = card_form_for_board(board, request.POST)
         if form.is_valid():
             card = form.save()
-            return redirect_to_board(board, col_name)
+            return redirect_to_board(board, axes)
     else:
         form = card_form_for_board(board)
     return {
-        'col_name': col_name,
+        'axes': axes,
         'form': form,
         'non_field_errors': form.errors.get(NON_FIELD_ERRORS),
     }
@@ -240,24 +240,24 @@ def new_card(request, owner, board, col_name):
 @login_required
 @with_template('board/edit-card.html')
 @that_board
-def edit_card(request, owner, board, col_name, card_name):
+def edit_card(request, owner, board, axes, card_name):
     card = get_object_or_404(Card, board=board, name=card_name)
     if request.method == 'POST':
         form = CardForm(request.POST, instance=card)
         if form.is_valid():
             form.save()
-            return redirect_to_board(board, col_name)
+            return redirect_to_board(board, axes)
     else:
         form = CardForm(instance=card)
     return {
-        'col_name': col_name,
+        'axes': axes,
         'form': form,
         'non_field_errors': form.errors.get(NON_FIELD_ERRORS),
     }
 
 @with_template('board/new-card.html')
 @that_board
-def create_many_cards(request, owner, board, col_name):
+def create_many_cards(request, owner, board, axes):
     text = None
     logger.debug('Method = {0!r}'.format(request.method))
     if request.method == 'POST':
@@ -271,10 +271,10 @@ def create_many_cards(request, owner, board, col_name):
             count += 1
         if count:
             messages.info(request, 'Added {0} card{1}'.format(count, pluralize(count)))
-            return redirect_to_board(board, col_name)
+            return redirect_to_board(board, axes)
         # If failed, fall through to showing form again:
     return {
-        'col_name': col_name,
+        'axes': axes,
         'text': text,
     }
 

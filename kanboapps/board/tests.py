@@ -289,7 +289,7 @@ class TestGrid(TestCase, BoardFixtureMixin):
         self.assertEqual(['r', 'v', 'x'], [t.name for t in self.cards[1].tag_set.all()])
 
     def test_simplest(self):
-        subject = self.board.make_grid()
+        subject = self.board.make_grid(AxisSpec(None, None))
 
         # One row containing onc cell containing all the cards.
         self.assert_grids_equal(Grid([
@@ -299,7 +299,7 @@ class TestGrid(TestCase, BoardFixtureMixin):
         ]), subject)
 
     def test_columns(self):
-        subject = self.board.make_grid(self.bags[0])
+        subject = self.board.make_grid(AxisSpec([self.bags[0]], None))
 
         # One row containing 3 cells, the first empty
         self.assert_grids_equal(Grid([
@@ -311,7 +311,7 @@ class TestGrid(TestCase, BoardFixtureMixin):
         ]), subject)
 
     def test_column_zero_has_unmatched_cards(self):
-        subject = self.board.make_grid(self.bags[2])
+        subject = self.board.make_grid(AxisSpec([self.bags[2]], None))
 
         # One row containing 4 cells, each with one quarter of the items.
         self.assert_grids_equal(Grid([
@@ -569,6 +569,7 @@ liver"""
 
         self.assertTrue(subject.is_valid())
 
+
 class TestTagFormChecksUniqueness(TestCase):
     def setUp(self):
         self.user = User.objects.create(username='username')
@@ -691,6 +692,20 @@ class AxisSpecBehaviour(TestCase):
 
         self.assertEqual([self.bag], result.x_axis)
         self.assertEqual([self.bag2, self.bag3], result.y_axis)
+
+    def test_when_stringified_should_return_spec(self):
+        self.given_a_board_with_three_bags()
+
+        result = str(AxisSpec([self.bag], [self.bag2, self.bag3]))
+
+        self.assertEqual('bagname+secondbag,thirdbag', result)
+
+    def test_when_no_y_axis_should_omit_from_spec(self):
+        self.given_a_board_with_three_bags()
+
+        result = str(AxisSpec([self.bag, self.bag2], None))
+
+        self.assertEqual('bagname,secondbag', result)
 
 
     # Steps used in the above

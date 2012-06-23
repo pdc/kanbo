@@ -47,6 +47,13 @@ class AxisSpec(object):
         self.x_axis = x_axis
         self.y_axis = y_axis
 
+    def __str__(self):
+        if not self.y_axis:
+            return  ','.join(b.name for b in self.x_axis)
+        return '{0}+{1}'.format(
+            ','.join(b.name for b in self.x_axis),
+            ','.join(b.name for b in self.y_axis))
+
 
 class Grid(object):
     """Represents a 2d presentation of cards.
@@ -130,7 +137,7 @@ class Board(models.Model):
         return 'card-grid', (), {
             'owner_username': self.owner.username,
             'board_name': self.name,
-            'col_name': self.bag_set.all()[0].name,
+            'axes': self.bag_set.all()[0].name,
         }
 
     @models.permalink
@@ -172,12 +179,12 @@ class Board(models.Model):
             return True
         return False
 
-    def make_grid(self, columns_def=None):
+    def make_grid(self, axis_spec):
         cards = toposorted(self.card_set.all())
 
-        if columns_def:
+        if axis_spec.x_axis:
             tag_idss = [(tag, [inf['id'] for inf in tag.card_set.values('id')])
-                    for tag in  columns_def.tags_sorted()]
+                    for tag in  axis_spec.x_axis[0].tags_sorted()]
             bins = [GridBin([x for x in cards if x.id in ids], [tag])
                 for (tag, ids) in tag_idss]
             missing = GridBin([x for x in cards if all(x not in bin.cards for bin in bins)])

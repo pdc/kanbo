@@ -20,7 +20,7 @@
     <ul class="menu">
         {% for bag in bags %}
         <li>
-            <a href="{% url card-grid owner_username=board.owner.username board_name=board.name col_name=bag.name %}">{{ bag.name }}</a>
+            <a href="{% url card-grid owner_username=board.owner.username board_name=board.name axes=bag.name %}">{{ bag.name }}</a>
         </li>
         {% endfor %}
     </ul>

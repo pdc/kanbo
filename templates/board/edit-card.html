@@ -2,7 +2,7 @@
 {% block title %}{{ board.label }}{% endblock %}
 
 {% block trail %}
-    <a href="{% url card-grid owner_username=owner.username board_name=board.name col_name=col_name %}">{{ board.label }}</a>
+    <a href="{% url card-grid owner_username=owner.username board_name=board.name axes=axes %}">{{ board.label }}</a>
     <span>></span>
 {% endblock %}
 
@@ -14,7 +14,7 @@
         {% include "board/form-part.html" %}
         <div class="buttons">
             <input type="submit" value="Save Changes">
-            or <a href="{% url card-grid owner_username=owner.username board_name=board.name col_name=col_name %}">cancel</a>
+            or <a href="{% url card-grid owner_username=owner.username board_name=board.name axes=axes %}">cancel</a>
         </div>
     </form>
 </section>

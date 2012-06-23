@@ -20,7 +20,7 @@
                     <h2>About Kanbo</h2>
                     <p>Any fool can create a task-list web app. Here’s mine.</p>
                     <p class="hero-link">
-                        <a href="{% url card-grid owner_username=board.owner.username board_name=board.name col_name="state" %}">Try the demonstration task grid</a>
+                        <a href="{% url card-grid owner_username=board.owner.username board_name=board.name axes="state" %}">Try the demonstration task grid</a>
                     </p>
                     <p>
                         Project-management styles variously calling themselves Agile, Lean,
