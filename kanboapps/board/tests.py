@@ -650,4 +650,57 @@ class DeleteBagBehaviour(TestCase):
         self.assertEqual(5, self.other_bag.tag_set.count()) # Doesn‘t delete anything else
 
 
+class AxisSpecBehaviour(TestCase):
+    def setUp(self):
+        self.user = User.objects.create(username='username')
+
+    def test_when_one_bag_named_should_make_it_the_xaxis(self):
+        self.given_a_board_with_one_bag()
+
+        result = self.board.parse_axis_spec('bagname')
+
+        self.assertEqual([self.bag], result.x_axis)
+        self.assertFalse(result.y_axis)
+
+    def test_when_wrong_name_it_should_explode(self):
+        self.given_a_board_with_one_bag()
+
+        with self.assertRaises(AxisSpec.NotValid):
+            result = self.board.parse_axis_spec('notbagname')
+
+    def test_when_two_bags_separated_by_plus_should_return_x_and_y_axes(self):
+        self.given_a_board_with_three_bags()
+
+        result = self.board.parse_axis_spec('secondbag+thirdbag')
+
+        self.assertEqual([self.bag2], result.x_axis)
+        self.assertEqual([self.bag3], result.y_axis)
+
+    def test_when_two_bags_separated_by_comma_should_return_multiple_x_axes(self):
+        self.given_a_board_with_three_bags()
+
+        result = self.board.parse_axis_spec('secondbag,thirdbag')
+
+        self.assertEqual([self.bag2, self.bag3], result.x_axis)
+        self.assertFalse(result.y_axis)
+
+    def test_when_plus_and_coma_combo_yield_two_axes(self):
+        self.given_a_board_with_three_bags()
+
+        result = self.board.parse_axis_spec('bagname+secondbag,thirdbag')
+
+        self.assertEqual([self.bag], result.x_axis)
+        self.assertEqual([self.bag2, self.bag3], result.y_axis)
+
+
+    # Steps used in the above
+
+    def given_a_board_with_one_bag(self):
+        self.board = self.user.board_set.create(name='boardname')
+        self.bag = self.board.bag_set.create(name='bagname')
+
+    def given_a_board_with_three_bags(self):
+        self.given_a_board_with_one_bag()
+        self.bag2 =  self.board.bag_set.create(name='secondbag')
+        self.bag3 =  self.board.bag_set.create(name='thirdbag')
 

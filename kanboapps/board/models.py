@@ -30,6 +30,24 @@ from django.contrib.auth.models import User
 
 logger = logging.getLogger(__name__)
 
+
+class AxisSpec(object):
+    """Specifies the axes of the grid.
+
+    Not stored in the db: used to represent
+    part of the URL of grid pages.
+    """
+
+    class NotValid(ValueError):
+        """Raised when cannot parse an axis spec."""
+        def __init__(self, bad_spec):
+            super(AxisSpec.NotValid, self).__init__('{0}: not a valid axis spec'.format(bad_spec))
+
+    def __init__(self, x_axis, y_axis):
+        self.x_axis = x_axis
+        self.y_axis = y_axis
+
+
 class Grid(object):
     """Represents a 2d presentation of cards.
 
@@ -169,6 +187,25 @@ class Board(models.Model):
     def event_stream(self):
         """Return the event stream for this board."""
         return EventRepeater().get_stream(self.id)
+
+    def parse_axis_spec(self, spec):
+        """Given a string return an axis spec.
+
+        <axis spec> ::= <empty> | <one axis> ( ‘+’ <one axis> )?
+        <one axis> ::= <bag name> ( ‘,’ <bag name> )*
+
+
+        """
+        parts = spec.split('+')
+        try:
+            x_axis = [self.bag_set.get(name=n) for n in parts[0].split(',')]
+            y_axis = ([self.bag_set.get(name=n) for n in parts[1].split(',')]
+                    if len(parts) > 1
+                    else None)
+        except Bag.DoesNotExist, e:
+            raise AxisSpec.NotValid(spec)
+
+        return AxisSpec(x_axis, y_axis)
 
 
 class Access(models.Model):
