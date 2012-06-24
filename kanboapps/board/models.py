@@ -47,6 +47,19 @@ class AxisSpec(object):
         self.x_axis = x_axis
         self.y_axis = y_axis
 
+    def x_axis_tag_sets(self):
+        """A list of sets, each containing tags from the bags in the axis."""
+        return self.axis_tag_sets(self.x_axis)
+
+    def y_axis_tag_sets(self):
+        """A list of sets, each containing tags from the bags in the axis."""
+        return self.axis_tag_sets(self.y_axis)
+
+    def axis_tag_sets(self, axis):
+        if not axis:
+            return [set()]
+        return [set()] + [set([t]) for t in axis[0].tags_sorted()]
+
     def __str__(self):
         if not self.y_axis:
             return  ','.join(b.name for b in self.x_axis)
@@ -66,6 +79,12 @@ class Grid(object):
     def __eq__(self, other):
         return self.rows == other.rows
 
+    def __str__(self):
+        return '[%s]' % '\n  '.join(str(r) for r in self.rows)
+
+    def __repr__(self):
+        return 'Grid({0!r})'.format(self.rows)
+
 
 class GridRow(object):
     def __init__(self, bins, tags=None):
@@ -75,11 +94,17 @@ class GridRow(object):
     def __eq__(self, other):
         return self.tags == other.tags and self.bins == other.bins
 
+    def __str__(self):
+        return ' | '.join(str(b) for b in self.bins)
+
+    def __repr__(self):
+        return 'GridRow({0!r}, tags={1!r})'.format(self.bins, self.tags)
+
 
 class GridBin(object):
     def __init__(self, cards, tags=None):
         self.cards = cards
-        self.tags = tags
+        self.tags = set(tags or [])
 
         self.element_id =  ('bin-' + '-'.join(str(x.id) for x in self.tags)
                 if tags else 'untagged-bin')
@@ -88,6 +113,12 @@ class GridBin(object):
         return (self.tags == other.tags
             and len(self.cards) == len(other.cards)
             and all(x.id == y.id for (x, y) in zip(self.cards, other.cards)))
+
+    def __str__(self):
+        return ', '.join(c.name for c in self.cards)
+
+    def __repr__(self):
+        return 'GridBin({0!r}, tags={1!r})'.format(self.cards, self.tags)
 
 
 lowercase_validator = RegexValidator(re.compile(r'^[a-z\d-]+$'), 'Must be lower-case letters a-z, digits, or hyphens')
@@ -180,16 +211,47 @@ class Board(models.Model):
         return False
 
     def make_grid(self, axis_spec):
+        """Arrange the cards in to a grid as specified by the axis spec.
+
+        Returns an instance of class Grid.
+        """
         cards = toposorted(self.card_set.all())
 
-        if axis_spec.x_axis:
-            tag_idss = [(tag, [inf['id'] for inf in tag.card_set.values('id')])
-                    for tag in  axis_spec.x_axis[0].tags_sorted()]
-            bins = [GridBin([x for x in cards if x.id in ids], [tag])
-                for (tag, ids) in tag_idss]
-            missing = GridBin([x for x in cards if all(x not in bin.cards for bin in bins)])
-            return Grid([GridRow([missing] + bins)])
-        return Grid([GridRow([GridBin(cards)])])
+        # Find the labels for the columns and rows.
+        xss = axis_spec.x_axis_tag_sets()[1:]
+        yss = axis_spec.y_axis_tag_sets()[1:]
+
+        # Get map from tags to card IDs.
+        all_tags = set(x for xs in xss for x in xs) | set(y for ys in yss for y in ys)
+        ids_by_tag = dict((tag, [inf['id'] for inf in tag.card_set.values('id')])
+            for tag in  all_tags)
+
+        # Now get the card ID sets for columns and rows
+        xcardidss = [intersection(ids_by_tag[t] for t in xs) for xs in xss]
+        ycardidss = [intersection(ids_by_tag[t] for t in ys) for ys in yss]
+
+        # Now the ‘core’ bins want the cards n the intersection of sets
+        binss = [
+            [GridBin([c for c in cards if c.id in xcardids and c.id in ycardids], xs | ys)
+                for (xs, xcardids) in zip(xss, xcardidss)]
+            for (ys, ycardids) in zip(yss, ycardidss)]
+
+        # Top row is bins with no y-axis tag.
+        xmissings = [
+            GridBin([c for c in cards if c.id in xcardids and all(c not in bs[i].cards for bs in binss)], xs)
+            for (i, (xs, xcardids)) in enumerate(zip(xss, xcardidss))]
+        # Left row is bins with no x-axis tag
+        ymissings = [
+            GridBin([c for c in cards if c.id in ycardids and all(c not in b.cards for b in bs)], ys)
+            for (ys, ycardids, bs) in zip(yss, ycardidss, binss)]
+
+        # Top left corner is bin for cards with no x- or y-axis tags.
+        # When no axes are defined, this will be all the cards!
+        missing = GridBin([c for c in cards if not any(c.id in ids for ids in ids_by_tag.values())], set())
+
+        return Grid(
+            [GridRow([missing] + xmissings)]
+            + [GridRow([ymissing] + bs) for (ymissing, bs) in zip(ymissings, binss)])
 
     def event_stream(self):
         """Return the event stream for this board."""
@@ -198,10 +260,10 @@ class Board(models.Model):
     def parse_axis_spec(self, spec):
         """Given a string return an axis spec.
 
+        Axis spec is used later to generate a grid.
+
         <axis spec> ::= <empty> | <one axis> ( ‘+’ <one axis> )?
         <one axis> ::= <bag name> ( ‘,’ <bag name> )*
-
-
         """
         parts = spec.split('+')
         try:
@@ -213,6 +275,16 @@ class Board(models.Model):
             raise AxisSpec.NotValid(spec)
 
         return AxisSpec(x_axis, y_axis)
+
+
+
+def intersection(xss):
+    it = iter(xss)
+    try:
+        xs0 = next(it)
+        return set(x for x in xs0 if all(x in xs for xs in it))
+    except StopIteration:
+        return set()
 
 
 class Access(models.Model):

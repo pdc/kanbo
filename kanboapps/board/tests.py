@@ -13,6 +13,7 @@ from mock import patch
 import redis
 import fakeredis
 import json
+from pprint import pprint
 from django.contrib.auth.models import User, AnonymousUser
 from kanboapps.board.models import *
 from kanboapps.board.forms import BoardForm, BagForm, TagForm
@@ -238,18 +239,18 @@ class BoardFixtureMixin(object):
         self.cards_name = dict((x.name, x) for x in self.cards)
         self.id_name = dict((x.name, x.id) for x in self.cards)
 
-        # Create some bags
+        # Create three bags
         self.bags = [self.board.bag_set.create(name=x) for x in 'qtw']
         self.tagss = [[b.tag_set.create(name=s) for s in ss]
             for b, ss in zip(self.bags, ['rs', 'uv', 'xyz'])]
 
-        # Taggity tag
-        for i, s in enumerate(self.cards):
-            s.tag_set.add(self.tagss[0][i // 8])
-            s.tag_set.add(self.tagss[1][i % 2])
+        # Tag then
+        for i, card in enumerate(self.cards):
+            card.tag_set.add(self.tagss[0][i // 8]) # First half q:r, second half q:3
+            card.tag_set.add(self.tagss[1][i % 2]) # Alternate t:u and t:v
             if i % 4:
-                s.tag_set.add(self.tagss[2][i % 4 - 1])
-            s.save()
+                card.tag_set.add(self.tagss[2][i % 4 - 1]) # Cycle through (blank), w:x, w:y, w:z
+            card.save()
 
     def reload_cards(self):
         self.cards = [Card.objects.get(id=s.id) for s in self.cards]
@@ -322,6 +323,29 @@ class TestGrid(TestCase, BoardFixtureMixin):
                 GridBin([self.cards[i] for i in [3, 7, 11, 15]], [self.tagss[2][2]]),
             ])
         ]), subject)
+
+    def test_when_y_axis_specified_should_generate_2_rows(self):
+        subject = self.board.make_grid(AxisSpec([self.bags[0]], [self.bags[1]]))
+
+        # _   q:r  q:s
+        # t:u 0246 8ACE # evens
+        # t:v 1357 9BDF # Odds
+
+        # Three rows of three cells, with the first row and column calls all empty.
+
+        self.assert_grids_equal(Grid([
+            GridRow([
+                GridBin([], []),
+                GridBin([], [self.tagss[0][0]]),
+                GridBin([], [self.tagss[0][1]])]),
+            GridRow([
+                GridBin([], [self.tagss[1][0]]),
+                GridBin([self.cards[i] for i in [0, 2, 4, 6]], [self.tagss[0][0], self.tagss[1][0]]),
+                GridBin([self.cards[i] for i in [8, 10, 12, 14]], [self.tagss[0][1], self.tagss[1][0]])]),
+            GridRow([
+                GridBin([], [self.tagss[1][1]]),
+                GridBin([self.cards[i] for i in [1, 3, 5, 7]], [self.tagss[0][0], self.tagss[1][1]]),
+                GridBin([self.cards[i] for i in [9, 11, 13, 15]], [self.tagss[0][1], self.tagss[1][1]])])]), subject)
 
 
 class TestCardReplacingTags(TestCase, BoardFixtureMixin):
@@ -678,11 +702,11 @@ class AxisSpecBehaviour(TestCase):
         self.assertEqual([self.bag3], result.y_axis)
 
     def test_when_two_bags_separated_by_comma_should_return_multiple_x_axes(self):
-        self.given_a_board_with_three_bags()
+        self.given_a_board_with_two_bags()
 
-        result = self.board.parse_axis_spec('secondbag,thirdbag')
+        result = self.board.parse_axis_spec('bagname,secondbag')
 
-        self.assertEqual([self.bag2, self.bag3], result.x_axis)
+        self.assertEqual([self.bag, self.bag2], result.x_axis)
         self.assertFalse(result.y_axis)
 
     def test_when_plus_and_coma_combo_yield_two_axes(self):
@@ -707,15 +731,54 @@ class AxisSpecBehaviour(TestCase):
 
         self.assertEqual('bagname,secondbag', result)
 
+    def test_when_one_bag_in_x_axis_should_return_simple_list_o_tags(self):
+        self.given_a_one_by_none_axis_spec()
+
+        result = self.axis_spec.x_axis_tag_sets()
+
+        self.assertEqual(set([]), result[0])
+        self.assertEqual(set([self.tags[0]]), result[1])
+        self.assertEqual(set([self.tags[1]]), result[2])
+
+    def test_when_no_bags_in_y_axis_should_return_list_with_empty_set(self):
+        self.given_a_one_by_none_axis_spec()
+
+        result = self.axis_spec.y_axis_tag_sets()
+
+        self.assertEqual([set([])], result)
+
+    def test_when_one_bag_in_y_axis_should_return_simple_list_o_tags(self):
+        self.given_a_one_by_one_axis_spec()
+
+        result = self.axis_spec.y_axis_tag_sets()
+
+        self.assertEqual(set([]), result[0])
+        self.assertEqual(set([self.tags2[0]]), result[1])
+        self.assertEqual(set([self.tags2[1]]), result[2])
+
 
     # Steps used in the above
 
     def given_a_board_with_one_bag(self):
         self.board = self.user.board_set.create(name='boardname')
         self.bag = self.board.bag_set.create(name='bagname')
+        self.tags = [self.bag.tag_set.create(name=n) for n in ['ape', 'bee']]
 
-    def given_a_board_with_three_bags(self):
+    def given_a_board_with_two_bags(self):
         self.given_a_board_with_one_bag()
         self.bag2 =  self.board.bag_set.create(name='secondbag')
+        self.tags2 = [self.bag2.tag_set.create(name=n) for n in ['cat', 'dog']]
+
+    def given_a_board_with_three_bags(self):
+        self.given_a_board_with_two_bags()
         self.bag3 =  self.board.bag_set.create(name='thirdbag')
+        self.tags3 = [self.bag2.tag_set.create(name=n) for n in ['eel', 'fox']]
+
+    def given_a_one_by_none_axis_spec(self):
+        self.given_a_board_with_one_bag()
+        self.axis_spec = AxisSpec([self.bag], None)
+
+    def given_a_one_by_one_axis_spec(self):
+        self.given_a_board_with_two_bags()
+        self.axis_spec = AxisSpec([self.bag], [self.bag2])
 
