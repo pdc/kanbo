@@ -18,9 +18,9 @@
     <h1>Grids</h1>
     <p>Grids are ways of displaying the cards on this board:</p>
     <ul class="menu">
-        {% for bag in bags %}
+        {% for axes in board.grid_options %}
         <li>
-            <a href="{% url card-grid owner_username=board.owner.username board_name=board.name axes=bag.name %}">{{ bag.name }}</a>
+            <a href="{% url card-grid owner_username=board.owner.username board_name=board.name axes=axes %}">{{ axes.label }}</a>
         </li>
         {% endfor %}
     </ul>

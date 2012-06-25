@@ -67,6 +67,13 @@ class AxisSpec(object):
             ','.join(b.name for b in self.x_axis),
             ','.join(b.name for b in self.y_axis))
 
+    def label(self):
+        if not self.y_axis:
+            return  ', '.join(b.name for b in self.x_axis)
+        return u'{0} \u00D7 {1}'.format(
+            ', '.join(b.name for b in self.x_axis),
+            ', '.join(b.name for b in self.y_axis))
+
 
 class Grid(object):
     """Represents a 2d presentation of cards.
@@ -210,6 +217,15 @@ class Board(models.Model):
             return True
         return False
 
+    def grid_options(self):
+        """Return a sequence of AxisSpec instances suited to this board.
+        """
+        bags = list(self.bag_set.all())
+        first_bag = bags.pop(0)
+        result = [AxisSpec([first_bag], None)]
+        result += [AxisSpec([first_bag], [b]) for b in bags]
+        return result
+
     def make_grid(self, axis_spec):
         """Arrange the cards in to a grid as specified by the axis spec.
 
@@ -332,6 +348,7 @@ class Bag(models.Model):
 
     class Meta:
         unique_together = [('board', 'name')]
+        ordering = ['id']
 
     def __unicode__(self):
         return self.name

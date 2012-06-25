@@ -720,10 +720,34 @@ class DeleteBagBehaviour(TestCase):
         self.assertEqual(5, self.other_bag.tag_set.count()) # Doesn‘t delete anything else
 
 
-class AxisSpecBehaviour(TestCase):
-    def setUp(self):
-        self.user = User.objects.create(username='username')
 
+class BoardStepsMixin(object):
+    def given_a_board_with_one_bag(self):
+        self.user = User.objects.create(username='username')
+        self.board = self.user.board_set.create(name='boardname')
+        self.bag = self.board.bag_set.create(name='bagname')
+        self.tags = [self.bag.tag_set.create(name=n) for n in ['ape', 'bee']]
+
+    def given_a_board_with_two_bags(self):
+        self.given_a_board_with_one_bag()
+        self.bag2 =  self.board.bag_set.create(name='secondbag')
+        self.tags2 = [self.bag2.tag_set.create(name=n) for n in ['cat', 'dog']]
+
+    def given_a_board_with_three_bags(self):
+        self.given_a_board_with_two_bags()
+        self.bag3 =  self.board.bag_set.create(name='thirdbag')
+        self.tags3 = [self.bag2.tag_set.create(name=n) for n in ['eel', 'fox']]
+
+    def given_a_one_by_none_axis_spec(self):
+        self.given_a_board_with_one_bag()
+        self.axis_spec = AxisSpec([self.bag], None)
+
+    def given_a_one_by_one_axis_spec(self):
+        self.given_a_board_with_two_bags()
+        self.axis_spec = AxisSpec([self.bag], [self.bag2])
+
+
+class AxisSpecBehaviour(TestCase, BoardStepsMixin):
     def test_when_one_bag_named_should_make_it_the_xaxis(self):
         self.given_a_board_with_one_bag()
 
@@ -776,6 +800,32 @@ class AxisSpecBehaviour(TestCase):
 
         self.assertEqual('bagname,secondbag', result)
 
+
+class AxisSpecToStringBehaviours(TestCase, BoardStepsMixin):
+    def test_when_stringified_should_return_spec(self):
+        self.given_a_board_with_three_bags()
+
+        result = str(AxisSpec([self.bag], [self.bag2, self.bag3]))
+
+        self.assertEqual('bagname+secondbag,thirdbag', result)
+
+
+    def test_label_should_use_multiplication_sign(self):
+        self.given_a_board_with_three_bags()
+
+        result = AxisSpec([self.bag], [self.bag2, self.bag3]).label()
+
+        self.assertEqual(u'bagname \xD7 secondbag, thirdbag', result)
+
+    def test_when_no_y_axis_should_omit_from_label(self):
+        self.given_a_board_with_one_bag()
+
+        result = AxisSpec([self.bag], None).label()
+
+        self.assertEqual('bagname', result)
+
+
+class AxisTagSetBehaviourts(TestCase, BoardStepsMixin):
     def test_when_one_bag_in_x_axis_should_return_simple_list_o_tags(self):
         self.given_a_one_by_none_axis_spec()
 
@@ -801,29 +851,34 @@ class AxisSpecBehaviour(TestCase):
         self.assertEqual(set([self.tags2[0]]), result[1])
         self.assertEqual(set([self.tags2[1]]), result[2])
 
-
-    # Steps used in the above
-
-    def given_a_board_with_one_bag(self):
-        self.board = self.user.board_set.create(name='boardname')
-        self.bag = self.board.bag_set.create(name='bagname')
-        self.tags = [self.bag.tag_set.create(name=n) for n in ['ape', 'bee']]
-
-    def given_a_board_with_two_bags(self):
+class BoardGridOptionsBehaviour(TestCase, BoardStepsMixin):
+    def test_when_one_bag_should_it_as_1x0(self):
         self.given_a_board_with_one_bag()
-        self.bag2 =  self.board.bag_set.create(name='secondbag')
-        self.tags2 = [self.bag2.tag_set.create(name=n) for n in ['cat', 'dog']]
 
-    def given_a_board_with_three_bags(self):
+        self.when_asked_for_grid_options()
+
+        self.assertEqual(1, len(self.result))
+        self.assertEqual('bagname', str(self.result[0]))
+
+    def test_when_two_bags_return_1x0_and_1x1(self):
         self.given_a_board_with_two_bags()
-        self.bag3 =  self.board.bag_set.create(name='thirdbag')
-        self.tags3 = [self.bag2.tag_set.create(name=n) for n in ['eel', 'fox']]
 
-    def given_a_one_by_none_axis_spec(self):
-        self.given_a_board_with_one_bag()
-        self.axis_spec = AxisSpec([self.bag], None)
+        self.when_asked_for_grid_options()
 
-    def given_a_one_by_one_axis_spec(self):
-        self.given_a_board_with_two_bags()
-        self.axis_spec = AxisSpec([self.bag], [self.bag2])
+        self.assertEqual(2, len(self.result))
+        self.assertEqual('bagname', str(self.result[0]))
+        self.assertEqual('bagname+secondbag', str(self.result[1]))
+
+    def test_when_three_bags_return_1x0_and_two_1x1s(self):
+        self.given_a_board_with_three_bags()
+
+        self.when_asked_for_grid_options()
+
+        self.assertEqual(3, len(self.result))
+        self.assertEqual('bagname', str(self.result[0]))
+        self.assertEqual('bagname+secondbag', str(self.result[1]))
+        self.assertEqual('bagname+thirdbag', str(self.result[2]))
+
+    def when_asked_for_grid_options(self):
+        self.result = self.board.grid_options()
 

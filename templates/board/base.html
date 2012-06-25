@@ -26,12 +26,12 @@
             </p>
 
             <ul id="tabs">
-                {% for bag in board.bag_set.all %}
+                {% for option in board.grid_options %}
                 <li>
-                    {% if bag.name == axes %}
-                    <strong>By {{ bag.name }}</strong>
+                    {% if option == axes%}
+                    <strong>{{ option.label }}</strong>
                     {% else %}
-                    <a href="{% url card-grid owner_username=board.owner.username board_name=board.name axes=bag.name %}">By {{ bag.name }}</a>
+                    <a href="{% url card-grid owner_username=board.owner.username board_name=board.name axes=option %}">{{ option.label }}</a>
                     {% endif %}
                 </li>
                 {% endfor %}
