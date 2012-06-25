@@ -308,7 +308,6 @@ section li {
 .card-bin {
     width: 239px;
     min-height: 120px;
-    border-right: 1px dotted #D67353;
 }
 
 .card-bin li {
@@ -380,9 +379,15 @@ section li {
     text-transform: uppercase;
     letter-spacing: 0.1em;
 }
+
+#card-grid thead th {
+  border-bottom: 2px solid #D67353;
+}
+
 #card-grid td {
     vertical-align: top;
     text-align: left;
+    border-bottom: 1px solid #D67353;
 }
 
 section form {

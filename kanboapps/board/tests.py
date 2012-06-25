@@ -348,13 +348,57 @@ class TestGrid(TestCase, BoardFixtureMixin):
                 GridBin([self.cards[i] for i in [9, 11, 13, 15]], [self.tagss[0][1], self.tagss[1][1]])])]), subject)
 
 
+class TagParsingBehaviour(TestCase, BoardFixtureMixin):
+    def setUp(self):
+        # Create intentionally repetative names to try to catch myself out!
+        self.user = User.objects.create(username='mr-user')
+        self.board1 = self.user.board_set.create(name='board1name')
+        self.board2 = self.user.board_set.create(name='board2name')
+        self.bag1a = self.board1.bag_set.create(name='baga')
+        self.bag1b = self.board1.bag_set.create(name='bagb')
+        self.bag2a = self.board2.bag_set.create(name='baga')
+        self.bag2b = self.board2.bag_set.create(name='bagb')
+        self.tag1ai = self.bag1a.tag_set.create(name='tagi')
+        self.tag1aii = self.bag1a.tag_set.create(name='tagii')
+        self.tag1aiii = self.bag1a.tag_set.create(name='tagiii')
+        self.tag1bi = self.bag1b.tag_set.create(name='tagi')
+        self.tag1bii = self.bag1b.tag_set.create(name='tagii')
+        self.tag1biii = self.bag1b.tag_set.create(name='tagiii')
+        self.tag2ai = self.bag2a.tag_set.create(name='tagi')
+        self.tag2aii = self.bag2a.tag_set.create(name='tagii')
+        self.tag2aiii = self.bag2a.tag_set.create(name='tagiii')
+        self.tag2bi = self.bag2b.tag_set.create(name='tagi')
+        self.tag2bii = self.bag2b.tag_set.create(name='tagii')
+        self.tag2biii = self.bag2b.tag_set.create(name='tagiii')
+
+    def test_given_a_tag_should_return_it(self):
+        self.assertEqual(self.tag1ai, self.board1.parse_tag(self.tag1ai))
+        self.assertEqual(self.tag2bii, self.board2.parse_tag(self.tag2bii))
+
+    def test_given_an_int_should_return_tag_with_that_id(self):
+        self.assertEqual(self.tag2aii, self.board2.parse_tag(self.tag2aii.id))
+        self.assertEqual(self.tag1biii, self.board1.parse_tag(self.tag1biii.id))
+
+    def test_given_string_should_return_named_tag(self):
+        self.assertEqual(self.tag1biii, self.board1.parse_tag('bagb:tagiii'))
+        self.assertEqual(self.tag2ai, self.board2.parse_tag('baga:tagi'))
+
+    def test_given_a_stringified_int_should_return_tag_with_that_id(self):
+        self.assertEqual(self.tag2bi, self.board2.parse_tag(str(self.tag2bi.id)))
+        self.assertEqual(self.tag1aii, self.board1.parse_tag(str(self.tag1aii.id)))
+
+    def test_given_a_stringified_int_for_wrong_board_it_should_fail(self):
+        with self.assertRaises(Tag.DoesNotExist):
+            self.board1.parse_tag(str(self.tag2bi.id))
+
+
 class TestCardReplacingTags(TestCase, BoardFixtureMixin):
     def setUp(self):
         self.create_board_and_accoutrements()
 
     def test_replace_one_existing_tag(self):
         self.cards[0].replace_tags(
-            axes=[self.bags[0]],
+            axis_spec=AxisSpec([self.bags[0]], None),
             tags=[self.tagss[0][1]])
         self.reload_cards()
 
@@ -363,7 +407,7 @@ class TestCardReplacingTags(TestCase, BoardFixtureMixin):
 
     def test_replace_one_existing_tag_with_nothing(self):
         self.cards[0].replace_tags(
-            axes=[self.bags[0]],
+            axis_spec=AxisSpec([self.bags[0]], None),
             tags=[])
         self.reload_cards()
 
@@ -372,7 +416,7 @@ class TestCardReplacingTags(TestCase, BoardFixtureMixin):
 
     def test_replace_one_existing_tag_id(self):
         self.cards[0].replace_tags(
-            axes=[self.bags[0].id],
+            axis_spec=AxisSpec([self.bags[0]], None),
             tags=[self.tagss[0][1].id])
         self.reload_cards()
 
@@ -473,12 +517,13 @@ class TestEventsAreSaved(TestCase, BoardFixtureMixin, FakeRedisMixin):
         self.assertEqual(1, next_seq)
 
         expected = {
-            'type': 'rearrange',
-            'board': 1,
-            'xaxis':  [self.bags[0].id],
-            'order': [2, 1],
-            'dropped': 2,
-            'tags': [self.tagss[0][1].id],
+            u'type': 'rearrange',
+            u'board': 1,
+            u'xaxis':  [self.bags[0].id],
+            u'yaxis':  [],
+            u'order': [2, 1],
+            u'dropped': 2,
+            u'tags': [self.tagss[0][1].id],
         }
         self.assertEqual([expected], json.loads(jevs))
 

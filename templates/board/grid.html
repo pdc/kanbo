@@ -42,9 +42,7 @@
                     {% if allows_rearrange %}
                     <form class="card_arrangement" action="{% url card-arrangement board_id=board.id axes=axes %}" method="post">
                         {% csrf_token %}
-                        {% for tag in bin.tags %}
-                        <input type="hidden" name="tags" value="{{ tag.id }}" />
-                        {% endfor %}
+                        <input type="hidden" name="tags" value="{{ bin.tags|join:"," }}" />
                         <input name="order" />
                         <input name="dropped" />
                         <input type="submit" value="Rearrange" />

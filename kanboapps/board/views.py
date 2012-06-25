@@ -190,15 +190,17 @@ def process_card_arrangement(request, board, axes):
         dropped_id = request.POST.get('dropped')
         if dropped_id:
             dropped = get_object_or_404(Card, id=dropped_id)
-            axis_bag = get_object_or_404(Bag, board=board, name=axes)
-            tag_strs = request.POST.getlist('tags')
-            dropped.replace_tags([axis_bag], tag_strs)
+            axis_spec = board.parse_axis_spec(axes)
+            tag_strs = request.POST['tags'].split(',')
+            tags = [board.parse_tag(s) for s in tag_strs]
+            dropped.replace_tags(axis_spec, tags)
             dropped.save()
 
             event.update({
-                'xaxis': [axis_bag.id],
+                'xaxis': [b.id for b in axis_spec.x_axis or []],
+                'yaxis': [b.id for b in axis_spec.y_axis or []],
                 'dropped': dropped.id,
-                'tags': [int(x) for x in tag_strs],
+                'tags': [t.id for t in tags],
                 })
         ids = [(None if x == '-' else int(x)) for s in request.POST.getlist('order') for x in s.split()]
         rearrange_objects(board.card_set, ids)
@@ -216,7 +218,7 @@ def process_card_arrangement(request, board, axes):
                 'label': dropped.label,
                 'tags': [{'id': t.id, 'name': t.name, 'axis': t.bag.name} for t in dropped.tag_set.all()],
             }
-            success['col_axis'] = {'id': axis_bag.id, 'name': axis_bag.name}
+            #success['col_axis'] = {'id': axis_bag.id, 'name': axis_bag.name}
             success['tags'] = [request.POST.getlist('tags')]
         return success
 

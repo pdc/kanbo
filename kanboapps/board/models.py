@@ -257,6 +257,25 @@ class Board(models.Model):
         """Return the event stream for this board."""
         return EventRepeater().get_stream(self.id)
 
+    def parse_tag(self, something):
+        """Given an external representation of a tag, return the tag.
+
+        Tags are defined in the scope of this board.
+        Options are:
+        - a tag. Represents itself.
+        - an integer. Represents the tag with that ID
+        - BAGNAME:TAGNAME. Represents the named tag in the named bag,
+        - an integer converted to a string. Represents the tag with that ID.
+        """
+        if isinstance(something, int):
+            return Tag.objects.get(bag__board=self, id=something)
+        if isinstance(something, Tag):
+            return something
+        parts = something.split(':', 1)
+        if len(parts) == 2:
+            return Tag.objects.get(bag__board=self, bag__name=parts[0], name=parts[1])
+        return Tag.objects.get(bag__board=self, id=int(something))
+
     def parse_axis_spec(self, spec):
         """Given a string return an axis spec.
 
@@ -398,9 +417,10 @@ class Card(models.Model):
         """
         return self.tag_set.get(bag=bag)
 
-    def replace_tags(self, axes, tags):
+    def replace_tags(self, axis_spec, tags):
         """Add the tags to this card, removing any from maching bags."""
-        for old_tag in self.tag_set.filter(bag__in=axes):
+        affected_bags =  (axis_spec.x_axis or []) + (axis_spec.y_axis or [])
+        for old_tag in self.tag_set.filter(bag__in=affected_bags):
             self.tag_set.remove(old_tag)
         for tag in tags:
             self.tag_set.add(tag)
