@@ -61,6 +61,12 @@ var CardGrid = (function ($) {
       // Make the card bins be sortable with drag-and-drop.
       $(binSelector).sortable({
         connectWith: binSelector,
+        start: function (event, ui) {
+            $('body').addClass('dragging')
+        },
+        stop: function (event, ui) {
+            $('body').removeClass('dragging')
+        },
         update: function (event, ui) {
             // Report the change to the server.
             var droppedID = ui.item.attr('id').replace(/^[a-z]+-/, '');
@@ -132,7 +138,7 @@ var CardGrid = (function ($) {
     function makeNewCardButtonMagic() {
         var form = $('#new-card-form').remove();
         $('#new-card-link').click(function (event) {
-            var cell =  $('#card-grid td').get(0);
+            var cell =  $('#card-grid tbody td').get(0);
             form.appendTo(cell);
             form.slideDown();
             $('#new-card-link').addClass('disabled');

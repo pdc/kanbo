@@ -28,9 +28,17 @@
     <table id="card-grid">
         <thead>
             <tr>
-                <th>–</th>
-                {% for tag in col_tags %}
-                <th>{{ tag.name }}</th>
+                <td></td>
+                {% for tags in axes.x_axis_tag_sets %}
+                <th>
+                    {% if tags %}
+                        {% for tag in tags %}
+                            {{ tag.name }}
+                        {% endfor %}
+                    {% else %}
+                        –
+                    {% endif %}
+                </th>
                 {% endfor %}
             </tr>
         </thead>
@@ -38,6 +46,15 @@
             {% for row in grid.rows %}
             <tr>
                 {% for bin in row.bins %}
+                    {% if forloop.first %}
+                    <th>
+                        {% for tag in bin.tags %}
+                            {{ tag.name }}{% if not forloop.last %},{% endif %}
+                        {% empty %}
+                            –
+                        {% endfor %}
+                    </th>
+                    {% endif %}
                 <td>
                     {% if allows_rearrange %}
                     <form class="card_arrangement" action="{% url card-arrangement board_id=board.id axes=axes %}" method="post">
