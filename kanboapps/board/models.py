@@ -44,8 +44,19 @@ class AxisSpec(object):
             super(AxisSpec.NotValid, self).__init__('{0}: not a valid axis spec'.format(bad_spec))
 
     def __init__(self, x_axis, y_axis):
-        self.x_axis = x_axis
-        self.y_axis = y_axis
+        """Create an axis spec programatically.
+
+        Arguments --
+            x_axis -- sequence of bags specifying column labelling
+            y_axis -- sequence of bags specifying row labelling
+
+        Generally x_axis is a singleton sequence and
+        y_axis is a singleton or empty.
+
+        Lists of more than one bag (shall) signify  hierarchical labels.
+        """
+        self.x_axis = x_axis or []
+        self.y_axis = y_axis or []
 
     def x_axis_tag_sets(self):
         """A list of sets, each containing tags from the bags in the axis."""
@@ -73,6 +84,9 @@ class AxisSpec(object):
         return u'{0} \u00D7 {1}'.format(
             ', '.join(b.name for b in self.x_axis),
             ', '.join(b.name for b in self.y_axis))
+
+    def __eq__(self, other):
+        return self.x_axis == other.x_axis and self.y_axis == other.y_axis
 
 
 class Grid(object):

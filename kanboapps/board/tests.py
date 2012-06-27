@@ -746,8 +746,27 @@ class BoardStepsMixin(object):
         self.given_a_board_with_two_bags()
         self.axis_spec = AxisSpec([self.bag], [self.bag2])
 
+    def given_logged_in_as_owner(self):
+        self.client.login(username='username', password='userpassword')
 
-class AxisSpecBehaviour(TestCase, BoardStepsMixin):
+
+class AxisSpecEquality(TestCase, BoardStepsMixin):
+    def test_when_same_x_and_y_axes_should_return_true(self):
+        self.given_a_board_with_two_bags()
+
+        self.assertTrue(AxisSpec([self.bag], None) == AxisSpec([self.bag], None))
+        self.assertTrue(AxisSpec([self.bag], [self.bag2]) == AxisSpec([self.bag], [self.bag2]))
+        self.assertTrue(AxisSpec([self.bag, self.bag2], None) == AxisSpec([self.bag, self.bag2], None))
+
+    def test_when_not_same_x_and_y_axes_should_return_false(self):
+        self.given_a_board_with_two_bags()
+
+        self.assertFalse(AxisSpec([self.bag], None) == AxisSpec([self.bag2], None))
+        self.assertFalse(AxisSpec([self.bag], [self.bag2]) == AxisSpec([self.bag2], [self.bag]))
+        self.assertFalse(AxisSpec([self.bag, self.bag2], None) == AxisSpec([self.bag2, self.bag], None))
+
+
+class AxisSpecParsingBehaviour(TestCase, BoardStepsMixin):
     def test_when_one_bag_named_should_make_it_the_xaxis(self):
         self.given_a_board_with_one_bag()
 
