@@ -28,7 +28,9 @@
     <table id="card-grid">
         <thead>
             <tr>
+                {% if axes.y_axis %}
                 <td></td>
+                {% endif %}
                 {% for tags in axes.x_axis_tag_sets %}
                 <th>
                     {% if tags %}
@@ -46,7 +48,7 @@
             {% for row in grid.rows %}
             <tr>
                 {% for bin in row.bins %}
-                    {% if forloop.first %}
+                    {% if forloop.first and axes.y_axis %}
                     <th>
                         {% for tag in bin.tags %}
                             {{ tag.name }}{% if not forloop.last %},{% endif %}
