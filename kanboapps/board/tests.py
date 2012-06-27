@@ -724,6 +724,8 @@ class DeleteBagBehaviour(TestCase):
 class BoardStepsMixin(object):
     def given_a_board_with_one_bag(self):
         self.user = User.objects.create(username='username')
+        self.user.set_password('userpassword')
+        self.user.save()
         self.board = self.user.board_set.create(name='boardname')
         self.bag = self.board.bag_set.create(name='bagname')
         self.tags = [self.bag.tag_set.create(name=n) for n in ['ape', 'bee']]
@@ -900,4 +902,74 @@ class BoardGridOptionsBehaviour(TestCase, BoardStepsMixin):
 
     def when_asked_for_grid_options(self):
         self.result = self.board.grid_options()
+
+
+class BoardAjaxBehaviour(TestCase, BoardStepsMixin):
+    def setUp(self):
+        self.client = Client()
+
+    def test_empty_tags_list(self):
+        # Inspired by an actual bug
+        self.given_a_board_with_one_bag()
+        self.given_one_untagged_card()
+        self.given_two_tagged_cards()
+        self.given_logged_in_as_owner()
+
+        self.when_calling_jarrange(tags=[], order=[self.cards[1], self.cards[0]], dropped=self.cards[1])
+
+        self.assert_successful_json()
+        self.assert_card_order([self.cards[1], self.cards[0], self.cards[2]])
+        self.assert_card_tags(self.cards[1], [])
+
+    def test_should_replace_tags_and_reorder(self):
+        self.given_a_board_with_one_bag()
+        self.given_one_untagged_card()
+        self.given_two_tagged_cards()
+        self.given_logged_in_as_owner()
+
+        self.when_calling_jarrange(tags=[self.tags[0]], order=[self.cards[1], self.cards[0]], dropped=self.cards[1])
+
+        self.assert_successful_json()
+        self.assert_card_order([self.cards[1], self.cards[0], self.cards[2]])
+        self.assert_card_tags(self.cards[1], [self.tags[0]])
+
+    def assert_successful_json(self):
+        self.obj = json.loads(self.response.content)
+        self.assertTrue(self.obj['success'])
+
+    def given_one_untagged_card(self):
+        if not hasattr(self, 'cards'):
+            self.cards = []
+        for i in range(1):
+            self.cards.append(self.board.card_set.create(
+                name='card{0}'.format(len(self.cards)),
+                label='card #{0}'.format(len(self.cards))))
+
+    def given_two_tagged_cards(self):
+        if not hasattr(self, 'cards'):
+            self.cards = []
+        for i in range(2):
+            self.cards.append(self.board.card_set.create(
+                name='card{0}'.format(len(self.cards)),
+                label='card #{0}'.format(len(self.cards))))
+            self.cards[-1].tag_set.add(self.tags[i])
+            self.cards[-1].save()
+
+    def when_calling_jarrange(self, tags, order, dropped):
+        self.response = self.client.post('/boards/{0}/grids/bagname/jarrange'.format(self.board.id), {
+            u'tags': ','.join(str(t) for t in tags),
+            u'order': ' '.join(str(t.id) for t in order),
+            u'dropped': str(dropped.id),
+        })
+
+    def assert_card_order(self, expected_order):
+        actual_order = toposorted(self.board.card_set.all())
+        self.assertEqual(expected_order, actual_order)
+
+    def assert_card_tags(self, card, expected_tags):
+        actual_tags = list(card.tag_set.all())
+        self.assertEqual(expected_tags, actual_tags)
+
+
+
 

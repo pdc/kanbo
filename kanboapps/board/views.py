@@ -191,7 +191,8 @@ def process_card_arrangement(request, board, axes):
         if dropped_id:
             dropped = get_object_or_404(Card, id=dropped_id)
             axis_spec = board.parse_axis_spec(axes)
-            tag_strs = request.POST['tags'].split(',')
+            tags_str = request.POST['tags']
+            tag_strs = tags_str.split(',') if tags_str else []
             tags = [board.parse_tag(s) for s in tag_strs]
             dropped.replace_tags(axis_spec, tags)
             dropped.save()
