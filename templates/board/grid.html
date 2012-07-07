@@ -80,7 +80,7 @@
                             <q>{{ card.label }}</q>
                             {% endif %}
                             {% for tag in card.tag_set.all %}
-                                {% if tag.bag.name != axes %}
+                                {% if tag.bag not in axes.x_axis and tag.bag not in axes.y_axis  %}
                                 <i>{{ tag }}</i>
                                 {% endif %}
                             {% endfor %}
