@@ -1,11 +1,11 @@
-Django==1.4
-South==0.7.4
+Django==1.4.1
+South==0.7.6
 cogapp==2.3
 distribute==0.6.25
-django-social-auth==0.6.9
+django-social-auth==0.7.2
 fakeredis==0.1.1
 httplib2==0.7.4
-mock==0.8.0
+mock==1.0b1
 oauth2==1.5.211
 python-openid==2.2.5
 pytz==2012b
