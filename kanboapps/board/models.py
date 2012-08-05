@@ -353,7 +353,10 @@ class Access(models.Model):
 
 
 class Bag(models.Model):
-    """A set of tags. One of the axes by which cards are classified."""
+    """A set of tags. One of the axes by which cards are classified.
+
+    For example, a bag called `state` might have tags `todo`, `doing`, `done`.
+    """
     board = models.ForeignKey(Board, null=True)
 
     name = models.SlugField(db_index=True, max_length=200,
@@ -394,8 +397,6 @@ class Bag(models.Model):
         return toposorted(self.tag_set.all())
 
 
-
-
 class Tag(models.Model):
     """One of the values of one axis of classification of cards."""
     bag = models.ForeignKey(Bag)
@@ -422,14 +423,23 @@ class Tag(models.Model):
 
 
 class Card(models.Model):
-    """On thing on a board"""
+    """One thing on a board.
+
+    Usually a card represents one task,
+    but for some methodologies it will instead
+    represent a story.
+    """
     board = models.ForeignKey(Board)
     tag_set = models.ManyToManyField(Tag, related_name='card_set', blank=True)
     succ = models.ForeignKey('self', null=True, blank=True,
         help_text='Another card that follows this one in the queue.')
 
-    name = models.SlugField(verbose_name='Short name', help_text='Short code or number that uniquely identifies this card')
-    label = models.CharField(max_length=200, help_text='The sentence or phrase written on the card')
+    name = models.SlugField(verbose_name='Short name',
+            help_text='Short code or number that uniquely identifies this card')
+    label = models.CharField(max_length=200,
+            help_text='The sentence or phrase written on the card')
+    href = models.URLField(max_length=1000, blank=True,
+            help_text='Optional. URL for more info about this card')
 
     created = models.DateTimeField(auto_now_add=True, editable=False)
     modified = models.DateTimeField(auto_now=True, editable=False)
