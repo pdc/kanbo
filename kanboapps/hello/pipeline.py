@@ -9,7 +9,8 @@ import re
 from uuid import uuid4
 from django.template.defaultfilters import slugify
 from django.contrib.auth.models import User
-from social_auth.backends.pipeline import USERNAME, USERNAME_MAX_LENGTH
+from social_auth.backends import USERNAME
+from social_auth.models import UserSocialAuth # username_max_length
 
 RANDOM_LENGTH = 16
 
@@ -57,10 +58,11 @@ def get_username(details, user=None, user_exists=username_rejected, *args, **kwa
 
     # New user: create plausible user name suitable for URLs.
 
-    username = details.get(USERNAME, 'user')[:USERNAME_MAX_LENGTH]
+    max_length = UserSocialAuth.username_max_length()
+    username = details.get(USERNAME, 'user')[:max_length]
     username = slugify_harder(username)
 
-    short_username = username[:USERNAME_MAX_LENGTH-RANDOM_LENGTH]
+    short_username = username[:max_length-RANDOM_LENGTH]
     while user_exists(username):
         username = short_username + uuid4().hex[:RANDOM_LENGTH]
 
