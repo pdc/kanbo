@@ -12,6 +12,19 @@
 {% block main %}
 <section id="board">
     <ul class="menu" id="menu">
+
+        {% if click_options|length > 1 %}
+            {% for click_option in click_options %}
+            <li{% if forloop.last %} class="last-in-group"{% endif %}>
+                {% if click_option.name == axes.click %}
+                <strong title="View tool: Click on a card title to view the task.">{{ click_option.name }}</strong>
+                {% else %}
+                <a href="{{ click_option.href }}" title="Edit tool: Click on a card title to edit the card.">{{ click_option.name }}</a>
+                {% endif %}
+            </li>
+            {% endfor %}
+        {% endif %}
+
         {% if allows_rearrange %}
         <li>
             <a id="new-card-link" href="#new-card-form">New card…</a>

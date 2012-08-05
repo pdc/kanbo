@@ -142,6 +142,7 @@ def card_grid(request, owner, board, axes):
 
     for card in [c for r in grid.rows for b in r.bins for c in b.cards]:
         card.click_href = card.get_click_href(request.user, axis_spec)
+    click_options = board.get_click_options(request.user, axis_spec)
 
     is_polling_enabled = settings.EVENT_REPEATER.get('POLL')
     next_seq = board.event_stream().next_seq() if is_polling_enabled else None
@@ -154,6 +155,7 @@ def card_grid(request, owner, board, axes):
         'is_polling_enabled': is_polling_enabled,
         'next_seq': next_seq,
         'new_card_form': card_form_for_board(board),
+        'click_options': click_options,
     }
 
 @with_template('board/grid.html')

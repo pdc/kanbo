@@ -69,18 +69,41 @@ class TestCard(TestCase):
         self.when_rendering_the_grid_for(self.owner, 'view')
 
         self.then_should_be_success()
-        self.then_should_have_grid_with_card_with_click_href()
+        self.and_click_options_should_include_edit()
+        self.and_should_have_grid_with_card_with_click_href()
         self.then_click_href_should_equal_href_attribute()
 
-    def test_edit_href_included_in_grid(self):
+    def test_when_owner_edit_href_included_in_grid(self):
         self.given_a_board()
         self.given_a_card_with_href()
 
         self.when_rendering_the_grid_for(self.owner, 'edit')
 
         self.then_should_be_success()
-        self.then_should_have_grid_with_card_with_click_href()
+        self.and_click_options_should_include_edit()
+        self.and_should_have_grid_with_card_with_click_href()
         self.then_click_href_should_equal_edit_url()
+
+    def test_when_not_owner_edit_href_not_included_in_grid(self):
+        self.given_a_board()
+        self.given_a_card_with_href()
+        self.given_another_user()
+
+        self.when_rendering_the_grid_for(self.user2, 'view')
+
+        self.then_should_be_success()
+        self.and_click_options_should_not_include_edit()
+
+    def test_when_edit_permission_edit_href_is_include_after_all(self):
+        self.given_a_board()
+        self.given_a_card_with_href()
+        self.given_another_user()
+        self.given_other_user_has_edit_privileges()
+
+        self.when_rendering_the_grid_for(self.owner, 'view')
+
+        self.then_should_be_success()
+        self.and_click_options_should_include_edit()
 
     # Helpers for the above tests
 
@@ -101,7 +124,7 @@ class TestCard(TestCase):
 
     def given_a_card_with_href(self):
         self.card = self.board.card_set.create(name='card2', label='Card 2',
-                href='http://example.org/card2')
+                href='HREF_ATTRIBUTE_VALUE')
 
     def given_a_card_without_href(self):
         self.card = self.board.card_set.create(name='card3', label='Card 3')
@@ -110,6 +133,9 @@ class TestCard(TestCase):
         self.user2 = User.objects.create(username='bang')
         self.user2.set_password('x')
         self.user2.save()
+
+    def given_other_user_has_edit_privileges(self):
+        Access.objects.create(user=self.user2, board=self.board, can_rearrange=True)
 
     def when_asked_for_href(self, user, which):
         self.result = self.card.get_click_href(user, AxisSpec([self.bag], [], click=which))
@@ -133,7 +159,7 @@ class TestCard(TestCase):
         self.response = self.client.get(u)
 
     def then_click_href_should_equal_href_attribute(self):
-        self.assertEqual('http://example.org/card2', self.result)
+        self.assertEqual('HREF_ATTRIBUTE_VALUE', self.result)
 
     def then_click_href_should_equal_edit_url(self):
         self.assertEqual('/pop/a/grids/state;click=edit/card2/edit', self.result)
@@ -144,7 +170,7 @@ class TestCard(TestCase):
     def then_should_be_success(self):
         self.assertEqual(200, self.response.status_code)
 
-    def then_should_have_grid_with_card_with_click_href(self):
+    def and_should_have_grid_with_card_with_click_href(self):
         self.grid = self.response.context['grid']
         for card in [card for row in self.grid.rows
                 for bin in row.bins
@@ -155,6 +181,13 @@ class TestCard(TestCase):
             self.fail('expected to find card in grid in context of response')
         self.assertTrue(hasattr(self.grid_card, 'click_href'), 'expected click_href attribute to be added')
         self.result = self.grid_card.click_href
+
+    def and_click_options_should_include_edit(self):
+        self.assertEqual(['view', 'edit'], [x.name for x in self.response.context['click_options']])
+
+    def and_click_options_should_not_include_edit(self):
+        self.assertEqual(['view'], [x.name for x in self.response.context['click_options']])
+
 
 
 class TestTopsort(TestCase):
@@ -671,6 +704,7 @@ class TestBoardMembership(TestCase):
         self.dick = User.objects.create(username='Dick')
 
         self.subject = self.alice.board_set.create(name='derp')
+        self.bag = self.subject.bag_set.create(name='bagname')
 
         Access.objects.create(user=self.bob, board=self.subject)
         Access.objects.create(user=self.dick, board=self.subject, can_rearrange=False)
@@ -693,6 +727,14 @@ class TestBoardMembership(TestCase):
     def test_anonymous_cannot_rearrange_board(self):
         anon = AnonymousUser()
         self.assertFalse(self.subject.allows_rearrange(anon))
+
+    def test_owner_has_two_click_options(self):
+        click_options = self.subject.get_click_options(self.alice, AxisSpec([self.bag], []))
+        self.assertEqual(2, len(click_options))
+        self.assertEqual('view', click_options[0].name)
+        self.assertEqual('/Alice/derp/grids/bagname', click_options[0].href)
+        self.assertEqual('edit', click_options[1].name)
+        self.assertEqual('/Alice/derp/grids/bagname;click=edit', click_options[1].href)
 
 
 class TestPublicBoardMembership(TestCase):

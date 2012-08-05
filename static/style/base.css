@@ -234,7 +234,7 @@ section .menu {
     float: left;
     margin: 0.7em 10px;
     padding: 0;
-    background-color: rgba(233, 137, 85, 0.25);
+    /*background-color: rgba(233, 137, 85, 0.25);*/
 }
 
 section .menu li {
@@ -244,12 +244,35 @@ section .menu li {
     padding: 0;
 }
 
+section .menu li.last-in-group {
+    margin-right: 20px;
+}
+
 /*[[[cog
 def gradient(params):
     for prefix in ['', '-o-', '-ms-', '-moz-', '-webkit-']:
         cog.outl('background: {0}linear-gradient({1});'.format(prefix, params))
 ]]]*/
 /*[[[end]]]*/
+
+
+section .menu strong { /* Used for a elected toggle */
+    display: block;
+    float: left;
+    margin: 0;
+    padding: 1px 10px;
+
+    /*[[[cog gradient('bottom, #96C4C7 0%,  #007F88 40%') ]]]*/
+    background: linear-gradient(bottom, #96C4C7 0%,  #007F88 40%);
+    background: -o-linear-gradient(bottom, #96C4C7 0%,  #007F88 40%);
+    background: -ms-linear-gradient(bottom, #96C4C7 0%,  #007F88 40%);
+    background: -moz-linear-gradient(bottom, #96C4C7 0%,  #007F88 40%);
+    background: -webkit-linear-gradient(bottom, #96C4C7 0%,  #007F88 40%);
+    /*[[[end]]]*/
+    color: white;
+    text-decoration: none;
+    border: 1px inset #888;
+}
 
 section .menu a {
     display: block;

@@ -94,6 +94,14 @@ class AxisSpec(object):
     def __eq__(self, other):
         return self.x_axis == other.x_axis and self.y_axis == other.y_axis
 
+    def copy_except(self, **kwargs):
+        """Copy this axis spec, with some changes."""
+        x_axis = kwargs.get('x_axis', self.x_axis)
+        y_axis = kwargs.get('y_axis', self.y_axis)
+        click = kwargs.get('click', self.click)
+        return AxisSpec(x_axis, y_axis, click)
+
+
 
 class Grid(object):
     """Represents a 2d presentation of cards.
@@ -147,6 +155,20 @@ class GridBin(object):
     def __repr__(self):
         return 'GridBin({0!r}, tags={1!r})'.format(self.cards, self.tags)
 
+class ClickOption(object):
+    """Used to represent options for clicking on cards.
+
+    Not stored int he database; instead derived from user permissions.
+    """
+    def __init__(self, name, href):
+        self.name = name
+        self.href = href
+
+    def __repr__(self):
+        return 'ClickOption({0!r}, {1!r})'.format(self.name, self.href)
+
+    def __str__(self):
+        return 'ClickOption({0!r}, {1!r})'.format(self.name, self.href)
 
 lowercase_validator = RegexValidator(re.compile(r'^[a-z\d-]+$'), 'Must be lower-case letters a-z, digits, or hyphens')
 class KeywordValidator(object):
@@ -189,20 +211,23 @@ class Board(models.Model):
     def __unicode__(self):
         return self.label
 
-    @models.permalink
     def get_absolute_url(self):
         """Returns the canonical link to this board."""
-        return 'card-grid', (), {
-            'owner_username': self.owner.username,
-            'board_name': self.name,
-            'axes': self.bag_set.all()[0].name,
-        }
+        return self.get_grid_url(AxisSpec([self.bag_set.all()[0]], []))
 
     @models.permalink
     def get_detail_url(self):
         return 'board-detail', (), {
             'owner_username': self.owner.username,
             'board_name': self.name,
+        }
+
+    @models.permalink
+    def get_grid_url(self, axis_spec):
+        return 'card-grid', (), {
+            'owner_username': self.owner.username,
+            'board_name': self.name,
+            'axes': str(axis_spec),
         }
 
     def clean(self):
@@ -342,6 +367,20 @@ class Board(models.Model):
 
         return AxisSpec(x_axis, y_axis, click)
 
+    def get_click_options(self, user, axis_spec):
+        """Return list of click options for this user.
+
+        Click options say what happens when you click on a card
+        in a grid.
+
+        Owner and editors can view and edit.
+        Other people can view only.
+        """
+        clicks = ['view']
+        if self.allows_rearrange(user):
+            clicks.append('edit')
+        return [ClickOption(click, self.get_grid_url(axis_spec.copy_except(click=click)))
+            for click in clicks]
 
 
 def intersection(xss):
