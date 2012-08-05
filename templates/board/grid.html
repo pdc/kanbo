@@ -70,8 +70,8 @@
                     <ul id="{{ bin.element_id }}" class="card-bin">
                         {% for card in bin.cards %}
                         <li id="card-{{ card.id }}">
-                            {% if allows_rearrange %}
-                            <a href="{% url edit-card owner_username=owner.username board_name=board.name axes=axes card_name=card.name %}">
+                            {% if card.click_href %}
+                            <a href="{{ card.click_href }}">
                                 <b>{{ card.name }}</b>
                                 <q>{{ card.label }}</q>
                             </a>

@@ -140,6 +140,9 @@ def card_grid(request, owner, board, axes):
     axis_spec = board.parse_axis_spec(axes)
     grid = board.make_grid(axis_spec)
 
+    for card in [c for r in grid.rows for b in r.bins for c in b.cards]:
+        card.click_href = card.get_click_href(request.user, axis_spec)
+
     is_polling_enabled = settings.EVENT_REPEATER.get('POLL')
     next_seq = board.event_stream().next_seq() if is_polling_enabled else None
 

@@ -24,6 +24,7 @@ import redis
 import json
 from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
+from django.core.urlresolvers import reverse
 from django.db import models
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -43,7 +44,7 @@ class AxisSpec(object):
         def __init__(self, bad_spec):
             super(AxisSpec.NotValid, self).__init__('{0}: not a valid axis spec'.format(bad_spec))
 
-    def __init__(self, x_axis, y_axis):
+    def __init__(self, x_axis, y_axis, click=None):
         """Create an axis spec programatically.
 
         Arguments --
@@ -57,6 +58,7 @@ class AxisSpec(object):
         """
         self.x_axis = x_axis or []
         self.y_axis = y_axis or []
+        self.click = click or 'view'
 
     def x_axis_tag_sets(self):
         """A list of sets, each containing tags from the bags in the axis."""
@@ -73,10 +75,14 @@ class AxisSpec(object):
 
     def __str__(self):
         if not self.y_axis:
-            return  ','.join(b.name for b in self.x_axis)
-        return '{0}+{1}'.format(
+            s =  ','.join(b.name for b in self.x_axis)
+        else:
+            s = '{0}+{1}'.format(
             ','.join(b.name for b in self.x_axis),
             ','.join(b.name for b in self.y_axis))
+        if self.click != 'view':
+            return '{0};click={1}'.format(s, self.click)
+        return s
 
     def label(self):
         if not self.y_axis:
@@ -311,9 +317,20 @@ class Board(models.Model):
 
         Axis spec is used later to generate a grid.
 
-        <axis spec> ::= <empty> | <one axis> ( ‘+’ <one axis> )?
+        <axis spec> ::= <empty> | <one axis> ( ‘+’ <one axis> )? ( ‘;click=’ action )?
         <one axis> ::= <bag name> ( ‘,’ <bag name> )*
+        <action> ::= ‘edit’
         """
+        # First strip off and process any action section:
+        parts = spec.split(';')
+        spec = parts[0]
+        click = None
+        for part in parts[1:]:
+            key, val = part.split('=')
+            if key == 'click':
+                click = val
+
+        # Now decode the axes themselves.
         parts = spec.split('+')
         try:
             x_axis = [self.bag_set.get(name=n) for n in parts[0].split(',')]
@@ -323,7 +340,7 @@ class Board(models.Model):
         except Bag.DoesNotExist, e:
             raise AxisSpec.NotValid(spec)
 
-        return AxisSpec(x_axis, y_axis)
+        return AxisSpec(x_axis, y_axis, click)
 
 
 
@@ -466,6 +483,26 @@ class Card(models.Model):
         for tag in tags:
             self.tag_set.add(tag)
 
+    def get_click_href(self, user, axis_spec):
+        """Get the URL to navigate to when user clicks on this card.
+
+        Arguments --
+            user -- the person doing the clicking
+            which -- which sort of click is wanted. One of ‘view’, ‘edit’.
+
+        Returns --
+            URL reference or None
+        """
+        if axis_spec.click == 'edit':
+            if not self.board.allows_rearrange(user):
+                return None
+            return reverse('edit-card', kwargs={
+                'owner_username': self.board.owner.username,
+                'board_name': self.board.name,
+                'axes': unicode(axis_spec),
+                'card_name': self.name,
+            })
+        return self.href
 
 class CyclesException(Exception):
     pass

@@ -24,18 +24,137 @@ class TestCard(TestCase):
         pass
 
     def test_get_tag(self):
-        bag = Bag(name='state')
-        bag.save()
-        new_tag = bag.tag_set.create(name='new')
-        progress_tag = bag.tag_set.create(name='in-progress')
-        done_tag = bag.tag_set.create(name='done')
+        self.given_a_board()
+        self.given_a_card_with_tag()
 
-        owner = User.objects.create(username='pop')
-        board = owner.board_set.create(label='a')
-        card = board.card_set.create(label='This')
-        card.tag_set.add(new_tag)
+        self.assertEqual('new', self.card.get_tag(self.bag).name)
 
-        self.assertEqual('new', card.get_tag(bag).name)
+    def test_when_has_href(self):
+        self.given_a_board()
+        self.given_a_card_with_href()
+
+        self.when_asked_for_view_href()
+
+        self.then_click_href_should_equal_href_attribute()
+
+    def test_when_hasnt_href(self):
+        self.given_a_board()
+        self.given_a_card_without_href()
+
+        self.when_asked_for_view_href()
+
+        self.then_click_href_should_equal_nothing()
+
+    def test_owner_can_get_edit_path(self):
+        self.given_a_board()
+        self.given_a_card_with_href()
+
+        self.when_asked_for_edit_href()
+
+        self.then_click_href_should_equal_edit_url()
+
+    def test_non_owner_gets_nothing(self):
+        self.given_a_board()
+        self.given_a_card_with_href()
+        self.given_another_user()
+
+        self.when_other_user_asks_for_edit_href()
+
+        self.then_click_href_should_equal_nothing()
+
+    def test_click_href_included_in_grid(self):
+        self.given_a_board()
+        self.given_a_card_with_href()
+
+        self.when_rendering_the_grid_for(self.owner, 'view')
+
+        self.then_should_be_success()
+        self.then_should_have_grid_with_card_with_click_href()
+        self.then_click_href_should_equal_href_attribute()
+
+    def test_edit_href_included_in_grid(self):
+        self.given_a_board()
+        self.given_a_card_with_href()
+
+        self.when_rendering_the_grid_for(self.owner, 'edit')
+
+        self.then_should_be_success()
+        self.then_should_have_grid_with_card_with_click_href()
+        self.then_click_href_should_equal_edit_url()
+
+    # Helpers for the above tests
+
+    def given_a_board(self):
+        self.owner = User.objects.create(username='pop')
+        self.owner.set_password('x')
+        self.owner.save()
+        self.board = self.owner.board_set.create(name='a')
+
+        self.bag = self.board.bag_set.create(name='state')
+        self.new_tag = self.bag.tag_set.create(name='new')
+        self.progress_tag = self.bag.tag_set.create(name='in-progress')
+        self.done_tag = self.bag.tag_set.create(name='done')
+
+    def given_a_card_with_tag(self):
+        self.card = self.board.card_set.create(label='This')
+        self.card.tag_set.add(self.new_tag)
+
+    def given_a_card_with_href(self):
+        self.card = self.board.card_set.create(name='card2', label='Card 2',
+                href='http://example.org/card2')
+
+    def given_a_card_without_href(self):
+        self.card = self.board.card_set.create(name='card3', label='Card 3')
+
+    def given_another_user(self):
+        self.user2 = User.objects.create(username='bang')
+        self.user2.set_password('x')
+        self.user2.save()
+
+    def when_asked_for_href(self, user, which):
+        self.result = self.card.get_click_href(user, AxisSpec([self.bag], [], click=which))
+
+    def when_asked_for_view_href(self):
+        self.when_asked_for_href(self.owner, 'view')
+
+    def when_asked_for_edit_href(self):
+        self.when_asked_for_href(self.owner, 'edit')
+
+    def when_other_user_asks_for_edit_href(self):
+        self.when_asked_for_href(self.user2, 'edit')
+
+    def when_rendering_the_grid_for(self, user, which):
+        self.client = Client()
+        self.client.login(username=user.username, password='x')
+
+        u = '/pop/a/grids/state'
+        if which != 'view':
+            u += ';click=' + which
+        self.response = self.client.get(u)
+
+    def then_click_href_should_equal_href_attribute(self):
+        self.assertEqual('http://example.org/card2', self.result)
+
+    def then_click_href_should_equal_edit_url(self):
+        self.assertEqual('/pop/a/grids/state;click=edit/card2/edit', self.result)
+
+    def then_click_href_should_equal_nothing(self):
+        self.assertFalse(self.result)
+
+    def then_should_be_success(self):
+        self.assertEqual(200, self.response.status_code)
+
+    def then_should_have_grid_with_card_with_click_href(self):
+        self.grid = self.response.context['grid']
+        for card in [card for row in self.grid.rows
+                for bin in row.bins
+                    for card in bin.cards]:
+            self.grid_card = card
+            break
+        else:
+            self.fail('expected to find card in grid in context of response')
+        self.assertTrue(hasattr(self.grid_card, 'click_href'), 'expected click_href attribute to be added')
+        self.result = self.grid_card.click_href
 
 
 class TestTopsort(TestCase):
@@ -837,6 +956,15 @@ class AxisSpecParsingBehaviour(TestCase, BoardStepsMixin):
 
         self.assertEqual('bagname,secondbag', result)
 
+    def test_when_click_specified(self):
+        self.given_a_board_with_one_bag()
+
+        result = self.board.parse_axis_spec('bagname;click=edit')
+
+        self.assertEqual([self.bag], result.x_axis)
+        self.assertFalse(result.y_axis)
+        self.assertEqual('edit', result.click)
+
 
 class AxisSpecToStringBehaviours(TestCase, BoardStepsMixin):
     def test_when_stringified_should_return_spec(self):
@@ -845,6 +973,13 @@ class AxisSpecToStringBehaviours(TestCase, BoardStepsMixin):
         result = str(AxisSpec([self.bag], [self.bag2, self.bag3]))
 
         self.assertEqual('bagname+secondbag,thirdbag', result)
+
+    def test_when_has_click_should_return_that_too(self):
+        self.given_a_board_with_three_bags()
+
+        result = str(AxisSpec([self.bag], [self.bag2, self.bag3], click='edit'))
+
+        self.assertEqual('bagname+secondbag,thirdbag;click=edit', result)
 
 
     def test_label_should_use_multiplication_sign(self):
