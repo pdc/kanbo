@@ -1,4 +1,5 @@
 {% extends "board/base.html" %}
+{% load url from future %}
 {% block title %}Log in  or Register - Kanbo{% endblock %}
 {% block heading %}Log in or Register{% endblock %}
 {% block main %}
@@ -6,7 +7,7 @@
             <ul>
                 {% for backend in social_auth.backends %}
                 <li class="log-in-with-{{ backend }}">
-                    <a href="{% url socialauth_begin backend=backend %}">Log in with {{ backend|title }}</a>
+                    <a href="{% url 'socialauth_begin' backend=backend %}?{{ redirect_querystring }}">Log in with {{ backend|title }}</a>
                 </li>
                 {% endfor %}
             </ul>
