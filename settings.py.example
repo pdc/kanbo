@@ -21,7 +21,7 @@ MANAGERS = ADMINS
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3', # Add 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
-        'NAME': local_path('development.db'),                      # Or path to database file if using sqlite3.
+        'NAME': local_path('dev.db'),                      # Or path to database file if using sqlite3.
         'USER': '',                      # Not used with sqlite3.
         'PASSWORD': '',                  # Not used with sqlite3.
         'HOST': '',                      # Set to empty string for localhost. Not used with sqlite3.
@@ -64,6 +64,65 @@ USE_I18N = True
 # calendars according to the current locale
 USE_L10N = True
 
+AUTH_PROFILE_MODULE = 'hello.Profile'
+
+# Used by django-social-auth to log people in.
+# See http://django-social-auth.readthedocs.org/en/latest/configuration.html
+AUTHENTICATION_BACKENDS = (
+    'social_auth.backends.twitter.TwitterBackend',
+    ##'social_auth.backends.facebook.FacebookBackend',
+    ##'social_auth.backends.google.GoogleOAuthBackend',
+    ##'social_auth.backends.google.GoogleOAuth2Backend',
+    ##'social_auth.backends.google.GoogleBackend',
+    ##'social_auth.backends.yahoo.YahooBackend',
+    ##'social_auth.backends.browserid.BrowserIDBackend',
+    ##'social_auth.backends.contrib.linkedin.LinkedinBackend',
+    ##'social_auth.backends.contrib.livejournal.LiveJournalBackend',
+    ##'social_auth.backends.contrib.orkut.OrkutBackend',
+    ##'social_auth.backends.contrib.foursquare.FoursquareBackend',
+    'social_auth.backends.contrib.github.GithubBackend',
+    ##'social_auth.backends.contrib.vkontakte.VkontakteBackend',
+    ##'social_auth.backends.contrib.live.LiveBackend',
+    ##'social_auth.backends.contrib.skyrock.SkyrockBackend',
+    ##'social_auth.backends.contrib.yahoo.YahooOAuthBackend',
+    ##'social_auth.backends.OpenIDBackend',
+    'django.contrib.auth.backends.ModelBackend',
+)
+
+SOCIAL_AUTH_PIPELINE = (
+    'social_auth.backends.pipeline.social.social_auth_user',
+    'social_auth.backends.pipeline.associate.associate_by_email',
+    'kanboapps.hello.pipeline.get_username',
+    'social_auth.backends.pipeline.user.create_user',
+    'social_auth.backends.pipeline.social.associate_user',
+    'social_auth.backends.pipeline.social.load_extra_data',
+    'social_auth.backends.pipeline.user.update_user_details'
+)
+
+# Customization for supported backends.
+TWITTER_CONSUMER_KEY = 'TK6vDXLBmmCDdYiWrBtrw'
+TWITTER_CONSUMER_SECRET = 'JykUbMOUmWnCgF9ChROMy7UFo62bxjHIWQhwdaKTc'
+GITHUB_APP_ID = 'e99319e4aee02e64ec19'
+GITHUB_API_SECRET = '4c2febde0e198e6ab712c81a1261890f3d25ea70'
+##GITHUB_EXTENDED_PERMISSIONS = [...]
+
+LOGIN_URL = '/hello/login-form'
+LOGIN_REDIRECT_URL = '/hello/logged-in'
+LOGIN_ERROR_URL    = '/hello/login-error'
+##SOCIAL_AUTH_LOGIN_REDIRECT_URL = '/hello/logged-in'
+SOCIAL_AUTH_NEW_USER_REDIRECT_URL = '/hello/create-user'
+SOCIAL_AUTH_NEW_ASSOCIATION_REDIRECT_URL = '/hello/create-association'
+SOCIAL_AUTH_DISCONNECT_REDIRECT_URL = '/hello/delete-association'
+##SOCIAL_AUTH_BACKEND_ERROR_URL = '/hello/problem'
+
+##SOCIAL_AUTH_COMPLETE_URL_NAME  = 'socialauth_complete'
+##SOCIAL_AUTH_ASSOCIATE_URL_NAME = 'socialauth_associate_complete'
+
+SOCIAL_AUTH_DEFAULT_USERNAME = 'boffo'
+SOCIAL_AUTH_EXPIRATION = 'expires'
+# There are other more exotic sewttings listed at
+# <http://django-social-auth.readthedocs.org/en/latest/configuration.html>
+
 # Absolute filesystem path to the directory that will hold user-uploaded files.
 # Example: "/home/media/media.lawrence.com/media/"
 MEDIA_ROOT = ''
@@ -81,12 +140,12 @@ STATIC_ROOT = '/Users/pdc/Sites/kanbo'
 
 # URL prefix for static files.
 # Example: "http://media.lawrence.com/static/"
-STATIC_URL = 'http://localhost/~pdc/kanbo/'
+STATIC_URL = 'http://localhost:8080/kanbo/'
 
 # URL prefix for admin static files -- CSS, JavaScript and images.
 # Make sure to use a trailing slash.
 # Examples: "http://foo.com/static/admin/", "/static/admin/".
-ADMIN_MEDIA_PREFIX = '{0}admin/'.format(STATIC_URL)
+##ADMIN_MEDIA_PREFIX = '{0}admin/'.format(STATIC_URL)
 
 # Additional locations of static files
 STATICFILES_DIRS = (
@@ -107,11 +166,19 @@ STATICFILES_FINDERS = (
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = 'jgk9*=7lngzz1bje0t^_#=^gt*ph*2!339!l9=&ji*$go-v71c'
 
-# List of callables that know how to import templates from various sources.
-TEMPLATE_LOADERS = (
-    'django.template.loaders.filesystem.Loader',
-    'django.template.loaders.app_directories.Loader',
-#     'django.template.loaders.eggs.Loader',
+TEMPLATE_CONTEXT_PROCESSORS = (
+    "django.contrib.auth.context_processors.auth",
+    "django.core.context_processors.debug",
+    "django.core.context_processors.i18n",
+    "django.core.context_processors.media",
+    "django.core.context_processors.static",
+    "django.core.context_processors.tz",
+    "django.contrib.messages.context_processors.messages",
+    'social_auth.context_processors.social_auth_by_name_backends',
+    'social_auth.context_processors.social_auth_backends',
+    'social_auth.context_processors.social_auth_login_redirect',
+    ##'social_auth.context_processors.social_auth_by_type_backends',
+    'kanboapps.hello.context_processors.profile',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -143,9 +210,11 @@ INSTALLED_APPS = (
     # Uncomment the next line to enable admin documentation:
     # 'django.contrib.admindocs',
     'south',
+    'social_auth',
 
     'kanboapps.board',
     'kanboapps.about',
+    'kanboapps.hello',
 )
 
 # A sample logging configuration. The only tangible logging
@@ -182,6 +251,11 @@ LOGGING = {
             'propagate': True,
         },
         'kanboapps': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+        'SocialAuth': {
             'handlers': ['console'],
             'level': 'DEBUG',
             'propagate': True,
