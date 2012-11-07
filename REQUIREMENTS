@@ -3,7 +3,7 @@ South==0.7.6
 cogapp==2.3
 distribute==0.6.30
 django-social-auth==0.7.7
-fakeredis==0.1.1
+git+git://github.com/pdc/fakeredis.git
 httplib2==0.7.6
 mock==1.0.0
 oauth2==1.5.211
