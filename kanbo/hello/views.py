@@ -10,8 +10,8 @@ from django.contrib import messages
 from django.shortcuts import render_to_response, get_object_or_404, redirect
 from django.conf import settings
 from django.contrib.auth import logout
-from kanboapps.board.models import Board
-from kanboapps.shortcuts import with_template, returns_json
+from kanbo.board.models import Board
+from kanbo.shortcuts import with_template, returns_json
 
 def redirect_to_next(request):
     next = request.GET.get('next') or request.META.get('HTTP_REFERER')

@@ -9,11 +9,11 @@ urlpatterns = patterns('',
     # url(r'^$', 'kanbo.views.home', name='home'),
     # url(r'^kanbo/', include('kanbo.foo.urls')),
 
-    url(r'^$', 'kanboapps.about.views.home', name='home'),
+    url(r'^$', 'kanbo.about.views.home', name='home'),
 
     # Enable logging in with myriad social network sites:
     url(r'', include('social_auth.urls')),
-    url(r'^hello/', include('kanboapps.hello.urls')),
+    url(r'^hello/', include('kanbo.hello.urls')),
 
     # Uncomment the admin/doc line below to enable admin documentation:
     # url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
@@ -23,5 +23,5 @@ urlpatterns = patterns('',
     url(r'^admin', include(admin.site.urls)),
 
     # Because user name is a wildcard it comes last.
-    url(r'', include('kanboapps.board.urls')),
+    url(r'', include('kanbo.board.urls')),
 )

@@ -15,9 +15,9 @@ import fakeredis
 import json
 from pprint import pprint
 from django.contrib.auth.models import User, AnonymousUser
-from kanboapps.board.models import *
-from kanboapps.board.forms import BoardForm, BagForm, TagForm
-from kanboapps.board import models
+from kanbo.board.models import *
+from kanbo.board.forms import BoardForm, BagForm, TagForm
+from kanbo.board import models
 
 class TestCard(TestCase):
     def test_nothing(self):

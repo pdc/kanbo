@@ -13,9 +13,9 @@ from django.contrib import messages
 from django.shortcuts import render_to_response, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
-from kanboapps.board.models import Board, Access, Card, Bag, Tag, toposorted, rearrange_objects, EventRepeater
-from kanboapps.board.forms import BoardForm, BagForm, TagForm, card_form_for_board, CardForm, AccessForm
-from kanboapps.shortcuts import with_template, returns_json
+from kanbo.board.models import Board, Access, Card, Bag, Tag, toposorted, rearrange_objects, EventRepeater
+from kanbo.board.forms import BoardForm, BagForm, TagForm, card_form_for_board, CardForm, AccessForm
+from kanbo.shortcuts import with_template, returns_json
 
 logger = logging.getLogger(__name__)
 

@@ -2,7 +2,7 @@
 
 from django.conf.urls.defaults import patterns, include, url
 
-urlpatterns = patterns('kanboapps.board.views',
+urlpatterns = patterns('kanbo.board.views',
     url(r'^(?P<owner_username>[\w-]+)$', 'user_profile', name='user-profile'),
     url(r'^(?P<owner_username>[\w-]+)/new$', 'new_board', name='new-board'),
     url(r'^(?P<owner_username>[\w-]+)/(?P<board_name>[\w-]+)$', 'board_detail', name='board-detail'),

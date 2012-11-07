@@ -2,7 +2,7 @@
 
 from django.conf.urls.defaults import patterns, include, url
 
-urlpatterns = patterns('kanboapps.hello.views',
+urlpatterns = patterns('kanbo.hello.views',
     url(r'^login-form$', 'login_form', name='hello-login-form'),
     url(r'^logged-in$', 'logged_in', name='hello-logged-in'),
     url(r'^logon-error$', 'login_error', name='hello-login-error'),

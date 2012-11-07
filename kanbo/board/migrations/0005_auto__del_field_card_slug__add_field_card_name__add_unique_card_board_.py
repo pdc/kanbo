@@ -3,7 +3,7 @@ import datetime
 from south.db import db
 from south.v2 import SchemaMigration
 from django.db import models
-from kanboapps.board.models import Board, Card
+from kanbo.board.models import Board, Card
 
 
 class Migration(SchemaMigration):

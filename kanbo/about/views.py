@@ -2,8 +2,8 @@
 
 from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User
-from kanboapps.board.models import Board
-from kanboapps.shortcuts import with_template, returns_json
+from kanbo.board.models import Board
+from kanbo.shortcuts import with_template, returns_json
 
 @with_template('about/home.html')
 def home(request):

@@ -92,7 +92,7 @@ AUTHENTICATION_BACKENDS = (
 SOCIAL_AUTH_PIPELINE = (
     'social_auth.backends.pipeline.social.social_auth_user',
     'social_auth.backends.pipeline.associate.associate_by_email',
-    'kanboapps.hello.pipeline.get_username',
+    'kanbo.hello.pipeline.get_username',
     'social_auth.backends.pipeline.user.create_user',
     'social_auth.backends.pipeline.social.associate_user',
     'social_auth.backends.pipeline.social.load_extra_data',
@@ -178,7 +178,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'social_auth.context_processors.social_auth_backends',
     'social_auth.context_processors.social_auth_login_redirect',
     ##'social_auth.context_processors.social_auth_by_type_backends',
-    'kanboapps.hello.context_processors.profile',
+    'kanbo.hello.context_processors.profile',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -212,9 +212,9 @@ INSTALLED_APPS = (
     'south',
     'social_auth',
 
-    'kanboapps.board',
-    'kanboapps.about',
-    'kanboapps.hello',
+    'kanbo.board',
+    'kanbo.about',
+    'kanbo.hello',
 )
 
 # A sample logging configuration. The only tangible logging
@@ -250,7 +250,7 @@ LOGGING = {
             'level': 'ERROR',
             'propagate': True,
         },
-        'kanboapps': {
+        'kanbo': {
             'handlers': ['console'],
             'level': 'DEBUG',
             'propagate': True,

@@ -5,7 +5,7 @@ from django import forms
 from django.forms import ModelForm
 from django.core.validators import RegexValidator
 from django.contrib.auth.models import User
-from kanboapps.board.models import Board, Bag, Tag, Card, Access
+from kanbo.board.models import Board, Bag, Tag, Card, Access
 
 class BoardForm(ModelForm):
     class Meta:

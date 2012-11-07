@@ -4,7 +4,7 @@ import re
 from mock import Mock, call
 from django.test import TestCase
 from django.contrib.auth.models import User
-from kanboapps.hello.pipeline import get_username, username_rejected
+from kanbo.hello.pipeline import get_username, username_rejected
 
 
 class GetUserTests(TestCase):
