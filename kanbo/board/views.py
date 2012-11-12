@@ -120,7 +120,7 @@ def board_detail(request, owner, board):
     }
     features.update((x, 'no') for x in ['location', 'menubar', 'status', 'toolbar'])
     features.update((x, 'yes') for x in ['resizable', 'scrollbar'])
-    bookmarklet_url = "javascript:window.open('{url}?title='+escape(document.title)+'&url='+escape(document.location),'new-card','{features}')".format(
+    bookmarklet_url = "javascript:d=document,e=escape,x=d.getElementsByTagName('h1');window.open('{url}?title='+e(d.title)+'&h1='+e(x.length?x[0].textContent:'')+'&url='+e(d.location),'new-card','{features}')".format(
         url=popup_url,
         features=','.join('{0}={1}'.format(k, v) for (k, v) in sorted(features.items()))
     )
