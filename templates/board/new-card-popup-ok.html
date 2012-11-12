@@ -10,3 +10,23 @@
                 Close this window when you have read this message.
             </p>
 {% endblock %}
+{% block script %}
+<script type="text/javascript">//<[!CDATA[
+    $(function () {
+        var seconds = 7;
+        function updateMsg() {
+            if (--seconds < 0) {
+                window.close();
+            }
+            $('#close-me').text('Close this window or wait ' + seconds + ' seconds');
+            window.setTimeout(updateMsg, 1000);
+        }
+        $('#close-me')
+            .click(function () {
+                window.close();
+            })
+            .addClass('clickable');
+        updateMsg();
+    });
+//]]></script>
+{% endblock %}

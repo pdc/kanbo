@@ -9,7 +9,19 @@
                 {% include "board/form-part.html" %}
                 <div class="buttons">
                     <input type="submit" value="Create Card">
-                    or <span>cancel</span>
+                    or <span class="cancel">close this window</span>
                 </div>
             </form>
+{% endblock %}
+{% block script %}
+<script type="text/javascript">//<[!CDATA[
+    $(function () {
+        $('span.cancel')
+            .click(function () {
+                window.close();
+            })
+            .text('Cancel')
+            .addClass('clickable');
+    });
+//]]></script>
 {% endblock %}
