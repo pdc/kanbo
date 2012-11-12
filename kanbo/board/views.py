@@ -20,7 +20,11 @@ from kanbo.shortcuts import with_template, returns_json
 logger = logging.getLogger(__name__)
 
 def that_owner(view_func):
-    """View decorator that translates  an owner_username in to an owner."""
+    """View decorator for handling a partucular view
+
+    The URL parameters `owner_username`
+    is turned in to parameter `owner`.
+    """
     def wrapped_view(request, owner_username, *args, **kwargs):
         owner = get_object_or_404(User, username=owner_username)
         result = view_func(request, owner, *args, **kwargs) or {}
@@ -30,7 +34,11 @@ def that_owner(view_func):
     return wrapped_view
 
 def that_board(view_func):
-    """View decorator that translates  an owner_username in to an owner."""
+    """View decorator for handling a partucular view
+
+    The URL parameters `owner_username` and `board_name`
+    are turned in to parameters `owner` and `board`.
+    """
     def wrapped_view(request, owner_username, board_name, *args, **kwargs):
         owner = get_object_or_404(User, username=owner_username)
         board = get_object_or_404(Board, owner=owner, name=board_name)
@@ -39,6 +47,7 @@ def that_board(view_func):
             result['owner'] = owner
             result['board'] = board
             result['allows_rearrange'] = board.allows_rearrange(request.user)
+            result['allows_add_card'] = board.allows_add_card(request.user)
         return result
     return wrapped_view
 
@@ -100,6 +109,22 @@ def board_detail(request, owner, board):
     collaborators = board.collaborators.all()
     for x in collaborators:
         x.can_rearrange = board.allows_rearrange(x)
+
+    popup_path = reverse('new-card-popup', kwargs={
+        'owner_username': board.owner.username,
+        'board_name': board.name})
+    popup_url = request.build_absolute_uri(popup_path)
+    features = {
+        'width': 600,
+        'height': 200,
+    }
+    features.update((x, 'no') for x in ['location', 'menubar', 'status', 'toolbar'])
+    features.update((x, 'yes') for x in ['resizable', 'scrollbar'])
+    bookmarklet_url = "javascript:window.open('{url}?title='+escape(document.title)+'&url='+escape(document.location),'new-card','{features}')".format(
+        url=popup_url,
+        features=','.join('{0}={1}'.format(k, v) for (k, v) in sorted(features.items()))
+    )
+
     return {
         'board': board,
         'collaborators': collaborators,
@@ -107,6 +132,7 @@ def board_detail(request, owner, board):
         'bags': board.bag_set.all(),
         'allows_add_remove_user': board.allows_add_remove_user(request.user),
         'add_user_form': AccessForm(instance=Access(board=board)),
+        'bookmarklet_url': bookmarklet_url,
     }
 
 @with_template('board/add-user.html')
@@ -408,3 +434,35 @@ def process_tag_arrangement(request, bag):
             'ids': ids,
         }
         return success
+
+
+
+@login_required
+@with_template('board/new-card-popup.html')
+@that_board
+def new_card_popup(request, owner, board):
+    if request.method == 'POST':
+        form = card_form_for_board(board, request.POST)
+        if form.is_valid():
+            card = form.save()
+            return redirect('new-card-popup-ok',
+                owner_username=owner.username,
+                board_name=board.name,
+                card_name=card.name)
+    else:
+        label_guess = request.GET.get('title')
+        href_guess = request.GET.get('url')
+        form = card_form_for_board(board, label=label_guess, href=href_guess)
+    return {
+        'form': form,
+        'non_field_errors': form.errors.get(NON_FIELD_ERRORS),
+    }
+
+@login_required
+@with_template('board/new-card-popup-ok.html')
+@that_board
+def new_card_popup_ok(request, owner, board, card_name):
+    card = get_object_or_404(Card, board=board, name=card_name)
+    return {
+        'card': card,
+    }

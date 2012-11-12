@@ -1,0 +1,85 @@
+@import url("../fonts/goudy-bookletter-1911/stylesheet.css");
+@import url("../fonts/sorts-mill-goudy/stylesheet.css");
+
+/*
+Pale #FFFAE4
+Yellow #E9B955
+Blue #007F88
+Red #D67353
+*/
+
+* {
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-size: 81.25%; /* If default is 16px this makes 13px */
+    font-family: "Helvetica Neue", "Arial", "Helvetica", sans-serif;
+    line-height: 1.38; /* If default is 16px then this is 18px */
+    color: #331;
+    background: #FFFAE4;
+}
+
+body.base {
+    background: #FADEC0;
+}
+
+h1 {
+    font-size: 1.54em;
+    padding: 20px 20px 10px 50px;
+    margin: 0 0 0.613em 0;
+
+    font-family: "GoudyBookletter1911Regular", serif;
+    font-weight: normal;
+    color: #FFFAE4;
+    background: #007F88 url(logo-31x21.png) 8px 50% no-repeat;
+    line-height: 1;
+}
+
+div {
+    display: relative;
+    clear: both;
+    float: left;
+    margin: 0.613em 10px 0 40px;
+}
+
+label {
+    float: left;
+    width: 90px;
+    margin: 0 10px;
+    text-align: right;
+}
+
+small {
+    display: none;
+}
+
+div:hover small {
+    font-size: 0.846em;
+    display: block;
+    position: absolute;
+    left: 150px;
+    margin-top: 2em;
+    padding: 0 10px;
+    background-color: #FFFAE4;
+    border: 1px solid #007F88;
+    box-shadow: rgba(0, 0, 0, 0.25) 1px 1px 2px;
+}
+
+div.buttons {
+    margin:  1.23em 10px 0 150px;
+}
+
+#id_href,
+#id_label {
+    width: 400px;
+}
+
+#id_label {
+    font-size: 1em;
+}
+
+p {
+    margin: 0.613em 10px 0.613em 50px;
+}

@@ -1,0 +1,15 @@
+{% extends 'board/popup-base.html' %}
+{% block title %}New card - {{ board.name }}{% endblock %}
+{% block heading %}
+            Adding a card to {{ board.name }}
+            {% if board.name != noard.label %}({{ board.label }}){% endif %}
+{% endblock %}
+{% block main %}
+            <form method="POST">
+                {% include "board/form-part.html" %}
+                <div class="buttons">
+                    <input type="submit" value="Create Card">
+                    or <span>cancel</span>
+                </div>
+            </form>
+{% endblock %}

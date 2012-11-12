@@ -1,4 +1,5 @@
 {% extends "board/base.html" %}
+{% load url from future %}
 {% block title %}{{ board.label }}{% endblock %}
 
 {% block details-tab %}
@@ -6,7 +7,7 @@
 {% endblock %}
 
 {% block heading %}
-    <a href="{% url user-profile owner_username=owner.username %}">{{ owner }}</a>
+    <a href="{% url 'user-profile' owner_username=owner.username %}">{{ owner }}</a>
     / {{ board.name }}
     {% if board.label and board.label != board.name %}
         ({{ board.label }})
@@ -20,7 +21,7 @@
     <ul class="menu">
         {% for axes in board.grid_options %}
         <li>
-            <a href="{% url card-grid owner_username=board.owner.username board_name=board.name axes=axes %}">{{ axes.label }}</a>
+            <a href="{% url 'card-grid' owner_username=board.owner.username board_name=board.name axes=axes %}">{{ axes.label }}</a>
         </li>
         {% endfor %}
     </ul>
@@ -31,6 +32,13 @@
     <p>This board contains {{ board.card_set.count }} card{{ board.card_set.count|pluralize }}.</p>
     <p>It was created on {{ board.created|date:"j N Y" }}.</p>
     <p>This board is visible to everybody.</p>
+
+    {% if allows_add_card %}
+    <p>
+        Drag this bookmarklet to a bookmark bar to add cards based on web pages elsewhere:
+        <a class="bookmarklet" href="{{ bookmarklet_url }}">&rarr;{{ board.name }}</a>
+    <p>
+    {% endif %}
 
     <p>Cards are classified using the following tag bags:</p>
     <ul>
@@ -45,7 +53,7 @@
 
     <ul class="menu">
         <li>
-            <a href="{% url new-bag owner_username=owner.username board_name=board.name %}">New tag bag…</a>
+            <a href="{% url 'new-bag' owner_username=owner.username board_name=board.name %}">New tag bag…</a>
         </li>
     </ul>
 </section>
@@ -62,7 +70,7 @@
     <p>*Read-only</p>
     {% endif %}
     {% if allows_add_remove_user %}
-    <form action="{% url add-user owner_username=owner.username board_name=board.name %}" method="POST">
+    <form action="{% url 'add-user' owner_username=owner.username board_name=board.name %}" method="POST">
         {% with form=add_user_form %}
         {% include "board/form-part.html" %}
         {% endwith %}

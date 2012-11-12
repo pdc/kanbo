@@ -1,0 +1,12 @@
+{% extends 'board/popup-base.html' %}
+{% block title %}{{ card.name }} - {{ board.name }}{% endblock %}
+{% block popup_class %}message{% endblock %}
+{% block main %}
+            <p>
+                Added the card {{ card.name }} to your board {{ board.name }}
+                {% if board.name != noard.label %}({{ board.label }}){% endif %}.
+            </p>
+            <p id="close-me">
+                Close this window when you have read this message.
+            </p>
+{% endblock %}

@@ -33,13 +33,16 @@ class CardForm(ModelForm):
         model = Card
         exclude = ['board', 'succ', 'tag_set']
 
-def card_form_for_board(board, post_vars=None):
+def card_form_for_board(board, post_vars=None, label=None, href=None):
     """Form for creating or editing a card on this board."""
     if post_vars:
         return CardForm(post_vars, instance=Card(board=board))
     else:
         default_name = str(1 + board.card_set.count())
-        return CardForm(instance=Card(board=board, name=default_name))
+        default_label = label or ''
+        default_href = href or ''
+        return CardForm(instance=Card(board=board, name=default_name,
+                label=default_label, href=default_href))
 
 class AccessForm(ModelForm):
     class Meta:
