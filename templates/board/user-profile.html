@@ -36,7 +36,7 @@
     {% endif %}
     {% if user == owner %}
     <p class="hero-link">
-        <a href="{% url new-board owner_username=owner.username %}">Create new task board</a>
+        <a href="{% url 'new-board' owner_username=owner.username %}">Create new task board</a>
     </p>
     {% endif %}
 </section>

@@ -15,7 +15,7 @@
     <ul class="menu">
         {% if allows_delete %}
         <li>
-            <a href="{% url delete-bag owner_username=owner.username board_name=board.name bag_name=bag.name %}">Delete bag…</a>
+            <a href="{% url 'delete-bag' owner_username=owner.username board_name=board.name bag_name=bag.name %}">Delete bag…</a>
         </li>
         {% endif %}
     </ul>
@@ -27,7 +27,7 @@
 
     <div>
         {%if allows_rearrange %}
-        <form method="POST" action="{% url tag-arrangement bag_id=bag.id %}">
+        <form method="POST" action="{% url 'tag-arrangement' bag_id=bag.id %}">
             {% csrf_token %}
             <input name="order" />
             <input name="dropped" />
@@ -45,7 +45,7 @@
     </div>
 
     {% if allows_rearrange %}
-    <form id="new-tag-form" method="POST" action="{% url new-tag owner_username=owner.username board_name=board.name bag_name=bag.name %}">
+    <form id="new-tag-form" method="POST" action="{% url 'new-tag' owner_username=owner.username board_name=board.name bag_name=bag.name %}">
         {% include "board/form-part.html" %}
         <div class="buttons">
             <input type="submit" value="Add tag">
@@ -68,7 +68,7 @@
     $(function () {
         CardGrid.enableRearrange(
             '.tag-list',
-            '{% url tag-arrangement-ajax bag_id=board.id %}');
+            '{% url 'tag-arrangement-ajax' bag_id=board.id %}');
         CardGrid.addAddButtonToList('#tag-list', '#new-tag-form');
         $('#tag-list').parent().append('<p>Drag and drop the tags in the above list to change the order that are shown in on the grid.</p>');
     });

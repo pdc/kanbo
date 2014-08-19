@@ -1,10 +1,9 @@
 # -*- coding: UTF-8 -*-
 
 """
-This file demonstrates writing tests using the unittest module. These will pass
-when you run "manage.py test".
+Run te tests with
 
-Replace this with more appropriate tests for your application.
+    ./manage.py test board
 """
 
 from django.test import TestCase, Client
@@ -15,6 +14,7 @@ import fakeredis
 import json
 from pprint import pprint
 from django.contrib.auth.models import User, AnonymousUser
+from kanbo.utils import url_fix
 from kanbo.board.models import *
 from kanbo.board.forms import BoardForm, BagForm, TagForm
 from kanbo.board import models
@@ -156,13 +156,14 @@ class TestCard(TestCase):
         u = '/pop/a/grids/state'
         if which != 'view':
             u += ';click=' + which
+        u += '/'
         self.response = self.client.get(u)
 
     def then_click_href_should_equal_href_attribute(self):
         self.assertEqual('HREF_ATTRIBUTE_VALUE', self.result)
 
     def then_click_href_should_equal_edit_url(self):
-        self.assertEqual('/pop/a/grids/state;click=edit/card2/edit', self.result)
+        self.assertEqual(url_fix('/pop/a/grids/state;click=edit/card2/edit'), url_fix(self.result))
 
     def then_click_href_should_equal_nothing(self):
         self.assertFalse(self.result)
@@ -427,7 +428,7 @@ class TestUrls(TestCase, BoardFixtureMixin):
         self.create_board_and_accoutrements()
 
     def test_board_has_absolute_url(self):
-        self.assertEqual('/derpyhooves/z/grids/q', self.board.get_absolute_url())
+        self.assertEqual('/derpyhooves/z/grids/q/', self.board.get_absolute_url())
 
     def test_bag_has_new_tag_url(self):
         self.assertEqual('/derpyhooves/z/bags/q/tags/new', self.bags[0].get_new_tag_url())
@@ -652,8 +653,6 @@ class TestEventsAreSaved(TestCase, BoardFixtureMixin, FakeRedisMixin):
     def setUp(self):
         self.prepare_event_repeater()
         self.create_board_and_accoutrements()
-        self.client = Client()
-
 
     def test_card_arrangement_creates_events(self):
         self.client.login(username='derpyhooves', password='jubilee')
@@ -732,9 +731,10 @@ class TestBoardMembership(TestCase):
         click_options = self.subject.get_click_options(self.alice, AxisSpec([self.bag], []))
         self.assertEqual(2, len(click_options))
         self.assertEqual('view', click_options[0].name)
-        self.assertEqual('/Alice/derp/grids/bagname', click_options[0].href)
+        self.assertEqual('/Alice/derp/grids/bagname/', click_options[0].href)
         self.assertEqual('edit', click_options[1].name)
-        self.assertEqual('/Alice/derp/grids/bagname;click=edit', click_options[1].href)
+        print url_fix(click_options[1].href)
+        self.assertEqual(url_fix('/Alice/derp/grids/bagname;click=edit/'), url_fix(click_options[1].href))
 
 
 class TestPublicBoardMembership(TestCase):
@@ -834,19 +834,19 @@ class DeleteBagBehaviour(TestCase):
         self.other_bag = self.board.bag_set.create(name='otherbag')
         self.other_tags = [self.other_bag.tag_set.create(name=x) for x in 'pqrst']
 
-        self.client = Client()
+        # self.client = Client()
 
     def test_when_logged_in_as_owner_it_should_allow_link(self):
         self.client.login(username='username', password='userpassword')
 
-        response = self.client.get('/username/boardname/bags/bagname')
+        response = self.client.get('/username/boardname/bags/bagname/')
 
         self.assertTrue(response.context['allows_delete'])
 
     def test_when_logged_in_as_other_it_should_not_allow_link(self):
         self.client.login(username='othernane', password='otherpassword')
 
-        response = self.client.get('/username/boardname/bags/bagname')
+        response = self.client.get('/username/boardname/bags/bagname/')
 
         self.assertFalse(response.context['allows_delete'])
 
@@ -860,7 +860,7 @@ class DeleteBagBehaviour(TestCase):
 
         response = self.client.get('/username/boardname/bags/bagname/delete')
 
-        self.assertRedirects(response, '/username/boardname')
+        self.assertRedirects(response, '/username/boardname/')
 
     def test_when_logged_in_as_owner_it_should_show_form(self):
         self.client.login(username='username', password='userpassword')
@@ -875,7 +875,7 @@ class DeleteBagBehaviour(TestCase):
 
         response = self.client.post('/username/boardname/bags/bagname/delete')
 
-        self.assertRedirects(response, '/username/boardname')
+        self.assertRedirects(response, '/username/boardname/')
         self.assertEqual(1, Bag.objects.filter(board=self.board).count()) # No longer in db
         self.assertEqual(0, Tag.objects.filter(bag=self.bag).count()) # Also delets dependents
         self.assertEqual(5, self.other_bag.tag_set.count()) # Doesn‘t delete anything else

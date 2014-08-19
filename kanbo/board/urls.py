@@ -1,32 +1,51 @@
 # -*- coding: UTF-8 -*-
 
-from django.conf.urls.defaults import patterns, include, url
+from __future__ import unicode_literals
+from django.conf.urls import include, url
+import kanbo.board.views
 
-urlpatterns = patterns('kanbo.board.views',
-    url(r'^(?P<owner_username>[\w-]+)$', 'user_profile', name='user-profile'),
-    url(r'^(?P<owner_username>[\w-]+)/new$', 'new_board', name='new-board'),
-    url(r'^(?P<owner_username>[\w-]+)/(?P<board_name>[\w-]+)$', 'board_detail', name='board-detail'),
 
-    url(r'^(?P<owner_username>[\w-]+)/(?P<board_name>[\w-]+)/bags/new$', 'new_bag', name='new-bag'),
-    url(r'^(?P<owner_username>[\w-]+)/(?P<board_name>[\w-]+)/bags/(?P<bag_name>[\w-]+)$', 'bag_detail', name='bag-detail'),
-    url(r'^(?P<owner_username>[\w-]+)/(?P<board_name>[\w-]+)/bags/(?P<bag_name>[\w-]+)/delete$', 'delete_bag', name='delete-bag'),
+# Organization of this file
+#
+# We start with definitions of partial URL confs for
+# parts of boards, then for boards (which include the former partial confs),
+# and so on and end with the main URLconf
 
-    url(r'^(?P<owner_username>[\w-]+)/(?P<board_name>[\w-]+)/bags/(?P<bag_name>[\w-]+)/tags/new$', 'new_tag', name='new-tag'),
-    url(r'^(?P<owner_username>[\w-]+)/(?P<board_name>[\w-]+)/grids/(?P<axes>[\w+,;=]+)$', 'card_grid', name='card-grid'),
-    url(r'^(?P<owner_username>[\w-]+)/(?P<board_name>[\w-]+)/grids/(?P<axes>[\w+,;=]+)$', 'card_grid', name='card-grid'),
-    url(r'^(?P<owner_username>[\w-]+)/(?P<board_name>[\w-]+)/grids/(?P<axes>[\w+,;=]+)/new$', 'new_card', name='new-card'),
-    url(r'^(?P<owner_username>[\w-]+)/(?P<board_name>[\w-]+)/popup-new$', 'new_card_popup', name='new-card-popup'),
-    url(r'^(?P<owner_username>[\w-]+)/(?P<board_name>[\w-]+)/popup-new/(?P<card_name>[\w-]+)$', 'new_card_popup_ok', name='new-card-popup-ok'),
-    url(r'^(?P<owner_username>[\w-]+)/(?P<board_name>[\w-]+)/grids/(?P<axes>[\w+,;=]+)/(?P<card_name>\w+)/edit$', 'edit_card', name='edit-card'),
-    url(r'^(?P<owner_username>[\w-]+)/(?P<board_name>[\w-]+)/grids/(?P<axes>[\w+,;=]+)/create$', 'create_many_cards', name='create-many-cards'),
-    url(r'^(?P<owner_username>[\w-]+)/(?P<board_name>[\w-]+)/users/add$', 'add_user', name='add-user'),
 
-    url(r'^boards/(?P<board_id>\d+)/arrangement$', 'card_arrangement', name='card-arrangement'),
-    url(r'^boards/(?P<board_id>\d+)/grids/(?P<axes>[\w+,;=]+)/arrangement$', 'card_arrangement', name='card-arrangement'),
-    url(r'^boards/(?P<board_id>\d+)/grids/(?P<axes>[\w+,;=]+)/jarrange$', 'card_arrangement_ajax', name='card-arrangement-ajax'),
+board_patterns = [  # Will be prefixed with /USER/BOARD/
+    url(r'^$', kanbo.board.views.board_detail, name='board-detail'),
+    url(r'^bags/new$', kanbo.board.views.new_bag, name='new-bag'),
+    url(r'^bags/(?P<bag_name>[\w-]+)/', include([
+        url(r'^$', kanbo.board.views.bag_detail, name='bag-detail'),
+        url(r'^delete$', kanbo.board.views.delete_bag, name='delete-bag'),
+        url(r'^tags/new$', kanbo.board.views.new_tag, name='new-tag'),
+    ])),
+    url(r'^grids/(?P<axes>[\w+,;=]+)/', include([
+        url(r'^$', kanbo.board.views.card_grid, name='card-grid'),
+        url(r'^new$', kanbo.board.views.new_card, name='new-card'),
+        url(r'^(?P<card_name>\w+)/edit$', kanbo.board.views.edit_card, name='edit-card'),
+        url(r'^create$', kanbo.board.views.create_many_cards, name='create-many-cards'),
+    ])),
+    url(r'^popup-new$', kanbo.board.views.new_card_popup, name='new-card-popup'),
+    url(r'^popup-new/(?P<card_name>[\w-]+)$', kanbo.board.views.new_card_popup_ok, name='new-card-popup-ok'),
+    url(r'^users/add$', kanbo.board.views.add_user, name='add-user'),
+]
 
-    url('^bags/(?P<bag_id>\d+)/arrangement$', 'tag_arrangement', name='tag-arrangement'),
-    url('^bags/(?P<bag_id>\d+)/jarrange$', 'tag_arrangement_ajax', name='tag-arrangement-ajax'),
+urlpatterns = [
+    url(r'^(?P<owner_username>[\w-]+)/', include([
+        url(r'^$', kanbo.board.views.user_profile, name='user-profile'),
+        url(r'^new$', kanbo.board.views.new_board, name='new-board'),
+        url(r'^(?P<board_name>[\w-]+)/', include(board_patterns)),
+    ])),
+    url(r'^boards/(?P<board_id>\d+)/', include([
+        url(r'^arrangement$', kanbo.board.views.card_arrangement, name='card-arrangement'),
+        url(r'^grids/(?P<axes>[\w+,;=]+)/arrangement$', kanbo.board.views.card_arrangement, name='card-arrangement'),
+        url(r'^grids/(?P<axes>[\w+,;=]+)/jarrange$', kanbo.board.views.card_arrangement_ajax, name='card-arrangement-ajax'),
 
-    url(r'^boards/(?P<board_id>\d+)/jevents/(?P<start_seq>\d+)', 'events_ajax', name='events-ajax'),
-)
+        url(r'^jevents/(?P<start_seq>\d+)$', kanbo.board.views.events_ajax, name='events-ajax'),
+    ])),
+    url(r'^bags/(?P<bag_id>\d+)/', include([
+        url(r'^arrangement$', kanbo.board.views.tag_arrangement, name='tag-arrangement'),
+        url(r'^jarrange$', kanbo.board.views.tag_arrangement_ajax, name='tag-arrangement-ajax'),
+    ])),
+]

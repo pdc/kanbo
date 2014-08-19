@@ -55,7 +55,7 @@ One of the packages it uses has to be installed from Git for now:
 
 The rest can be installed in the usual way:
 
-    pip install -r REQUIREMENTS
+    pip install -r requirements.txt
 
 Now you can test it
 
@@ -63,7 +63,7 @@ Now you can test it
 
 I use South for migrations, so you set up a database as follows
 
-    ./manage syncdb
-    ./manage migrate board
+    ./manage.py syncdb
+    ./manage.py migrate board
 
 

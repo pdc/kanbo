@@ -12,12 +12,12 @@
     <body class="no-js">
         <header>
             <p id="trail">
-                <a href="{% url home %}" class="wordmark">Kanbo</a>
+                <a href="{% url 'home' %}" class="wordmark">Kanbo</a>
             </p>
 
             {% if board %}
             <p id="board-name">
-                <a href="{% url user-profile owner_username=owner.username %}">{% if owner.id == 1 %}Demonstration boards{% else %}{{ owner.username }}{% endif %}</a>
+                <a href="{% url 'user-profile' owner_username=owner.username %}">{% if owner.id == 1 %}Demonstration boards{% else %}{{ owner.username }}{% endif %}</a>
                 /
                 <a href="{{ board.get_absolute_url }}">{{ board.name }}</a>
                 {% if board.label != board.name %}
@@ -31,13 +31,13 @@
                     {% if option == axes%}
                     <strong>{{ option.label }}</strong>
                     {% else %}
-                    <a href="{% url card-grid owner_username=board.owner.username board_name=board.name axes=option %}">{{ option.label }}</a>
+                    <a href="{% url 'card-grid' owner_username=board.owner.username board_name=board.name axes=option %}">{{ option.label }}</a>
                     {% endif %}
                 </li>
                 {% endfor %}
                 <li>
                     {% block details-tab %}
-                    <a href="{% url board-detail owner_username=board.owner.username board_name=board.name %}">Details</a>
+                    <a href="{% url 'board-detail' owner_username=board.owner.username board_name=board.name %}">Details</a>
                     {% endblock %}
                 </li>
             </ul>

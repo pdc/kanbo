@@ -2,7 +2,7 @@
 {% block title %}{{ board.label }}{% endblock %}
 
 {% block trail %}
-<a href="{% url board-detail owner_username=owner.username board_name=board.name %}">{{ board.name }}</a> >
+<a href="{% url 'board-detail' owner_username=owner.username board_name=board.name %}">{{ board.name }}</a> >
 {% endblock %}
 
 {% block heading %}
@@ -33,7 +33,7 @@
         {% for bag in bags %}
             {% if bag.name != axes %}
             <li>
-                <a href="{% url card-grid  owner_username=board.owner.username board_name=board.name axes=bag.name %}">{{ bag.name }}</a>
+                <a href="{% url 'card-grid'  owner_username=board.owner.username board_name=board.name axes=bag.name %}">{{ bag.name }}</a>
             </li>
             {% endif %}
         {% endfor %}
@@ -72,7 +72,7 @@
                     {% endif %}
                 <td>
                     {% if allows_rearrange %}
-                    <form class="card_arrangement" action="{% url card-arrangement board_id=board.id axes=axes %}" method="post">
+                    <form class="card_arrangement" action="{% url 'card-arrangement' board_id=board.id axes=axes %}" method="post">
                         {% csrf_token %}
                         <input type="hidden" name="tags" value="{{ bin.tags|join:"," }}" />
                         <input name="order" />
@@ -109,7 +109,7 @@
 </section>
 {% if allows_rearrange %}
 <section id="editor">
-    <form id="new-card-form" action="{% url new-card owner_username=owner.username board_name=board.name axes=axes %}" method="POST">
+    <form id="new-card-form" action="{% url 'new-card' owner_username=owner.username board_name=board.name axes=axes %}" method="POST">
         {% with form=new_card_form %}
             {% include "board/form-part.html" %}
             <div class="buttons">
@@ -131,14 +131,14 @@
     $(function () {
         CardGrid.enableRearrange(
             '.card-bin',
-            '{% url card-arrangement-ajax board_id=board.id axes=axes %}');
+            '{% url 'card-arrangement-ajax' board_id=board.id axes=axes %}');
         CardGrid.makeNewCardButtonMagic();
     });
 </script>
 {% endif %}
 {% if is_polling_enabled %}
 <script type="text/javascript">
-    CardGrid.pollForUpdates('{% url events-ajax board_id=board.id start_seq=next_seq %}');
+    CardGrid.pollForUpdates('{% url 'events-ajax' board_id=board.id start_seq=next_seq %}');
 </script>
 {% endif %}
 {% if messages %}

@@ -9,8 +9,10 @@ import re
 from uuid import uuid4
 from django.template.defaultfilters import slugify
 from django.contrib.auth.models import User
-from social_auth.backends import USERNAME
 from social_auth.models import UserSocialAuth # username_max_length
+
+
+USERNAME_MIN_LEN = 2
 
 RANDOM_LENGTH = 16
 
@@ -21,6 +23,8 @@ url_bits = set([
     'about',
     'hello',
     'boards',
+    'bags',
+    'users',
     'api',
     ])
 def username_rejected(username):
@@ -30,6 +34,7 @@ def username_rejected(username):
     a user with this name.
     """
     return (not username
+        or len(username) < USERNAME_MIN_LEN
         or username in url_bits
         or BAD_USERNAME_RE.match(username)
         or User.objects.filter(username=username).exists())
@@ -54,16 +59,16 @@ def slugify_harder(name):
 
 def get_username(details, user=None, user_exists=username_rejected, *args, **kwargs):
     if user: # Existing user?
-        return {USERNAME: user.username}
+        return {'username': user.username}
 
     # New user: create plausible user name suitable for URLs.
 
     max_length = UserSocialAuth.username_max_length()
-    username = details.get(USERNAME, 'user')[:max_length]
+    username = details.get('username', 'user')[:max_length]
     username = slugify_harder(username)
 
     short_username = username[:max_length-RANDOM_LENGTH]
     while user_exists(username):
         username = short_username + uuid4().hex[:RANDOM_LENGTH]
 
-    return {USERNAME: username}
+    return {'username': username}

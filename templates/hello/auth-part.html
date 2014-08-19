@@ -1,18 +1,18 @@
 
                 {% if user.is_authenticated %}
                 <aside id="auth" class="authenticated logged-in">
-                    <form action="{% url hello-log-out %}" method="post">
+                    <form action="{% url 'hello-log-out' %}" method="post">
                         <p>
                             {% if user_profile.image_url %}
                             <img src="{{ user_profile.image_url }}" alt="" class="userpic" />
                             {% else %}
                             Logged in as
                             {% endif %}
-                            <a href="{% url user-profile owner_username=user.username %}">
+                            <a href="{% url 'user-profile' owner_username=user.username %}">
                                 <i>{{ user.username }}</i>
                             </a>
 
-                            <input type="hidden"  name="csrfmiddlewaretoken" value="{{ csrf_token }}" />
+                            {% csrf_token %}
                             <input type="submit" value="Log out">
                         <p>
                     </form>
@@ -20,7 +20,7 @@
                 {% else %}
                 <aside id="auth" class="log-in">
                     <p>
-                        <a href="{% url hello-login-form %}">Log in or Register</a>
+                        <a href="{% url 'hello-login-form' %}">Log in or Register</a>
                     <p>
                 </aside>
                 {% endif %}

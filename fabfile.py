@@ -8,14 +8,15 @@ env.site_name = 'kanbo'
 env.hosts = ['{0}@spreadsite.org'.format(env.site_name)]
 env.virtualenv = env.site_name
 env.settings_subdir = env.site_name
-env.django_apps = ['about', 'board', 'hello']
+env.django_apps = ['kanbo.about', 'kanbo.board', 'kanbo.hello']
 
 def update_requirements():
-    local("pip freeze | egrep -v 'Fabric|pycrypto|ssh' > REQUIREMENTS")
+    local("pip freeze | egrep -v 'Fabric|pycrypto|ssh|paramiko|ecdsa' > requirements.txt")
 
 def test():
     with settings(warn_only=True):
-        result = local('./manage.py test {0}'.format(' '.join(env.django_apps)), capture=True)
+        # result = local('./manage.py test {0}'.format(' '.join(env.django_apps)), capture=True)
+        result = local('./manage.py test'.format(' '.join(env.django_apps)), capture=True)
     if result.failed and not confirm("Tests failed. Continue anyway?"):
         abort("Aborting at user request.")
 
@@ -36,7 +37,7 @@ def deploy():
         run('cp {0}/settings_production.py {0}/settings.py'.format(env.settings_subdir))
 
         with prefix('. /home/{0}/virtualenvs/{1}/bin/activate'.format(env.site_name, env.virtualenv)):
-            run('pip install -r REQUIREMENTS')
+            run('pip install -r requirements.txt')
             run('./manage.py collectstatic --noinput')
 
     run('touch /etc/uwsgi/emperor.d/{0}.ini'.format(env.site_name))

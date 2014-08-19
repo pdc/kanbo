@@ -12,7 +12,7 @@
         {% include "board/form-part.html" %}
         <div class="buttons">
             <input type="submit" value="Create Card">
-            or <a href="{% url card-grid owner_username=owner.username board_name=board.name axes=axes %}">cancel</a>
+            or <a href="{% url 'card-grid' owner_username=owner.username board_name=board.name axes=axes %}">cancel</a>
         </div>
     </form>
 </section>
@@ -36,7 +36,7 @@
     </p>
 
     {%if user == owner %}
-    <form action="{% url create-many-cards owner_username=owner.username board_name=board.name axes=axes %}" method="post">
+    <form action="{% url 'create-many-cards' owner_username=owner.username board_name=board.name axes=axes %}" method="post">
         {% csrf_token %}
         <textarea name="cards">{{ text }}</textarea>
         <input type="submit" value="Add cards" />

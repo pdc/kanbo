@@ -17,6 +17,7 @@ from kanbo.board.models import Board, Access, Card, Bag, Tag, toposorted, rearra
 from kanbo.board.forms import BoardForm, BagForm, TagForm, card_form_for_board, CardForm, AccessForm
 from kanbo.shortcuts import with_template, returns_json
 
+
 logger = logging.getLogger(__name__)
 
 def that_owner(view_func):
