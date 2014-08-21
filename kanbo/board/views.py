@@ -174,6 +174,8 @@ def card_grid(request, owner, board, axes):
     is_polling_enabled = settings.EVENT_REPEATER.get('POLL')
     next_seq = board.event_stream().next_seq() if is_polling_enabled else None
 
+    column_count = len(grid.rows[0].bins)
+
     return {
         'board': board,
         'grid': grid,
@@ -183,6 +185,8 @@ def card_grid(request, owner, board, axes):
         'next_seq': next_seq,
         'new_card_form': card_form_for_board(board),
         'click_options': click_options,
+        'min_grid_width': 220 * column_count,
+        'bin_width_percent': 100 // (1 + column_count),
     }
 
 @with_template('board/grid.html')
@@ -435,7 +439,6 @@ def process_tag_arrangement(request, bag):
             'ids': ids,
         }
         return success
-
 
 
 @login_required

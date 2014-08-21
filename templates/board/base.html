@@ -7,6 +7,7 @@
         <!--[if lt IE 9]>
         <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
         <![endif]-->
+        {% block more-style %}{% endblock %}
         <link rel="shortcut icon" href="{{ STATIC_URL }}style/favicon.png">
     </head>
     <body class="no-js">
@@ -46,7 +47,7 @@
             {% endif %}
 
         </header>
-        <div id="all">
+        <div class="upper">
             <div id="main">
                 {% block messages %}
                 {% if messages %}
@@ -59,8 +60,9 @@
                 {% endblock %}
                 {% block main %}{% endblock %}
             </div>
-            {% block auth %}{% include "hello/auth-part.html" %}{% endblock %}
         </div>
+        {% block full-width %}{% endblock %}
+        {% block auth %}{% include "hello/auth-part.html" %}{% endblock %}
         {% block javascripts %}{% endblock %}
     </body>
 </html>

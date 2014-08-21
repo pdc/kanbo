@@ -9,7 +9,7 @@
     {{ axes }} Grid
 {% endblock %}
 
-{% block main %}
+{% block full-width %}
 <section id="board">
     <ul class="menu" id="menu">
 
@@ -38,7 +38,7 @@
             {% endif %}
         {% endfor %}
     </ul>
-    <table id="card-grid">
+    <table id="card-grid" class="card-grid">
         <thead>
             <tr>
                 {% if axes.y_axis %}
@@ -146,4 +146,16 @@
     CardGrid.addCloseButtonToMessages();
 </script>
 {% endif %}
+{% endblock %}
+
+{% block more-style %}
+<style>
+    .card-grid {
+        min-width: {{ min_grid_width }}px;
+    }
+    .card-grid td,
+    .card-grid th {
+        width: {{ bin_width_percent }}%;
+    }
+</style>
 {% endblock %}

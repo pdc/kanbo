@@ -132,7 +132,7 @@ header::after {
     content: ".";
 }
 
-#all {
+.upper {
     width: 960px; /* 12u */
     margin: 0 auto;
 }
@@ -616,19 +616,19 @@ aside li {
 /* Adjustments for different width screens */
 
 @media screen and (min-width: 1240px) {
-    #all {
+    .upper {
         width: 1200px; /* 15u */
     }
 }
 
 @media screen and (min-width: 1480px) {
-    #all {
+    .upper {
         width: 1440px; /* 18u */
     }
 }
 
 @media screen and (min-width: 1960px) {
-    #all {
+    .upper {
         width: 1920px; /* 24u */
     }
 }
