@@ -11,7 +11,7 @@ env.settings_subdir = env.site_name
 env.django_apps = ['kanbo.about', 'kanbo.board', 'kanbo.hello']
 
 def update_requirements():
-    local("pip freeze | egrep -v 'Fabric|pycrypto|ssh|paramiko|ecdsa|distribute' > requirements.txt")
+    local("pip freeze | egrep -v 'Fabric|pycrypto|ssh|paramiko|ecdsa|distribute|greenlet|cffi|readline|colorama' > requirements.txt")
 
 def test():
     with settings(warn_only=True):
