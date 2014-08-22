@@ -9,15 +9,14 @@ Run te tests with
 from django.test import TestCase, Client
 from mock import patch
 
-import redis
 import fakeredis
 import json
-from pprint import pprint
 from django.contrib.auth.models import User, AnonymousUser
+from django.core.urlresolvers import resolve
 from kanbo.utils import url_fix
 from kanbo.board.models import *
-from kanbo.board.forms import BoardForm, BagForm, TagForm
-from kanbo.board import models
+from kanbo.board.forms import BagForm, TagForm, AccessForm
+
 
 class TestCard(TestCase):
     def test_nothing(self):
@@ -188,7 +187,6 @@ class TestCard(TestCase):
 
     def and_click_options_should_not_include_edit(self):
         self.assertEqual(['view'], [x.name for x in self.response.context['click_options']])
-
 
 
 class TestTopsort(TestCase):
@@ -1164,5 +1162,114 @@ class BoardAjaxBehaviour(TestCase, BoardStepsMixin):
         self.assertEqual(expected_tags, actual_tags)
 
 
+class TestAccessForm(TestCase):
+    def test_converts_username_to_user_instance(self):
+        self.given_a_board()
+        self.given_another_user('hortense')
+
+        self.when_instantiating_access_form_with_username('hortense')
+
+        self.then_form_should_be_valid()
+        self.then_user_should_be_instance(username='hortense')
+
+    def test_rejects_nonexistent_username(self):
+        self.given_a_board()
+        self.given_another_user('hortense')
+
+        self.when_instantiating_access_form_with_username('bartholemew')
+
+        self.then_form_should_NOT_be_valid()
+        self.then_user_field_should_have_error_message()
+
+    # Helpers
+
+    def given_a_board(self):
+        self.owner = User.objects.create_user(username='OWNER', password='OWNER_PASSWORD')
+        self.board = self.owner.board_set.create(name='a')
+
+        self.bag = self.board.bag_set.create(name='state')
+        self.new_tag = self.bag.tag_set.create(name='new')
+        self.progress_tag = self.bag.tag_set.create(name='in-progress')
+        self.done_tag = self.bag.tag_set.create(name='done')
+
+    def given_another_user(self, username='OTHER', password='PASSWORD'):
+        self.other = User.objects.create_user(username=username, password=password)
+
+    def when_instantiating_access_form_with_username(self, username='flimflam', can_rearrange=True):
+        post = {
+            'user': username,
+        }
+        if can_rearrange:
+            post['can_rearrange'] = 'on'
+        self.form = AccessForm(post, instance=Access(board=self.board))
+
+    def then_form_should_be_valid(self):
+        self.assertTrue(self.form.is_valid())
+
+    def then_form_should_NOT_be_valid(self):
+        self.assertFalse(self.form.is_valid())
+
+    def then_user_should_be_instance(self, username):
+        actual = self.form.cleaned_data['user']
+        self.assertTrue(isinstance(actual, User))
+        self.assertEqual(username, actual.username)
+
+    def then_user_field_should_have_error_message(self):
+        self.assertTrue(self.form['user'].errors)
 
 
+class TestAutocompleteUser(TestCase):
+    def test_returns_users_with_usename_prefix(self):
+        self.given_users([
+            ('albert', 'Albert'),
+            ('alfonse', 'Alfonse Smith'),
+            ('bob', 'Robert McSob'),
+            ('boom', 'Balshep Oom'),
+            ('boy69', 'Justin'),
+        ])
+        self.given_logged_in_as('albert')
+
+        self.when_requesting_autocomplete(term='bo')
+
+        self.then_results_should_be_json([
+            {'value': 'bob', 'label': 'bob (Robert McSob)'},
+            {'value': 'boom', 'label': 'boom (Balshep Oom)'},
+            {'value': 'boy69', 'label': 'boy69 (Justin)'}])
+
+    def test_excludes_requesting_user(self):
+        self.given_users([
+            ('albert', 'Albert'),
+            ('alfonse', 'Alfonse Smith'),
+            ('bob', 'Robert McSob'),
+            ('boom', 'Balshep Oom'),
+            ('boy69', 'Justin'),
+        ])
+        self.given_logged_in_as('boom')
+
+        self.when_requesting_autocomplete(term='bo')
+
+        self.then_results_should_be_json([
+            {'value': 'bob', 'label': 'bob (Robert McSob)'},
+            {'value': 'boy69', 'label': 'boy69 (Justin)'}])
+
+    def given_users(self, username_fullnames):
+        for username, fullname in username_fullnames:
+            first, last = (fullname + ' ').split(' ', 1)
+            last = last.rstrip()
+            user = User.objects.create_user(username=username, password='PASSWORD')
+            user.last_name = last
+            user.first_name = first
+            user.save()
+
+    def given_logged_in_as(self, username):
+        self.client.login(username=username, password='PASSWORD')
+
+    def when_requesting_autocomplete(self, term):
+        path = reverse('autocomplete-user')
+        self.response = self.client.get(path, {'term': term})
+
+    def then_results_should_be_json(self, expected):
+        self.assertEqual(200, self.response.status_code)
+        self.assertEqual('application/json', self.response['Content-Type'].split(';')[0])
+        actual = json.loads(self.response.content)
+        self.assertEqual(expected, actual)

@@ -70,12 +70,12 @@
     <p>*Read-only</p>
     {% endif %}
     {% if allows_add_remove_user %}
-    <form action="{% url 'add-user' owner_username=owner.username board_name=board.name %}" method="POST">
+    <form method="POST" class="add-user-form">
         {% with form=add_user_form %}
         {% include "board/form-part.html" %}
         {% endwith %}
         <div class="buttons">
-            <input type="submit" value="Add User">
+            <input type="submit" name="add-user" value="Add User">
         </div>
     </form>
     {% endif %}
@@ -86,4 +86,17 @@
 <script type="text/javascript" src="http://code.jquery.com/jquery-1.7.2.min.js"></script>
 <script type="text/javascript"src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.18/jquery-ui.min.js"></script>
 <script type="text/javascript" src="{{ STATIC_URL }}js/board.js"></script>
+
+
+{% if allows_add_remove_user %}
+<script>
+    $('.add-user-form input[type="text"]').autocomplete({
+        source: '{% url "autocomplete-user" %}'
+    });
+</script>
+{% endif %}
+{% endblock %}
+
+{% block more-style %}
+    <link rel="stylesheet" type="text/css" href="https://code.jquery.com/ui/1.11.1/themes/smoothness/jquery-ui.css">
 {% endblock %}

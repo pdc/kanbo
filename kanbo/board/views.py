@@ -20,6 +20,7 @@ from kanbo.shortcuts import with_template, returns_json
 
 logger = logging.getLogger(__name__)
 
+
 def that_owner(view_func):
     """View decorator for handling a partucular view
 
@@ -33,6 +34,7 @@ def that_owner(view_func):
             result['owner'] = owner
         return result
     return wrapped_view
+
 
 def that_board(view_func):
     """View decorator for handling a partucular view
@@ -52,10 +54,12 @@ def that_board(view_func):
         return result
     return wrapped_view
 
+
 def redirect_to_board_detail(board, view_name='board-detail'):
     return redirect(view_name,
         owner_username=board.owner.username,
         board_name=board.name)
+
 
 def redirect_to_board(board, axes=None, view_name='card-grid'):
     """Return a HttpresponseRedirect to this board.
@@ -80,6 +84,7 @@ def user_profile(request, owner):
         'boards': boards,
     }
 
+
 @login_required
 @with_template('board/new-board.html')
 @that_owner
@@ -103,10 +108,20 @@ def new_board(request, owner):
         'non_field_errors': form.errors.get(NON_FIELD_ERRORS),
     }
 
+
 @with_template('board/board-detail.html')
 @that_board
 def board_detail(request, owner, board):
-    #cards = toposorted(board.card_set.all())
+    if not board.allows_add_remove_user(request.user):
+        add_user_form = None
+    elif request.method == 'POST':
+        add_user_form = AccessForm(request.POST, instance=Access(board=board))
+        if add_user_form.is_valid():
+            add_user_form.save(message_callback=lambda msg: messages.info(request, msg))
+            return redirect_to_board_detail(board)
+    else:
+        add_user_form = AccessForm(instance=Access(board=board)) # blank form
+
     collaborators = board.collaborators.all()
     for x in collaborators:
         x.can_rearrange = board.allows_rearrange(x)
@@ -132,9 +147,10 @@ def board_detail(request, owner, board):
         'any_cant_rearrange': any(not x.can_rearrange for x in collaborators),
         'bags': board.bag_set.all(),
         'allows_add_remove_user': board.allows_add_remove_user(request.user),
-        'add_user_form': AccessForm(instance=Access(board=board)),
+        'add_user_form': add_user_form,
         'bookmarklet_url': bookmarklet_url,
     }
+
 
 @with_template('board/add-user.html')
 @that_board
@@ -144,6 +160,7 @@ def add_user(request, owner, board):
         return redirect_to_board_detail(board)
 
     if request.method == 'POST':
+        print ' request.POST', request.POST
         form = AccessForm(request.POST, instance=Access(board=board))
         if form.is_valid():
             try:
@@ -160,6 +177,7 @@ def add_user(request, owner, board):
         'form': form,
         'non_field_errors': form.errors.get(NON_FIELD_ERRORS),
     }
+
 
 @with_template('board/grid.html')
 @that_board
@@ -189,6 +207,7 @@ def card_grid(request, owner, board, axes):
         'bin_width_percent': 100 // (1 + column_count),
     }
 
+
 @with_template('board/grid.html')
 def card_arrangement(request, board_id, axes):
     board = get_object_or_404(Board, pk=board_id)
@@ -203,6 +222,7 @@ def card_arrangement(request, board_id, axes):
         'order':  request.POST['order'],
     }
 
+
 @returns_json
 def card_arrangement_ajax(request, board_id, axes):
     board = get_object_or_404(Board, pk=board_id)
@@ -210,6 +230,7 @@ def card_arrangement_ajax(request, board_id, axes):
     res = success or {}
     res['success'] = bool(success)
     return res
+
 
 def process_card_arrangement(request, board, axes):
     """Code common to the 2 card_arrangement views."""
@@ -259,6 +280,7 @@ def process_card_arrangement(request, board, axes):
             success['tags'] = [request.POST.getlist('tags')]
         return success
 
+
 @login_required
 @with_template('board/new-card.html')
 @that_board
@@ -275,6 +297,7 @@ def new_card(request, owner, board, axes):
         'form': form,
         'non_field_errors': form.errors.get(NON_FIELD_ERRORS),
     }
+
 
 @login_required
 @with_template('board/edit-card.html')
@@ -293,6 +316,7 @@ def edit_card(request, owner, board, axes, card_name):
         'form': form,
         'non_field_errors': form.errors.get(NON_FIELD_ERRORS),
     }
+
 
 @with_template('board/new-card.html')
 @that_board
@@ -316,6 +340,7 @@ def create_many_cards(request, owner, board, axes):
         'axes': axes,
         'text': text,
     }
+
 
 @returns_json
 def events_ajax(request, board_id, start_seq):
@@ -353,6 +378,7 @@ def new_bag(request, owner, board):
         'non_field_errors': form.errors.get(NON_FIELD_ERRORS),
     }
 
+
 @with_template('board/bag-detail.html')
 @that_board
 def bag_detail(request, owner, board, bag_name):
@@ -363,6 +389,7 @@ def bag_detail(request, owner, board, bag_name):
         'order': ' '.join(str(x.id) for x in bag.tags_sorted()),
         'allows_delete': bag.allows_delete(request.user),
     }
+
 
 @login_required
 @with_template('board/delete-bag.html')
@@ -377,6 +404,7 @@ def delete_bag(request, owner, board, bag_name):
     return {
         'bag': bag,
     }
+
 
 @with_template('board/new-tag.html')
 @that_board
@@ -395,6 +423,7 @@ def new_tag(request, owner, board, bag_name):
         'non_field_errors': form.errors.get(NON_FIELD_ERRORS),
     }
 
+
 @with_template('board/bag-detail.html')
 def tag_arrangement(request, bag_id):
     bag = get_object_or_404(Bag, id=bag_id)
@@ -408,6 +437,7 @@ def tag_arrangement(request, bag_id):
         'allows_rearrange': bag.allows_rearrange(request.user),
     }
 
+
 @returns_json
 def tag_arrangement_ajax(request, bag_id):
     bag = get_object_or_404(Bag, pk=bag_id)
@@ -415,6 +445,7 @@ def tag_arrangement_ajax(request, bag_id):
     res = success or {}
     res['success'] = bool(success)
     return res
+
 
 def process_tag_arrangement(request, bag):
     """Code common to the 2 card_arrangement views."""
@@ -462,6 +493,7 @@ def new_card_popup(request, owner, board):
         'non_field_errors': form.errors.get(NON_FIELD_ERRORS),
     }
 
+
 @login_required
 @with_template('board/new-card-popup-ok.html')
 @that_board
@@ -470,3 +502,21 @@ def new_card_popup_ok(request, owner, board, card_name):
     return {
         'card': card,
     }
+
+
+@login_required
+@returns_json
+def autocomplete_user(request):
+    term = request.GET.get('term')
+    print 'term', term
+    if not term:
+        return []
+    user_infos = (User.objects
+        .filter(username__startswith=term)
+        .exclude(id=request.user.id)
+        .order_by('username')
+        .values('username', 'first_name', 'last_name'))
+    return [{
+        'value': x['username'],
+        'label': '{} ({})'.format(x['username'], (x['first_name'] + ' ' + x['last_name']).strip()),
+    } for x in user_infos]

@@ -155,6 +155,7 @@ class GridBin(object):
     def __repr__(self):
         return 'GridBin({0!r}, tags={1!r})'.format(self.cards, self.tags)
 
+
 class ClickOption(object):
     """Used to represent options for clicking on cards.
 
@@ -170,6 +171,7 @@ class ClickOption(object):
     def __str__(self):
         return 'ClickOption({0!r}, {1!r})'.format(self.name, self.href)
 
+
 lowercase_validator = RegexValidator(re.compile(r'^[a-z\d-]+$'), 'Must be lower-case letters a-z, digits, or hyphens')
 class KeywordValidator(object):
     def __init__(self, ws):
@@ -178,6 +180,7 @@ class KeywordValidator(object):
     def __call__(self, value):
         if value in self.words:
             raise ValidationError(u'The name \u2018{0}\u2019 is reserved and cannot be used.'.format(value))
+
 
 board_level_keywords = ['new', 'create', 'edit', 'update', 'delete', 'profile', 'kanbo']
 
@@ -543,8 +546,10 @@ class Card(models.Model):
             })
         return self.href
 
+
 class CyclesException(Exception):
     pass
+
 
 def toposort(xs):
     """Given a list of things with a partial order, sort them.
@@ -563,6 +568,7 @@ def toposort(xs):
     """
     xs[:] = topoiter(xs)
 
+
 def toposorted(xs):
     """Given a list of things with a partial order, return a sorted list.
 
@@ -579,6 +585,7 @@ def toposorted(xs):
     This returns a fresh list.
     """
     return list(topoiter(xs))
+
 
 def topoiter(xs):
     """Given a list of things with a partial order, yield the things in order.
@@ -666,6 +673,7 @@ def topoiter(xs):
             if not m.in_count:
                 heappush(queue, m)
 
+
 def rearrange_objects(queryset, ids):
     """Rearrange entities in the model
 
@@ -736,8 +744,10 @@ def get_redis():
         _redis_class = getattr(module, class_name)
     return _redis_class(**settings.EVENT_REPEATER['PARAMS'])
 
+
 class EventsExpired(Exception):
     pass
+
 
 class EventRepeater(object):
     def __init__(self):
