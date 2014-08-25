@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang=en>
+    <head>
+        <meta charset=UTF-8>
+        <title>Check Environment</title>
+        <script type="text/javascript">
+  WebFontConfig = {
+    google: { families: [ 'Fira+Sans:400,700:latin', 'Alegreya:400italic,400:latin' ] }
+  };
+  (function() {
+    var wf = document.createElement('script');
+    wf.src = ('https:' == document.location.protocol ? 'https' : 'http') +
+      '://ajax.googleapis.com/ajax/libs/webfont/1/webfont.js';
+    wf.type = 'text/javascript';
+    wf.async = 'true';
+    var s = document.getElementsByTagName('script')[0];
+    s.parentNode.insertBefore(wf, s);
+  })();</script>
+        <style>
+            body {
+                font-size: 16px;
+                font-family: 'Alegreya', serif;
+                line-height: 20px;
+                background: #EEE;
+                color: #222;
+            }
+            h1 {
+                margin: 20px 0 10px;
+                font-size: 24px;
+                font-family: 'Fira Sans', sans-serif;
+                font-weight: bold;
+                line-height: 30px;
+            }
+            samp {
+                font-family: 'Fira Sans', sans-serif;;
+            }
+            th, td {
+                text-align: left;
+                font-size: 16px;
+                line-height: 20px;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Check environment</h1>
+        <table>
+            <tbody>
+                {% for name, value in vars %}
+                <tr>
+                    <th><i>{{ name }}</i></th>
+                    <td><samp>{{ value }}</samp></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </ul>
+    </body>
+</html>
+
+

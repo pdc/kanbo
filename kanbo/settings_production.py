@@ -54,7 +54,13 @@ USE_TZ = True
 # http://www.i18nguy.com/unicode/language-identifiers.html
 LANGUAGE_CODE = 'en-GB'
 
-SITE_ID = 1
+# SITE_ID = 1
+
+# How to refer to this version of the site in mail etc.
+SITE_NAME = os.environ.get('SITE_NAME', 'Kanbo (dev)')
+
+# How to make absolute URLs for links to this version of the site
+SITE_ORIGIN = os.environ.get('SITE_ORIGIN', 'http://localhost:8000')
 
 # If you set this to False, Django will make some optimizations so as not
 # to load the internationalization machinery.
@@ -64,6 +70,8 @@ USE_I18N = True
 # calendars according to the current locale
 USE_L10N = True
 
+
+# FIXME This needs to be replaced with a dfifferent way to do profiles
 AUTH_PROFILE_MODULE = 'hello.Profile'
 
 # Used by django-social-auth to log people in.
