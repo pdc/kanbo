@@ -1,4 +1,4 @@
-Django==1.6.5
+Django==1.11.23
 South==1.0
 cogapp==2.3
 django-nose==1.2
